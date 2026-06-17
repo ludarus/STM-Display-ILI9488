@@ -1,0 +1,7 @@
+../Core/Src/display.c:15:6:DISPLAY_RESET	1
+../Core/Src/display.c:31:6:DISPLAY_SELECT	1
+../Core/Src/display.c:36:6:DISPLAY_DESELECT	1
+../Core/Src/display.c:42:6:DISPLAY_CMD	1
+../Core/Src/display.c:57:6:DISPLAY_DATA	1
+../Core/Src/display.c:72:6:DISPLAY_INIT	1
+../Core/Src/display.c:111:6:DISPLAY_WRITE	1

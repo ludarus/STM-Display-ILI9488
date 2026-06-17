@@ -167,7 +167,7 @@ def generate_header(data: list, var_name: str, width: int, height: int) -> None:
     lines.append(f"static const uint8_t {var_name}[{len(data)}U] = {{")
     for value in data:
         hex_str = f"0x{value:02X}"
-        lines.append(f"{hex_str},")
+        lines.append(f"     {hex_str},  /* {value} \t*/")
     lines.append("};")
     lines.append("")
     lines.append(f"#endif /* {guard} */")
@@ -180,11 +180,16 @@ def main():
     # getting arguments from cli
     parser = argparse.ArgumentParser()
     os.path
-    parser.add_argument("input")
+    parser.add_argument("input", help="a 1bpp BMP file")
+    parser.add_argument("output", help="output directory of the header file")
     args = parser.parse_args()
     # checking if file exists
     if not os.path.isfile(args.input):
         print(f"ERROR: File not found: {args.input}", file=sys.stderr)
+        sys.exit(1)
+
+    if not os.path.isdir(args.output):
+        print(f"ERROR: Directory not found: {args.output}", file=sys.stderr)
         sys.exit(1)
 
     try:
@@ -193,16 +198,14 @@ def main():
         print(f"ERROR: {e}", file=sys.stderr)
         sys.exit(1)
 
-    output_path = os.path.splitext(args.input)[0] + ".h"
-
     var_name = sanitise_name(args.input)
     header = generate_header(data, var_name, width, height)
 
-    with open(output_path, "w") as f:
+    with open(f"{args.output}/{var_name}.h", "w") as f:
         f.write(header)
 
     print(
-        f"Successfully compressed bmp to c array. Header file is located in {output_path}"
+        f"Successfully compressed bmp to c array. Header file is located in {args.output}/{var_name}.h"
     )
 
 
