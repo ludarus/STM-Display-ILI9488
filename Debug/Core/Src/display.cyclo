@@ -1,8 +1,8 @@
-../Core/Src/display.c:48:6:DISPLAY_RESET	1
-../Core/Src/display.c:64:6:DISPLAY_SELECT	1
-../Core/Src/display.c:69:6:DISPLAY_DESELECT	1
-../Core/Src/display.c:75:6:DISPLAY_CMD	1
-../Core/Src/display.c:90:6:DISPLAY_DATA	1
-../Core/Src/display.c:105:6:DISPLAY_INIT	1
-../Core/Src/display.c:146:6:DISPLAY_WRITE	10
-../Core/Src/display.c:239:6:HAL_SPI_TxCpltCallback	4
+../Core/Src/display.c:20:6:DISPLAY_RESET	1
+../Core/Src/display.c:36:6:DISPLAY_SELECT	1
+../Core/Src/display.c:41:6:DISPLAY_DESELECT	1
+../Core/Src/display.c:47:6:DISPLAY_CMD	1
+../Core/Src/display.c:62:6:DISPLAY_DATA	1
+../Core/Src/display.c:77:6:DISPLAY_INIT	1
+../Core/Src/display.c:119:6:DISPLAY_WRITE	13
+../Core/Src/display.c:245:6:HAL_SPI_TxCpltCallback	5

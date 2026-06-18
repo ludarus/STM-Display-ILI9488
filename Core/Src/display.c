@@ -12,37 +12,9 @@
 #include <stdbool.h>
 #include "image.h"
 #include <memory.h>
+#include "display.h"
 
-#define ON_COLOR 0xFF
-#define OFF_COLOR 0x00
-
-#define CHUNK 8192
-
-//creating a buffer to load into the RAM for faster image display
-static uint8_t buf[2][CHUNK];
-static uint8_t activeBuf = 0;
-
-static uint8_t currentlyDrawing = 0;
-
-static uint8_t *drawPtr = 0;
-static uint8_t *drawEnd = 0;
-
-//DEBUG
-static uint32_t startTime;
-static uint32_t finalTime;
-//DEBUG
-
-// bit packing to save memory
-static uint8_t screenCopy[((480 * 320) + 7) / 8];
-
-// macros to set and access bits in the array
-// sets pixel to 1
-#define SET_PIXEL(array, bit) ((array)[(bit) / 8] |= (1u <<((bit) % 8))) // returns void
-// sets pixel to 0
-#define CLR_PIXEL(arr, bit) ((arr)[(bit)/8] &= ~(1u << ((bit) % 8)))
-// shifting byte to desired bit and masking off the rest of the bit
-#define GET_PIXEL(array, bit) (((array)[(bit) / 8] >> ((bit) % 8)) & 1u) // returns 0u or 1u
-#define OR_PIXEL(arr, bit, val) ((arr)[(bit)/8] |= ((!!(val)) << ((bit) % 8)))
+static ImageTransferState_t state;
 
 // LCD hardware Reset, active low
 void DISPLAY_RESET(void) {
@@ -122,7 +94,8 @@ void DISPLAY_INIT(SPI_HandleTypeDef *spi) {
 	// memory data access control - instruction 36h MADCTL
 	DISPLAY_CMD(spi, 0x36);
 	// MX = 0, MY = 0, MV = 0, ML = 0, RGB = 0, MH = 0
-	DISPLAY_DATA(spi, 0x00, 1);
+	uint8_t madctl = 0;
+	DISPLAY_DATA(spi, &madctl, 1);
 
 	// Interface Pixel Format - instruction 3Ah COLMOD
 	DISPLAY_CMD(spi, 0x3A);
@@ -145,14 +118,20 @@ void DISPLAY_INIT(SPI_HandleTypeDef *spi) {
 
 void DISPLAY_WRITE(SPI_HandleTypeDef *spi, uint16_t x, uint16_t y,
 		Image_t *image, bool overWrite) {
-	if (!currentlyDrawing) {
+	if (!state.currentlyDrawing) {
 
 		// set column address command
 		DISPLAY_CMD(spi, 0x2A);
 		// parameters: starting col MSB, starting col LSB, ending col MSB, ending col LSB
-		uint8_t caset[] = { (uint8_t) (x >> 8), (uint8_t) (x & 0xFF),
-				(uint8_t) ((uint8_t) (x + image->width - 1) >> 8), (uint8_t) ((x
-						+ image->width - 1) & 0xFF) };
+		uint8_t caset[] = {
+
+		(uint8_t) (x >> 8),
+
+		(uint8_t) (x & 0xFF),
+
+		(uint8_t) ((x + image->width - 1) >> 8),
+
+		(uint8_t) ((x + image->width - 1) & 0xFF) };
 
 		DISPLAY_DATA(spi, caset, 4);
 
@@ -164,19 +143,20 @@ void DISPLAY_WRITE(SPI_HandleTypeDef *spi, uint16_t x, uint16_t y,
 				(uint8_t) ((y + image->height - 1) & 0xFF) };
 		DISPLAY_DATA(spi, raset, 4);
 
-		// decompressing image as a bit array. Storing statically as max size on heap to prevent ram overflows
-		static uint8_t dcompImage[((320 * 480) + 7) / 8];
-		uint32_t dcompImage_SIZE = 0;
+		// resetting the decompiled image
+		memset(state.dcompImage, 0, sizeof(state.dcompImage));
+		// size in bits
+		state.dcompImage_SIZE = 0;
 		for (uint32_t i = 0; i < image->size; i++) {
 			for (uint8_t j = 0; j < image->data[i]; j++) {
 				if (i % 2) {
 					//pixel is high, 1 % 2 = 1
-					SET_PIXEL(dcompImage, dcompImage_SIZE);
+					SET_PIXEL(state.dcompImage, state.dcompImage_SIZE);
 				} else {
 					//pixel is low
-					CLR_PIXEL(dcompImage, dcompImage_SIZE);
+					CLR_PIXEL(state.dcompImage, state.dcompImage_SIZE);
 				}
-				dcompImage_SIZE++;
+				state.dcompImage_SIZE++;
 			}
 		}
 
@@ -186,14 +166,14 @@ void DISPLAY_WRITE(SPI_HandleTypeDef *spi, uint16_t x, uint16_t y,
 				uint32_t globalpos = 480 * (y + h) + x + w;
 				uint32_t localpos = (image->width * h) + w;
 				if (overWrite) {
-					if (GET_PIXEL(dcompImage, localpos)) {
-						SET_PIXEL(screenCopy, globalpos);
+					if (GET_PIXEL(state.dcompImage, localpos)) {
+						SET_PIXEL(state.screenCopy, globalpos);
 					} else {
-						CLR_PIXEL(screenCopy, globalpos);
+						CLR_PIXEL(state.screenCopy, globalpos);
 					}
 				} else {
-					OR_PIXEL(screenCopy, globalpos,
-							GET_PIXEL(dcompImage,localpos));
+					OR_PIXEL(state.screenCopy, globalpos,
+							GET_PIXEL(state.dcompImage, localpos));
 				}
 			}
 		}
@@ -209,26 +189,52 @@ void DISPLAY_WRITE(SPI_HandleTypeDef *spi, uint16_t x, uint16_t y,
 
 		// double buffering
 
-		//sending image data. chunking data by 2^16 bits
-		drawPtr = &dcompImage[0];
-		drawEnd = &dcompImage[dcompImage_SIZE];
+		//sending image data. chunking data for DMA and memory saving purposes
+		state.imageProgress = 0;
+		state.imageTarget = state.dcompImage_SIZE * 2;
 
 		//setting status to busy
-		currentlyDrawing = 1;
+		state.currentlyDrawing = true;
 
-		startTime = HAL_GetTick();
-		activeBuf = 0;
+		//debug clock
+		state.startTime = HAL_GetTick();
+
+		state.activeBuf = 0;
 		//checking if chunking is required or not
-		if (dcompImage_SIZE <= CHUNK) {
+		if (state.imageTarget <= CHUNK) {
 			//not required
-			HAL_SPI_Transmit_DMA(spi, drawPtr, dcompImage_SIZE);
-			drawPtr = drawEnd;
+
+			//expanding to buffer
+			for (uint32_t i = 0; i < state.dcompImage_SIZE; i++) {
+				state.buf[state.activeBuf][i * 2] = GET_PIXEL(state.dcompImage,
+						i);
+				state.buf[state.activeBuf][(i * 2) + 1] = 0;
+			}
+
+			HAL_SPI_Transmit_DMA(spi, state.buf[state.activeBuf],
+					state.imageTarget);
+			state.imageProgress = state.imageTarget;
 		} else {
 			//required
-			HAL_SPI_Transmit_DMA(spi, drawPtr, CHUNK);
-			drawPtr += CHUNK;
+
+			//expanding to buffer
+			for (uint32_t i = 0; i < CHUNK / 2; i++) {
+				state.buf[state.activeBuf][i * 2] = GET_PIXEL(state.dcompImage,
+						i);
+				state.buf[state.activeBuf][(i * 2) + 1] = 0;
+			}
+
+			HAL_SPI_Transmit_DMA(spi, state.buf[state.activeBuf], CHUNK);
+			state.activeBuf = !state.activeBuf;
+			state.imageProgress += CHUNK;
 			//loading the next chunk of the image into ram for faster transfer
-			memcpy(buf[activeBuf], drawPtr, CHUNK);
+			for (uint32_t i = state.imageProgress / 2;
+					i < (CHUNK / 2) + state.imageProgress / 2; i++) {
+				uint32_t localIdx = (i - (state.imageProgress / 2)) * 2; // local buffer offset
+				state.buf[state.activeBuf][localIdx] = GET_PIXEL(
+						state.dcompImage, i);
+				state.buf[state.activeBuf][localIdx + 1] = 0;
+			}
 		}
 	} else {
 		// called if function is already drawing when called
@@ -238,24 +244,30 @@ void DISPLAY_WRITE(SPI_HandleTypeDef *spi, uint16_t x, uint16_t y,
 //callback that is called when HAL_SPI_Transmit_DMA finishes
 void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi) {
 	if (hspi->Instance == SPI1) {
-		if (drawPtr >= drawEnd) {
+		if (state.imageProgress >= state.imageTarget) {
 			//done drawing
-			finalTime = HAL_GetTick() - startTime;
+			state.finalTime = HAL_GetTick() - state.startTime;
 			DISPLAY_DESELECT();
-			currentlyDrawing = 0;
+			state.currentlyDrawing = 0;
 			return;
-		} else if (drawEnd - drawPtr < CHUNK) {
+		} else if (state.imageTarget - state.imageProgress < CHUNK) {
 			//partial chunk
-			HAL_SPI_Transmit_DMA(hspi, buf[activeBuf], drawEnd - drawPtr);
+			HAL_SPI_Transmit_DMA(hspi, state.buf[state.activeBuf],
+					state.imageTarget - state.imageProgress);
 			//done drawing criteria
-			drawPtr += CHUNK;
+			state.imageProgress += CHUNK;
 		} else {
 			//full chunk
-			HAL_SPI_Transmit_DMA(hspi, buf[activeBuf], CHUNK);
-			drawPtr += CHUNK;
+			HAL_SPI_Transmit_DMA(hspi, state.buf[state.activeBuf], CHUNK);
+			state.imageProgress += CHUNK;
 			//loading the next chunk of the image into ram for faster transfer, and swapping buffers
-			activeBuf = !activeBuf;
-			memcpy(buf[activeBuf], drawPtr, CHUNK);
+			state.activeBuf = !state.activeBuf;
+			for (uint32_t i = state.imageProgress / 2;
+					i < (CHUNK / 2) + state.imageProgress / 2; i++) {
+				state.buf[state.activeBuf][i * 2] = GET_PIXEL(state.dcompImage,
+						i);
+				state.buf[state.activeBuf][(i * 2) + 1] = 0;
+			}
 
 		}
 	}
