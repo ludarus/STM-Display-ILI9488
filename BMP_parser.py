@@ -163,17 +163,17 @@ def generate_header(data: list, var_name: str, width: int, height: int) -> None:
     lines.append(" * Pixel 0,0 is top-left.")
     lines.append(" */")
     lines.append("")
+    lines.append(f"static const uint8_t {var_name}_DATA[{len(data)}U] = {{")
+    for value in data:
+        hex_str = f"0x{value:02X}"
+        lines.append(f"     {hex_str},  /* {value} \t*/")
+    lines.append("};")
+    lines.append("")
     lines.append(f"static const Image_t {var_name} = " + "{")
     lines.append(f"     .width = {width},")
     lines.append(f"     .height = {height},")
     lines.append(f"     .size = {len(data)},")
     lines.append(f"     .data = {var_name}_DATA")
-    lines.append("};")
-    lines.append("")
-    lines.append(f"static const uint8_t {var_name}_DATA[{len(data)}U] = {{")
-    for value in data:
-        hex_str = f"0x{value:02X}"
-        lines.append(f"     {hex_str},  /* {value} \t*/")
     lines.append("};")
     lines.append("")
     lines.append(f"#endif /* {guard} */")
@@ -224,6 +224,7 @@ def main():
 
             count = 0
             dirName = os.path.dirname(args.input)
+            includes = []
 
             for possibleFile in os.listdir(dirName):
                 if os.path.isfile(f"{dirName}/{possibleFile}"):
@@ -237,10 +238,12 @@ def main():
                     print(
                         f"Successfully compressed {dirName}/{possibleFile} to c array. Header file is located in {args.output}{var_name}.h"
                     )
+                    includes.append(f'#include "{var_name}.h"')
                     count += 1
             print(
                 f"successfully converted {count} files in {os.path.dirname(args.input)}"
             )
+            print("include statement: \n" + "\n".join(includes))
 
         except ValueError as e:
             print(f"ERROR: {e}", file=sys.stderr)

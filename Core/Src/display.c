@@ -29,7 +29,6 @@ void DISPLAY_RESET(void) {
 	HAL_GPIO_WritePin(DISPLAY_RESET_GPIO_Port, DISPLAY_RESET_Pin, GPIO_PIN_SET);
 
 	HAL_Delay(100);
-
 }
 
 // LCD chip select signal, active low
