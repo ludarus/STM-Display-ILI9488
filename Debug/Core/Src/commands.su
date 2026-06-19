@@ -1,0 +1,5 @@
+../Core/Src/commands.c:15:16:helpCMD	8	static
+../Core/Src/commands.c:30:10:getCommandBuffer	8	static
+../Core/Src/commands.c:34:8:getCommandSize	8	static
+../Core/Src/commands.c:39:6:parseCommand	24	static
+../Core/Src/commands.c:60:6:HAL_UARTEx_RxEventCallback	16	static

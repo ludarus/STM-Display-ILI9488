@@ -22,6 +22,8 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "display.h"
+#include "commands.h"
+//testing includes
 #include "File_038_ObjNum_037_48x76_08_31_23.h"
 #include "File_033_ObjNum_032_48x76_10_27_23.h"
 #include "File_047_ObjNum_046_72x83_08_30_23.h"
@@ -137,19 +139,7 @@ static void MX_SPI1_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-uint8_t serialBuffer[100];
-uint32_t recievedSize = 0;
-const uint8_t confirmation[] = "\n\rCommand received\r\n";
 
-void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size) {
-	recievedSize = Size;
-
-	//sending confirmation message back to source
-	HAL_UART_Transmit_IT(huart, confirmation, sizeof(confirmation) - 1);
-
-	//restarting receive
-	HAL_UARTEx_ReceiveToIdle_DMA(huart, serialBuffer, sizeof(serialBuffer));
-}
 /* USER CODE END 0 */
 
 /**
@@ -183,9 +173,10 @@ int main(void) {
 	MX_DMA_Init();
 	MX_USART2_UART_Init();
 	MX_SPI1_Init();
+
 	/* USER CODE BEGIN 2 */
 	// DMA serial command recieve until IDLE
-	HAL_UARTEx_ReceiveToIdle_DMA(&huart2, serialBuffer, sizeof(serialBuffer));
+	HAL_UARTEx_ReceiveToIdle_DMA(&huart2, getCommandBuffer(), getCommandSize());
 
 	// initializing display
 	DISPLAY_INIT(&hspi1);

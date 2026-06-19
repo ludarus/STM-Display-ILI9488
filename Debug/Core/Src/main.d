@@ -28,7 +28,7 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_spi_ex.h \
  ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_uart.h \
  ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_uart_ex.h \
- ../Core/Inc/display.h ../Core/Inc/image.h \
+ ../Core/Inc/display.h ../Core/Inc/image.h ../Core/Inc/commands.h \
  ../Core/Inc/File_038_ObjNum_037_48x76_08_31_23.h \
  ../Core/Inc/File_033_ObjNum_032_48x76_10_27_23.h \
  ../Core/Inc/File_047_ObjNum_046_72x83_08_30_23.h \
@@ -137,6 +137,7 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_uart_ex.h:
 ../Core/Inc/display.h:
 ../Core/Inc/image.h:
+../Core/Inc/commands.h:
 ../Core/Inc/File_038_ObjNum_037_48x76_08_31_23.h:
 ../Core/Inc/File_033_ObjNum_032_48x76_10_27_23.h:
 ../Core/Inc/File_047_ObjNum_046_72x83_08_30_23.h:
