@@ -193,6 +193,13 @@ def main():
         action="store_true",
         help="attempt to convert every file in the directory",
     )
+    parser.add_argument(
+        "-p",
+        "--preview",
+        action="store_true",
+        help="just display preview and don't convert to c header",
+    )
+
     args = parser.parse_args()
     # checking if file exists
     if not os.path.isfile(args.input):
@@ -209,11 +216,12 @@ def main():
             var_name = sanitise_name(args.input)
             header = generate_header(data, var_name, width, height)
 
-            with open(f"{args.output}{var_name}.h", "w") as f:
-                f.write(header)
-            print(
-                f"Successfully compressed bmp to c array. Header file is located in {args.output}{var_name}.h"
-            )
+            if not args.preview:
+                with open(f"{args.output}{var_name}.h", "w") as f:
+                    f.write(header)
+                print(
+                    f"Successfully compressed bmp to c array. Header file is located in {args.output}{var_name}.h"
+                )
 
         except ValueError as e:
             print(f"ERROR: {e}", file=sys.stderr)
@@ -232,18 +240,20 @@ def main():
                     var_name = sanitise_name(f"{dirName}/{possibleFile}")
                     header = generate_header(data, var_name, width, height)
 
-                    with open(f"{args.output}{var_name}.h", "w") as f:
-                        f.write(header)
+                    if not args.preview:
+                        with open(f"{args.output}{var_name}.h", "w") as f:
+                            f.write(header)
 
-                    print(
-                        f"Successfully compressed {dirName}/{possibleFile} to c array. Header file is located in {args.output}{var_name}.h"
-                    )
-                    includes.append(f'#include "{var_name}.h"')
-                    count += 1
-            print(
-                f"successfully converted {count} files in {os.path.dirname(args.input)}"
-            )
-            print("include statement: \n" + "\n".join(includes))
+                        print(
+                            f"Successfully compressed {dirName}/{possibleFile} to c array. Header file is located in {args.output}{var_name}.h"
+                        )
+                        includes.append(f'#include "{var_name}.h"')
+                        count += 1
+            if not args.preview:
+                print(
+                    f"successfully converted {count} files in {os.path.dirname(args.input)}"
+                )
+                print("include statement: \n" + "\n".join(includes))
 
         except ValueError as e:
             print(f"ERROR: {e}", file=sys.stderr)

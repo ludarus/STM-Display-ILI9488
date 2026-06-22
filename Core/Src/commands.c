@@ -8,7 +8,6 @@
 #include "commands.h"
 #include "display.h"
 #include <stdbool.h>
-#include "File_006_ObjNum_005_240x128_10_27_23_C.h"
 
 const uint8_t errorMsg[] = "\n\rCommand not found\r\n";
 

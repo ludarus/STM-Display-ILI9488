@@ -6,12 +6,16 @@
  */
 #include <stdbool.h>
 #include "image.h"
+#include "main.h"
 
 #ifndef INC_DISPLAY_H_
 #define INC_DISPLAY_H_
 
 #define ON_COLOR 0xFF
 #define OFF_COLOR 0x00
+
+#define DISPLAY_WIDTH 480
+#define DISPLAY_HEIGHT 320
 
 #define CHUNK 4096
 
@@ -25,18 +29,18 @@
 #define OR_PIXEL(arr, bit, val) ((arr)[(bit)/8] |= ((!!(val)) << ((bit) % 8)))
 
 typedef struct {
-	bool currentlyDrawing;
+	volatile bool currentlyDrawing;
 
 	//creating a buffer to load into the RAM for faster image display
 	uint8_t buf[2][CHUNK];
-	uint8_t activeBuf;
+	volatile uint8_t activeBuf;
 
 	uint16_t x;
 	uint16_t y;
 	uint16_t width;
 	uint16_t height;
 
-	uint32_t imageProgress;
+	volatile uint32_t imageProgress;
 	uint32_t imageTarget;
 
 	//DEBUG
@@ -47,6 +51,7 @@ typedef struct {
 	// bit packing to save memory
 	uint8_t screenCopy[((480 * 320) + 7) / 8];
 	uint32_t dcompImage_SIZE;
+
 } ImageTransferState_t;
 
 void DISPLAY_INIT(SPI_HandleTypeDef *spi);
