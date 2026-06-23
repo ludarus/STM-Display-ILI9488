@@ -182,7 +182,7 @@ int main(void)
 	DISPLAY_INIT(&hspi1);
 	HAL_Delay(200);
 	DISPLAY_FILL(&hspi1);
-	DISPLAY_WRITE(&hspi1, 0, 0, &File_002_ObjNum_001_NEW_6_17_26, true);
+	DISPLAY_WRITE(&hspi1, 100, 100, &File_002_ObjNum_001_NEW_6_17_26, true);
 
   /* USER CODE END 2 */
 

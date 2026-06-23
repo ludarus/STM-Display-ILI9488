@@ -46,6 +46,7 @@ typedef struct {
 	//DEBUG
 	uint32_t startTime;
 	uint32_t finalTime;
+	volatile uint8_t THING;
 	//DEBUG
 
 	// bit packing to save memory
