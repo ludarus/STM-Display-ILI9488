@@ -1,18 +1,16 @@
-print("const uint8_t table[256][3] = " + "{")
+ON  = 0xE
+OFF = 0x0
 
-# iterating through all possible permutations of a three byte packet for 3bpp
+print("const uint32_t pixel_lut[256] = {")
+
 for i in range(256):
-    value = 0
+    result = 0
+    for shift in (0, 2, 4, 6):
+        lo = ON if (i >> (shift    )) & 1 else OFF
+        hi = ON if (i >> (shift + 1)) & 1 else OFF
+        result = (result >> 8) | (((lo << 4) | hi) << 24)
 
-    for bit in range(7, -1, -1):
-        value <<= 3
-        if i & (1 << bit):
-            value |= 0b111
-
-    b0 = (value >> 16) & 0xFF
-    b1 = (value >> 8) & 0xFF
-    b2 = value & 0xFF
-
-    print(f"    {{{b0:#04x}, {b1:#04x}, {b2:#04x}}},")
+    comma = "," if i < 255 else " "
+    print(f"    0x{result:08X}{comma}")
 
 print("};")

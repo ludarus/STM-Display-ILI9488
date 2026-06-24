@@ -11,7 +11,7 @@
 #ifndef INC_DISPLAY_ILI9488_H_
 #define INC_DISPLAY_ILI9488_H_
 
-#define ON_COLOR 0xFF
+#define ON_COLOR 0xE0
 #define OFF_COLOR 0x00
 
 #define ILI9488_WIDTH 480
@@ -32,7 +32,7 @@
 typedef struct {
   volatile bool currentlyDrawing;
   // creating a buffer to load into the RAM for faster image display
-  uint8_t buf[2][CHUNK];
+  uint8_t buf[2][CHUNK] __attribute__((aligned(4)));
   volatile uint8_t activeBuf;
 
   uint16_t x;
