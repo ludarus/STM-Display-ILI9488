@@ -466,7 +466,7 @@ bool ST7796S_WRITE(SPI_HandleTypeDef *spi, uint16_t x, uint16_t y,
   }
 }
 
-// callback that is called when HAL_SPI_Transmit_DMA finishes
+//// callback that is called when HAL_SPI_Transmit_DMA finishes
 //void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi) {
 //  if (hspi->Instance == SPI1) {
 //    if (state.imageProgress >= state.imageTarget) {

@@ -165,7 +165,7 @@ const uint8_t errorMsg[] = "\n\rCommand not found\r\n";
 
 static const SPI_HandleTypeDef *spi;
 
-static uint8_t imageNum;
+static uint8_t imageNum = 34;
 static bool isOr;
 
 void commandsInit(SPI_HandleTypeDef *spiInterface) { spi = spiInterface; }
@@ -181,9 +181,9 @@ const ByteArray_t helpCMD(void) {
 }
 
 const ByteArray_t displayImageCMD(void) {
-  if (ILI9488_WRITE(spi, 32, 7, images[imageNum], !isOr)) {
+  if (ILI9488_WRITE(spi, 0, 0, images[imageNum], !isOr)) {
     imageNum++;
-    imageNum %= sizeof(images) -1;
+    imageNum %= 74;
     static uint8_t msg[] = "SUCESSFULLY DISPLAYED IMAGE\n";
     return (ByteArray_t){.data = msg, .size = sizeof(msg) - 1};
   } else {

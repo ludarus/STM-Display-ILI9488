@@ -13,6 +13,9 @@
 #include "memory.h"
 #include <display-ili9488.h>
 #include <stdbool.h>
+// for memcpy()
+// may remove later
+#include "string.h"
 
 static ImageTransferState_t state;
 
@@ -62,7 +65,8 @@ static const uint32_t table[256] = { 0x00000000, 0x000000E0, 0x0000000E,
 		0xEEEE0EE0, 0xEEEE0E0E, 0xEEEE0EEE, 0xEEEEEE00, 0xEEEEEEE0, 0xEEEEEE0E,
 		0xEEEEEEEE };
 
-//static const uint8_t speed[65535] = { 0 };
+//static const uint8_t speed1[480 * 320 / 4] = { 0 };
+//static const uint8_t speed2[480 * 320 / 4] = { 0 };
 //uint8_t speedCount = 0;
 
 // LCD hardware Reset, active low
@@ -91,7 +95,7 @@ void ILI9488_DESELECT(void) {
 	HAL_GPIO_WritePin(DISPLAY_CS_GPIO_Port, DISPLAY_CS_Pin, GPIO_PIN_SET);
 }
 
-// sends cmd to lcd
+// sends command to lcd
 void ILI9488_CMD(SPI_HandleTypeDef *spi, uint8_t cmd) {
 	// setting DC pin to command mode (low)
 	HAL_GPIO_WritePin(DISPLAY_DC_GPIO_Port, DISPLAY_DC_Pin, GPIO_PIN_RESET);
@@ -162,9 +166,9 @@ void ILI9488_INIT(SPI_HandleTypeDef *spi) {
 
 	// Column inversion for display longevity
 	// 1 dot mode
-//	ILI9488_CMD(spi, 0xB4);
-//	uint8_t inversion = 0x01;
-//	ILI9488_DATA(spi, &inversion, 1);
+	//	ILI9488_CMD(spi, 0xB4);
+	//	uint8_t inversion = 0x01;
+	//	ILI9488_DATA(spi, &inversion, 1);
 
 	// display on
 	ILI9488_CMD(spi, 0x29);
@@ -217,17 +221,23 @@ void ILI9488_FILL(SPI_HandleTypeDef *spi) {
 	for (uint32_t r = 0; r < 76800; r++) {
 		HAL_SPI_Transmit(spi, &padded, 1, HAL_MAX_DELAY);
 	}
-//	HAL_SPI_Transmit_DMA(spi, speed, sizeof(speed));
+//	HAL_Delay(500);
+//	HAL_SPI_Transmit_DMA(spi, speed1, sizeof(speed1));
 
-//	speedCount--;
+//	speedCount = 1;
 	ILI9488_DESELECT();
 
 }
 
-//// speed testing function for ILI9488_FILL
+// speed testing function for ILI9488_FILL
 //void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi) {
 //	if (hspi->Instance == SPI1) {
-//		ILI9488_DESELECT();
+//		if (speedCount < 1){
+//			ILI9488_DESELECT();
+//		}else{
+//			HAL_SPI_Transmit_DMA(hspi, speed2, sizeof(speed2));
+//			speedCount--;
+//		}
 //	}
 //}
 
@@ -351,11 +361,102 @@ bool ILI9488_WRITE(SPI_HandleTypeDef *spi, uint16_t x, uint16_t y,
 		ILI9488_DATA(spi, raset, 4);
 
 		// decompressing image to cloned buffer
-
-		// an index throughout the loop
+		uint32_t startTime = HAL_GetTick();
+		// size of visible image
 		state.dcompImage_SIZE = 0;
+
+		// all pixels in image including ones that are clipped off by the edge of the screen
+		// index
 		uint32_t count = 0;
 		// iterating through compressed image
+
+		// WORK IN PROGRESS
+//		for (uint32_t i = 0; i < image->size; i++) {
+//			// filling up current partial byte
+//			for (uint8_t j = 0; j < (8 - count % 8) % 8 && j < image->data[i]; j++) {
+//				if ((count % image->width) + x < ILI9488_WIDTH
+//						&& (count / image->width) + y < ILI9488_HEIGHT) {
+//					uint32_t globalpos = ILI9488_WIDTH
+//							* (y + (count / image->width)) + x
+//							+ (count % image->width);
+//					if (i % 2) {
+//						// pixel is high, 1 % 2 = 1
+//						//  will always be high in overwrite and OR mode
+//						SET_PIXEL(state.screenCopy, globalpos);
+//					} else if (overWrite) {
+//						// pixel is low and overwrite is on. if in OR mode, just leave
+//						// current pixel as it is
+//						CLR_PIXEL(state.screenCopy, globalpos);
+//					}
+//					state.dcompImage_SIZE++;
+//				}
+//				count++;
+//			}
+//
+//			// filling up next bytes
+//			for (uint8_t j = 0; j < image->data[i] / 8; j++) {
+//				// if the next 8 pixels/bits aren't cut off by the screen
+//				if ((count % image->width) + x + 8 < ILI9488_WIDTH
+//						&& (count / image->width) + y + (8 / image->width)
+//								< ILI9488_HEIGHT) {
+//					if (i % 2) {
+//						// pixel is high, 1 % 2 = 1
+//						//  will always be high in overwrite and OR mode
+//						state.screenCopy[count / 8] = 1;
+//					} else if (overWrite) {
+//						// pixel is low and overwrite is on. if in OR mode, just leave
+//						// current pixel as it is
+//						state.screenCopy[count / 8] = 0;
+//					}
+//					state.dcompImage_SIZE += 8;
+//					count += 8;
+//				} else {
+//					//fill up partial byte
+//					for (uint8_t f = 0; f < 8; f++) {
+//						if ((count % image->width) + x < ILI9488_WIDTH
+//								&& (count / image->width) + y < ILI9488_HEIGHT) {
+//							// calculating screen pixel index from current position within image
+//							uint32_t globalpos = ILI9488_WIDTH
+//									* (y + (count / image->width)) + x
+//									+ (count % image->width);
+//							if (i % 2) {
+//								// pixel is high, 1 % 2 = 1
+//								//  will always be high in overwrite and OR mode
+//								SET_PIXEL(state.screenCopy, globalpos);
+//							} else if (overWrite) {
+//								// pixel is low and overwrite is on. if in OR mode, just leave
+//								// current pixel as it is
+//								CLR_PIXEL(state.screenCopy, globalpos);
+//							}
+//							state.dcompImage_SIZE++;
+//						}
+//						count++;
+//					}
+//				}
+//
+//				// filling up last partial byte
+//				for (uint8_t j = 0; j < image->data[i] % 8; j++) {
+//					if ((count % image->width) + x < ILI9488_WIDTH
+//							&& (count / image->width) + y < ILI9488_HEIGHT) {
+//						uint32_t globalpos = ILI9488_WIDTH
+//								* (y + (count / image->width)) + x
+//								+ (count % image->width);
+//						if (i % 2) {
+//							// pixel is high, 1 % 2 = 1
+//							//  will always be high in overwrite and OR mode
+//							SET_PIXEL(state.screenCopy, globalpos);
+//						} else if (overWrite) {
+//							// pixel is low and overwrite is on. if in OR mode, just leave
+//							// current pixel as it is
+//							CLR_PIXEL(state.screenCopy, globalpos);
+//						}
+//						state.dcompImage_SIZE++;
+//					}
+//					count++;
+//				}
+//			}
+//		}
+
 		for (uint32_t i = 0; i < image->size; i++) {
 			// iterating through the current RLE value
 			// TODO: OPTIMIZE THIS
@@ -382,7 +483,8 @@ bool ILI9488_WRITE(SPI_HandleTypeDef *spi, uint16_t x, uint16_t y,
 			}
 		}
 
-		// TODO FIX OBOE HERE
+		uint32_t finalTime = HAL_GetTick() - startTime;
+
 		if (x + image->width > ILI9488_WIDTH) {
 			state.width = ILI9488_WIDTH - x;
 		} else {
@@ -437,8 +539,7 @@ bool ILI9488_WRITE(SPI_HandleTypeDef *spi, uint16_t x, uint16_t y,
 			state.imageProgress = state.imageTarget;
 		} else {
 			// required
-
-			// expanding to buffer
+			// PRELOADING FIRST TWO CHUNKS
 			for (uint32_t i = 0; i < CHUNK / 4; i++) {
 				// converting image space index to screen space index
 				uint32_t globalpos = ILI9488_SCALED_WIDTH
@@ -447,11 +548,8 @@ bool ILI9488_WRITE(SPI_HandleTypeDef *spi, uint16_t x, uint16_t y,
 				((uint32_t*) state.buf[state.activeBuf])[i] =
 						table[state.screenCopy[globalpos]];
 			}
-			state.startTime = HAL_GetTick();
-			HAL_SPI_Transmit_DMA(spi, state.buf[state.activeBuf], CHUNK);
-			state.imageProgress += CHUNK;
-			// loading the next chunk of the image into ram for faster transfer
 
+			state.imageProgress += CHUNK;
 			state.activeBuf = !state.activeBuf;
 			uint16_t shift = state.imageProgress / 4;
 			for (uint32_t i = 0;
@@ -462,13 +560,15 @@ bool ILI9488_WRITE(SPI_HandleTypeDef *spi, uint16_t x, uint16_t y,
 									CHUNK / 4); i++) {
 				// converting image space index to screen space index
 				uint32_t globalpos = ILI9488_SCALED_WIDTH
-						* (state.y + ((i + shift) / state.width))
-						+ state.x + ((i + shift) % state.width);
+						* (state.y + ((i + shift) / state.width)) + state.x
+						+ ((i + shift) % state.width);
 				((uint32_t*) state.buf[state.activeBuf])[i] =
 						table[state.screenCopy[globalpos]];
 			}
-		}
+			//transmitting the first chunk, then the interrupt will transmit the second chunk before loading the third etc
 
+			HAL_SPI_Transmit_DMA(spi, state.buf[!state.activeBuf], CHUNK);
+		}
 		return true;
 	} else {
 		// called if function is already drawing when called
@@ -481,7 +581,7 @@ void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi) {
 	if (hspi->Instance == SPI1) {
 		if (state.imageProgress >= state.imageTarget) {
 			// done drawing
-			state.finalTime = HAL_GetTick() - state.startTime;
+
 			ILI9488_DESELECT();
 			state.currentlyDrawing = 0;
 			return;
@@ -497,13 +597,15 @@ void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi) {
 			HAL_SPI_Transmit_DMA(hspi, state.buf[state.activeBuf], CHUNK);
 			state.activeBuf = !state.activeBuf;
 			uint16_t shift = state.imageProgress / 4;
+			// pointer to the active 4 byte section of memory
+			uint32_t *dst = (uint32_t*) state.buf[state.activeBuf];
 			for (uint32_t i = 0; i < CHUNK / 4; i++) {
 				// converting image space index to screen space index
+				// this line is heavily compiler optimized because any obvious optimizations make it slower
 				uint32_t globalpos = ILI9488_SCALED_WIDTH
-						* (state.y + ((i + shift) / state.width))
-						+ state.x + ((i + shift) % state.width );
-				((uint32_t*) state.buf[state.activeBuf])[i] =
-						table[state.screenCopy[globalpos]];
+						* (state.y + ((i + shift) / state.width)) + state.x
+						+ ((i + shift) % state.width);
+				*dst++ = table[state.screenCopy[globalpos]];
 			}
 
 		}

@@ -11,14 +11,13 @@
 #ifndef INC_DISPLAY_ILI9488_H_
 #define INC_DISPLAY_ILI9488_H_
 
-#define ON_COLOR 0xE0
-#define OFF_COLOR 0x00
-
 #define ILI9488_WIDTH 480
 #define ILI9488_HEIGHT 320
 
 #define ILI9488_SCALED_WIDTH (ILI9488_WIDTH / 8)
 
+//#define CHUNK 5360
+//#define CHUNK 64
 #define CHUNK 4096
 
 // macros to set and access bits in the array
@@ -28,8 +27,6 @@
 // sets pixel to 0
 #define CLR_PIXEL(arr, bit) ((arr)[(bit) / 8] &= ~(1u << ((bit) % 8)))
 // shifting byte to desired bit and masking off the rest of the bit
-#define GET_PIXEL(array, bit)                                                  \
-  (((array)[(bit) / 8] >> ((bit) % 8)) & 1u) // returns 0u or 1u
 
 typedef struct {
   volatile bool currentlyDrawing;
@@ -66,7 +63,5 @@ void ILI9488_DATA(SPI_HandleTypeDef *spi, uint8_t *data, uint16_t size);
 void ILI9488_FILL(SPI_HandleTypeDef *spi);
 bool ILI9488_WRITE(SPI_HandleTypeDef *spi, uint16_t x, uint16_t y,
                    Image_t *image, bool overWrite);
-
-
 
 #endif /* INC_DISPLAY_ILI9488_H_ */
