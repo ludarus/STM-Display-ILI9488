@@ -17,6 +17,8 @@
 #define ILI9488_WIDTH 480
 #define ILI9488_HEIGHT 320
 
+#define ILI9488_SCALED_WIDTH (ILI9488_WIDTH / 8)
+
 #define CHUNK 4096
 
 // macros to set and access bits in the array

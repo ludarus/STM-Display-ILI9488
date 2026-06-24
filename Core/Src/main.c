@@ -111,8 +111,10 @@ int main(void) {
 	commandsInit(&hspi1);
 
 	ILI9488_FILL(&hspi1);
-//	ILI9488_REFRESH(&hspi1);
 
+	ILI9488_REFRESH(&hspi1);
+
+	HAL_Delay(500);
 	ILI9488_WRITE(&hspi1, 0, 0, &File_072_ObjNum_135_480x320_6_18_26, true);
 
 	HAL_Delay(1000);

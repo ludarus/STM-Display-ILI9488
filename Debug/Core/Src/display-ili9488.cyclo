@@ -6,5 +6,5 @@
 ../Core/Src/display-ili9488.c:125:6:ILI9488_INIT	1
 ../Core/Src/display-ili9488.c:174:6:ILI9488_FILL	2
 ../Core/Src/display-ili9488.c:235:6:ILI9488_REFRESH	3
-../Core/Src/display-ili9488.c:302:6:ILI9488_WRITE	19
-../Core/Src/display-ili9488.c:478:6:HAL_SPI_TxCpltCallback	5
+../Core/Src/display-ili9488.c:303:6:ILI9488_WRITE	19
+../Core/Src/display-ili9488.c:480:6:HAL_SPI_TxCpltCallback	5

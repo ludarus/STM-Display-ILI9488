@@ -181,8 +181,9 @@ const ByteArray_t helpCMD(void) {
 }
 
 const ByteArray_t displayImageCMD(void) {
-  if (ILI9488_WRITE(spi, 0, 0, images[imageNum % sizeof(images)], !isOr)) {
+  if (ILI9488_WRITE(spi, 32, 7, images[imageNum], !isOr)) {
     imageNum++;
+    imageNum %= sizeof(images) -1;
     static uint8_t msg[] = "SUCESSFULLY DISPLAYED IMAGE\n";
     return (ByteArray_t){.data = msg, .size = sizeof(msg) - 1};
   } else {

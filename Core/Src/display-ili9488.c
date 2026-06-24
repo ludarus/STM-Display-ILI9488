@@ -289,7 +289,7 @@ bool ILI9488_REFRESH(SPI_HandleTypeDef *spi) {
 //		}
 		for (uint32_t i = 0; i < sizeof(state.screenCopy); i++) {
 			HAL_SPI_Transmit(spi, (uint8_t*) &table[state.screenCopy[i]], 4,
-					HAL_MAX_DELAY);
+			HAL_MAX_DELAY);
 		}
 		ILI9488_DESELECT();
 		state.currentlyDrawing = false;
@@ -299,6 +299,7 @@ bool ILI9488_REFRESH(SPI_HandleTypeDef *spi) {
 	}
 }
 
+// x and y should be multiples of 8
 bool ILI9488_WRITE(SPI_HandleTypeDef *spi, uint16_t x, uint16_t y,
 		Image_t *image, bool overWrite) {
 	if (!state.currentlyDrawing) {
@@ -357,6 +358,7 @@ bool ILI9488_WRITE(SPI_HandleTypeDef *spi, uint16_t x, uint16_t y,
 		// iterating through compressed image
 		for (uint32_t i = 0; i < image->size; i++) {
 			// iterating through the current RLE value
+			// TODO: OPTIMIZE THIS
 			for (uint8_t j = 0; j < image->data[i]; j++) {
 				if ((count % image->width) + x < ILI9488_WIDTH
 						&& (count / image->width) + y < ILI9488_HEIGHT) {
@@ -380,9 +382,6 @@ bool ILI9488_WRITE(SPI_HandleTypeDef *spi, uint16_t x, uint16_t y,
 			}
 		}
 
-		state.x = x;
-		state.y = y;
-
 		// TODO FIX OBOE HERE
 		if (x + image->width > ILI9488_WIDTH) {
 			state.width = ILI9488_WIDTH - x;
@@ -396,12 +395,15 @@ bool ILI9488_WRITE(SPI_HandleTypeDef *spi, uint16_t x, uint16_t y,
 			state.height = image->height;
 		}
 
+		state.x = x / 8;
+		state.y = y;
+		state.width /= 8;
+
 		// write data command
 		ILI9488_CMD(spi, 0x2C);
 
 		// setting to data mode
 		HAL_GPIO_WritePin(DISPLAY_DC_GPIO_Port, DISPLAY_DC_Pin, GPIO_PIN_SET);
-
 
 		// selecting spi device
 		ILI9488_SELECT();
@@ -422,9 +424,9 @@ bool ILI9488_WRITE(SPI_HandleTypeDef *spi, uint16_t x, uint16_t y,
 			// scan 8 pixels at once, = 4 bytes
 			for (uint32_t i = 0; i < state.imageTarget / 4; i++) {
 				// converting image space index to screen space index
-				uint32_t globalpos = (ILI9488_WIDTH / 8)
-						* ((y / 8) + (i / (state.width / 8))) + (x / 8)
-						+ (i % (state.width / 8));
+				uint32_t globalpos = ILI9488_SCALED_WIDTH
+						* (state.y + (i / state.width)) + state.x
+						+ (i % state.width);
 				((uint32_t*) state.buf[state.activeBuf])[i] =
 						table[state.screenCopy[globalpos]];
 			}
@@ -439,9 +441,9 @@ bool ILI9488_WRITE(SPI_HandleTypeDef *spi, uint16_t x, uint16_t y,
 			// expanding to buffer
 			for (uint32_t i = 0; i < CHUNK / 4; i++) {
 				// converting image space index to screen space index
-				uint32_t globalpos = (ILI9488_WIDTH / 8)
-						* ((y / 8) + (i / (state.width / 8))) + (x / 8)
-						+ (i % (state.width / 8));
+				uint32_t globalpos = ILI9488_SCALED_WIDTH
+						* (state.y + (i / state.width)) + state.x
+						+ (i % state.width);
 				((uint32_t*) state.buf[state.activeBuf])[i] =
 						table[state.screenCopy[globalpos]];
 			}
@@ -459,9 +461,9 @@ bool ILI9488_WRITE(SPI_HandleTypeDef *spi, uint16_t x, uint16_t y,
 											/ 4 :
 									CHUNK / 4); i++) {
 				// converting image space index to screen space index
-				uint32_t globalpos = (ILI9488_WIDTH / 8)
-						* ((y / 8) + ((i + shift) / (state.width / 8)))
-						+ (x / 8) + ((i + shift) % (state.width / 8));
+				uint32_t globalpos = ILI9488_SCALED_WIDTH
+						* (state.y + ((i + shift) / state.width))
+						+ state.x + ((i + shift) % state.width);
 				((uint32_t*) state.buf[state.activeBuf])[i] =
 						table[state.screenCopy[globalpos]];
 			}
@@ -493,15 +495,17 @@ void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi) {
 			// full chunk
 			state.imageProgress += CHUNK;
 			HAL_SPI_Transmit_DMA(hspi, state.buf[state.activeBuf], CHUNK);
+			state.activeBuf = !state.activeBuf;
 			uint16_t shift = state.imageProgress / 4;
 			for (uint32_t i = 0; i < CHUNK / 4; i++) {
 				// converting image space index to screen space index
-				uint32_t globalpos = (ILI9488_WIDTH / 8)
-						* ((state.y / 8) + ((i + shift) / (state.width / 8)))
-						+ (state.x / 8) + ((i + shift) % (state.width / 8));
+				uint32_t globalpos = ILI9488_SCALED_WIDTH
+						* (state.y + ((i + shift) / state.width))
+						+ state.x + ((i + shift) % state.width );
 				((uint32_t*) state.buf[state.activeBuf])[i] =
 						table[state.screenCopy[globalpos]];
 			}
+
 		}
 	}
 }
