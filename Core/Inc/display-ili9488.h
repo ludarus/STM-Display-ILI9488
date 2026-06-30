@@ -76,6 +76,7 @@ typedef struct {
 // public functions
 void ILI9488_INIT(SPI_HandleTypeDef *spi);
 bool ILI9488_REFRESH(SPI_HandleTypeDef *spi);
+bool ILI9488_REFRESH_DEBUG(SPI_HandleTypeDef *spi);
 void ILI9488_FILL(SPI_HandleTypeDef *spi);
 bool ILI9488_LOAD_IMAGE(SPI_HandleTypeDef *spi, uint16_t x, uint16_t y,
                         Image_t *image, bool overWrite);

@@ -249,9 +249,91 @@ void ILI9488_FILL(SPI_HandleTypeDef *spi) {
 //	}
 //}
 
+// fast refreshing using chunking
+bool ILI9488_REFRESH(SPI_HandleTypeDef *spi) {
+  // checking if the display is already being modified
+  if (!state.currentlyDrawing) {
+    // setting status to busy
+
+    state.currentlyDrawing = true;
+
+    // set column address command
+    ILI9488_CMD(spi, 0x2A);
+    // parameters: starting col MSB, starting col LSB, ending col MSB, ending
+    // col LSB
+    uint8_t caset[] = {
+
+        (uint8_t)(0),
+
+        (uint8_t)(0),
+
+        (uint8_t)((ILI9488_WIDTH - 1) >> 8),
+
+        (uint8_t)((ILI9488_WIDTH - 1) & 0xFF)};
+
+    ILI9488_DATA(spi, caset, 4);
+
+    // set row address command
+    ILI9488_CMD(spi, 0x2B);
+    // parameters: starting row MSB, starting row LSB, ending row MSB, ending
+    // row LSB
+    uint8_t raset[] = {
+
+        (uint8_t)(0),
+
+        (uint8_t)(0),
+
+        (uint8_t)((ILI9488_HEIGHT - 1) >> 8),
+
+        (uint8_t)((ILI9488_HEIGHT - 1) & 0xFF)};
+
+    ILI9488_DATA(spi, raset, 4);
+
+    // write data command
+    ILI9488_CMD(spi, 0x2C);
+
+    // setting to data mode
+    HAL_GPIO_WritePin(DISPLAY_DC_GPIO_Port, DISPLAY_DC_Pin, GPIO_PIN_SET);
+
+    // selecting spi device
+    ILI9488_SELECT();
+
+    state.activeBuf = 0;
+	 state.imageProgress = 0;
+    // setting state to reuse the other callback
+    state.dcompImage_SIZE = ILI9488_WIDTH * ILI9488_HEIGHT;
+    state.imageTarget = state.dcompImage_SIZE / 2;
+    state.width = ILI9488_WIDTH / 8;
+    state.height = ILI9488_HEIGHT;
+    state.x = 0;
+    state.y = 0;
+
+    // PRELOADING FIRST TWO CHUNKS
+    for (uint32_t i = 0; i < CHUNK / 4; i++) {
+      ((uint32_t *)state.buf[state.activeBuf])[i] = table[state.screenCopy[i]];
+    }
+
+    state.imageProgress += CHUNK;
+    state.activeBuf = !state.activeBuf;
+    uint16_t shift = state.imageProgress / 4;
+    for (uint32_t i = 0; i < CHUNK / 4; i++) {
+      ((uint32_t *)state.buf[state.activeBuf])[i] =
+          table[state.screenCopy[i + shift]];
+    }
+
+    // transmitting the first chunk, then the interrupt will transmit the
+    // second chunk before loading the third etc
+    HAL_SPI_Transmit_DMA(spi, state.buf[!state.activeBuf], CHUNK);
+
+    return true;
+  } else {
+    return false;
+  }
+}
+
 // testing function to make sure written images are in the right spot
 // can be altered for speed later in development
-bool ILI9488_REFRESH(SPI_HandleTypeDef *spi) {
+bool ILI9488_REFRESH_DEBUG(SPI_HandleTypeDef *spi) {
   // checking if the display is already being modified
   if (!state.currentlyDrawing) {
     // setting status to busy
@@ -491,8 +573,6 @@ bool ILI9488_LOAD_TEXT(
   state.width = charCount * characterWidth;
   state.height = characterHeight;
   state.dcompImage_SIZE = decompiledImageSize;
-
-  ILI9488_DRAW(spi);
 
   return true;
 }
