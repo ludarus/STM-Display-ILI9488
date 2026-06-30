@@ -51,10 +51,10 @@ typedef struct {
   volatile uint8_t activeBuf;
 
   // parameters from the requested image to be displayed
-  uint16_t x;
-  uint16_t y;
-  uint16_t width;
-  uint16_t height;
+  uint16_t x;      // in bytes
+  uint16_t y;      // in pixels
+  uint16_t width;  // in bytes
+  uint16_t height; // in pixels
 
   // current amount of bytes transferred
   volatile uint32_t imageProgress;

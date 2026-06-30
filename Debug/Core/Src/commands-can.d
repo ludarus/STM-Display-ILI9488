@@ -1,4 +1,5 @@
-Core/Src/commands-can.o: ../Core/Src/commands-can.c ../Core/Inc/main.h \
+Core/Src/commands-can.o: ../Core/Src/commands-can.c \
+ ../Core/Inc/commands-can.h ../Core/Inc/main.h \
  ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal.h \
  ../Core/Inc/stm32f0xx_hal_conf.h \
  ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_rcc.h \
@@ -29,7 +30,8 @@ Core/Src/commands-can.o: ../Core/Src/commands-can.c ../Core/Inc/main.h \
  ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_spi_ex.h \
  ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_uart.h \
  ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_uart_ex.h \
- ../Core/Inc/commands-can.h ../Core/Inc/main.h
+ ../Core/Inc/main.h
+../Core/Inc/commands-can.h:
 ../Core/Inc/main.h:
 ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal.h:
 ../Core/Inc/stm32f0xx_hal_conf.h:
@@ -61,5 +63,4 @@ Core/Src/commands-can.o: ../Core/Src/commands-can.c ../Core/Inc/main.h \
 ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_spi_ex.h:
 ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_uart.h:
 ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_uart_ex.h:
-../Core/Inc/commands-can.h:
 ../Core/Inc/main.h:

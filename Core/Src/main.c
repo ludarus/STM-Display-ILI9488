@@ -125,37 +125,39 @@ int main(void) {
   ILI9488_LOAD_TEXT(&hspi1, 0, 0, "Lorem ipsum dol", font, CHARWIDTH, FONTSIZE,
                     CHARHEIGHT);
 
-  // ILI9488_DRAW(&hspi1);
+  ILI9488_DRAW(&hspi1);
 
-  ILI9488_LOAD_TEXT(&hspi1, 0, 50, "or sit amet, co", font, CHARWIDTH, FONTSIZE,
+  ILI9488_LOAD_TEXT(&hspi1, 8, 50, "or sit amet, co", font, CHARWIDTH, FONTSIZE,
                     CHARHEIGHT);
 
-  // ILI9488_DRAW(&hspi1);
+  ILI9488_DRAW(&hspi1);
 
-  ILI9488_LOAD_TEXT(&hspi1, 0, 100, "nsectetur adipi", font, CHARWIDTH,
+  ILI9488_LOAD_TEXT(&hspi1, 16, 100, "nsectetur adipi", font, CHARWIDTH,
                     FONTSIZE, CHARHEIGHT);
 
-  // ILI9488_DRAW(&hspi1);
+  ILI9488_DRAW(&hspi1);
 
-  ILI9488_LOAD_TEXT(&hspi1, 0, 150, "scing elit, sed", font, CHARWIDTH,
+  ILI9488_LOAD_TEXT(&hspi1, 24, 150, "scing elit, sed", font, CHARWIDTH,
                     FONTSIZE, CHARHEIGHT);
 
-  // ILI9488_DRAW(&hspi1);
+  ILI9488_DRAW(&hspi1);
 
-  ILI9488_LOAD_TEXT(&hspi1, 0, 200, " do eiusmod tem", font, CHARWIDTH,
+  ILI9488_LOAD_TEXT(&hspi1, 32, 200, " do eiusmod tem", font, CHARWIDTH,
                     FONTSIZE, CHARHEIGHT);
 
-  // ILI9488_DRAW(&hspi1);
+  ILI9488_DRAW(&hspi1);
 
-  ILI9488_LOAD_TEXT(&hspi1, 0, 250, "por incididunt ", font, CHARWIDTH,
+  ILI9488_LOAD_TEXT(&hspi1, 40, 250, "por incididunt ", font, CHARWIDTH,
                     FONTSIZE, CHARHEIGHT);
 
-  // ILI9488_DRAW(&hspi1);
+  ILI9488_DRAW(&hspi1);
 
-  ILI9488_LOAD_TEXT(&hspi1, 0, 300, "ut labore et do", font, CHARWIDTH,
+  ILI9488_LOAD_TEXT(&hspi1, 48, 300, "ut labore et do", font, CHARWIDTH,
                     FONTSIZE, CHARHEIGHT);
 
-  // ILI9488_DRAW(&hspi1);
+  ILI9488_DRAW(&hspi1);
+
+  HAL_Delay(1000);
 
   ILI9488_REFRESH(&hspi1);
 

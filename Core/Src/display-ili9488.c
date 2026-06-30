@@ -106,6 +106,7 @@ void ILI9488_CMD(SPI_HandleTypeDef *spi, uint8_t cmd) {
   ILI9488_SELECT();
 
   // using SPI to transmit data
+  //
   HAL_SPI_Transmit(spi, &cmd, 1, HAL_MAX_DELAY);
 
   // deselecting SPI device
@@ -299,7 +300,7 @@ bool ILI9488_REFRESH(SPI_HandleTypeDef *spi) {
     ILI9488_SELECT();
 
     state.activeBuf = 0;
-	 state.imageProgress = 0;
+    state.imageProgress = 0;
     // setting state to reuse the other callback
     state.dcompImage_SIZE = ILI9488_WIDTH * ILI9488_HEIGHT;
     state.imageTarget = state.dcompImage_SIZE / 2;
@@ -531,7 +532,7 @@ bool ILI9488_LOAD_TEXT(
   // parsing the text
 
   uint16_t charCount = 0;
-  uint32_t decompiledImageSize = 0;
+  uint32_t decompiledImageSize = 0; // in pixels
   // iterating through every inputted character
   for (uint16_t charIdx = 0; text[charIdx] != 0; charIdx++) {
     if (charIdx > (ILI9488_WIDTH - x) / characterWidth) {
@@ -540,27 +541,30 @@ bool ILI9488_LOAD_TEXT(
     }
 
     // loading character
-    uint16_t startCol = (charIdx * characterWidth) + x;
-    uint16_t startRow = y;
-    uint16_t col = 0, row = 0;
+    uint16_t startCol = ((charIdx * characterWidth) + x) / 8; // in bytes
+    uint16_t col = 0;                                         // in bytes
+    uint16_t row = 0;                                         // in pixels
     uint8_t *currentCharacter =
         (text[charIdx] < 32 || (size_t)(text[charIdx] - 32) >= fontSize)
             ? font[0].data
             : font[text[charIdx] - 32].data;
+    uint16_t byteOffset = (ILI9488_SCALED_WIDTH * y) + startCol; // in bytes
+    uint16_t scaledCharacterWidth = characterWidth / 8;          // in bytes
 
-    // loading one bit at a time
-    // TODO: switch to one byte at a time
-
-    for (uint32_t px = 0; px < characterWidth * characterHeight; px++) {
-      uint32_t globalpos = ILI9488_WIDTH * (startRow + row) + startCol + col;
-      // if the current pixel is in bounds of the screen
-      if (col + startCol < ILI9488_WIDTH && row + startRow < ILI9488_HEIGHT) {
-        if (GET_PIXEL(currentCharacter, px)) {
-          SET_PIXEL(state.screenCopy, globalpos);
-        }
-        decompiledImageSize++;
+    // loading one byte at a time. This can be done easily as the screen width
+    // is a multiple of 8, the x coordinate is a multiple of 8, and the font
+    // width is a multiple of 8
+    for (uint32_t byte = 0; byte < (characterWidth * characterHeight) / 8;
+         byte++) {
+      uint32_t globalpos = byteOffset + (ILI9488_SCALED_WIDTH * row) + col;
+      // if the current byte is in bounds of the screen
+      if (col + startCol < ILI9488_SCALED_WIDTH && row + y < ILI9488_HEIGHT) {
+        // or mode
+        state.screenCopy[globalpos] |= currentCharacter[byte];
+        decompiledImageSize += 8;
       }
-      if (++col == characterWidth) {
+      // incrementing colmn and row
+      if (++col >= scaledCharacterWidth) {
         col = 0;
         row++;
       }

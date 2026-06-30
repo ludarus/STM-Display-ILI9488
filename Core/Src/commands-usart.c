@@ -219,7 +219,7 @@ const ByteArray_t displayImageCMD(void) {
 
 const ByteArray_t refreshCMD(void) {
   // checking if the display is currently being written to
-  if (ILI9488_REFRESH(spi)) {
+  if (ILI9488_REFRESH_DEBUG(spi)) {
     imageNum++;
     static uint8_t msg[] = "SUCESSFULLY REFRESHED DISPLAY\n";
     return (ByteArray_t){.data = msg, .size = sizeof(msg) - 1};
