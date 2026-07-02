@@ -205,7 +205,7 @@ const ByteArray_t helpCMD(void) {
 
 const ByteArray_t displayImageCMD(void) {
   // checking if the display is currently being written to
-  if (ILI9488_LOAD_IMAGE(spi, 128, 300, images[imageNum], !isOr)) {
+  if (ILI9488_LOAD_IMAGE(spi, 0, 0, images[imageNum], !isOr)) {
     // cycling through the images
     imageNum++;
     imageNum %= 74;

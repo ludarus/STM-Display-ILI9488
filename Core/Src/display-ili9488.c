@@ -14,6 +14,7 @@
 #include "main.h"
 #include <display-ili9488.h>
 #include <stdbool.h>
+#include <stdint.h>
 
 // state so main functions and callbacks can all access render state
 static ImageTransferState_t state;
@@ -418,94 +419,115 @@ bool ILI9488_LOAD_IMAGE(SPI_HandleTypeDef *spi, uint16_t x, uint16_t y,
 
   // all pixels in image including ones that are clipped off by the edge of
   // copying state variables for compiler optimization (pointer aliasing)
-  uint16_t col = 0, row = 0;
-  const uint16_t imgWidth = image->width;
+  uint16_t row = 0;                            // in pixels
+  uint16_t col = 0;                            // in pixels
+  uint16_t imgWidth = image->width;            // in pixels
+  uint32_t decompiledImageSize = 0;            // in pixels
+  uint32_t pxOffset = (y * ILI9488_WIDTH) + x; // in pixels
   uint8_t *imgData = image->data;
-  uint32_t decompiledImageSize = 0;
+  bool isColInBounds = x + imgWidth < ILI9488_WIDTH;
+  bool isRowInBounds = y + row < ILI9488_HEIGHT;
 
   // iterating through compressed image
   for (uint32_t i = 0; i < image->size; i++) {
-    // getting the remaining number of pixels in the current RLE value
-    // uint8_t remainingPixels = imgData[i];
-    // bool isOn = (i % 2);
-    //
-    // while (remainingPixels > 0) {
-    //   // getting the remaining number of pixels in the current row
-    //   uint16_t rowAvailable = imgWidth - col;
-    //   // getting the amount to chunk the write by
-    //   uint16_t chunk =
-    //       remainingPixels < rowAvailable ? remainingPixels : rowAvailable;
-    //
-    //   // checking if current row is inside the boundaries of the screen
-    //   if (col + x < ILI9488_WIDTH && row + y < ILI9488_HEIGHT) {
-    //     // filling up the leading byte of the chunk (bitwise)
-    //
-    //     uint32_t globalPos = ILI9488_WIDTH * (y + row) + x + col;
-    //
-    //     // decrementing the remaining pixels
-    //     remainingPixels -= chunk;
-    //
-    //     // updating col and row
-    //     if ((col += chunk) >= imgWidth) {
-    //       col -= imgWidth;
-    //       row++;
-    //     }
-    //
-    //     if (globalPos % 8 != 0) {
-    //       for (uint8_t leading = 0; leading < 8 - (globalPos % 8); leading++)
-    //       {
-    //         if (isOn) {
-    //           // pixel will always be on
-    //           SET_PIXEL(state.screenCopy, globalPos);
-    //         } else if (overWrite) {
-    //           // byte is OFF colour and overwriting
-    //           CLR_PIXEL(state.screenCopy, globalPos);
-    //         }
-    //         globalPos++;
-    //         chunk--;
-    //       }
-    //     }
-    //
-    //     // filling up the middle bytes (byte-wise)
-    //     for (uint16_t byte = 0; byte < chunk / 8; byte++) {
-    //       if (isOn) {
-    //         // pixel will always be on
-    //         state.screenCopy[(globalPos / 8) + byte] = 0xFF;
-    //       } else if (overWrite) {
-    //         // byte is OFF colour and overwriting
-    //         state.screenCopy[(globalPos / 8) + byte] = 0;
-    //       }
-    //       globalPos += 8;
-    //     }
-    //
-    //     // filling up the trailing byte of the chunk (bitwise)
-    //   }
-    // }
 
-    // iterating through the current RLE value
-    for (uint8_t j = 0; j < imgData[i]; j++) {
-      // if the current pixel is in bounds of the screen
-      if (col + x < ILI9488_WIDTH && row + y < ILI9488_HEIGHT) {
-        // calculating screen pixel index from current position within image
-        uint32_t globalpos = ILI9488_WIDTH * (y + row) + x + col;
+    // faster loading algorithm
+    bool isOn = i % 2;
+    uint8_t remainingPx = imgData[i]; // in pixels
 
-        if (i % 2) {
-          // pixel is high, 1 % 2 = 1
-          //  will always be high in overwrite and OR mode
-          SET_PIXEL(state.screenCopy, globalpos);
-        } else if (overWrite) {
-          // pixel is low and overwrite is on. if in OR mode, just leave
-          // current pixel as it is
-          CLR_PIXEL(state.screenCopy, globalpos);
+    while (remainingPx > 0) {
+      // filling all the pixels on the current row of the image
+      // if the thing is out of range in the y direction, always normal
+      uint16_t chunk = isColInBounds || !isRowInBounds
+                          ? imgWidth - col
+                          : ILI9488_WIDTH - col; // in pixels;
+
+      // if chunk is more than the remaining pixels needed
+      chunk = remainingPx > chunk ? chunk : remainingPx;
+      remainingPx -= chunk;
+
+      // checking if current position is in the bounds of the screen to load the
+      // correct pixels
+      if (x + col < ILI9488_WIDTH && y + row < ILI9488_HEIGHT) {
+        // loading pixels
+        decompiledImageSize += chunk;
+
+        uint32_t globalpos = pxOffset + (row * imgWidth) + x; // in pixels
+
+        // leading
+        // if the current position isn't byte aligned
+        if (globalpos % 8 != 0) {
+          uint8_t leading = 8 - (globalpos % 8);
+          if (isOn) {
+            // write pixels
+            state.screenCopy[globalpos / 8] |= 0xFF >> leading;
+          } else if (overWrite) {
+            // clear pixels
+            state.screenCopy[globalpos / 8] =
+                (state.screenCopy[globalpos / 8] >> leading) << leading;
+          }
+          chunk -= leading;
+          globalpos += leading;
         }
-        decompiledImageSize++;
+
+        // filling middle
+        for (uint8_t byte = 0; byte < chunk / 8; byte++) {
+          if (isOn) {
+            // write byte
+            state.screenCopy[globalpos / 8] = 0xFF;
+          } else if (overWrite) {
+            // clear byte
+            state.screenCopy[globalpos / 8] = 0;
+          }
+
+          globalpos += 8;
+        }
+
+        // filling trailing
+        uint8_t trailing = chunk % 8;
+        if (isOn) {
+          // write pixels
+          state.screenCopy[globalpos / 8] |= 0xFF >> trailing;
+        } else if (overWrite) {
+          // clear pixels
+          state.screenCopy[globalpos / 8] =
+              (state.screenCopy[globalpos / 8] >> trailing) << trailing;
+        }
       }
-      // incrementing the column and width
-      if (++col == imgWidth) {
+      // incrementing row and column
+      if ((col += chunk) >= imgWidth) {
         col = 0;
         row++;
       }
     }
+
+    // RLE IMPLEMENTATION
+    // iterating through the current RLE value
+    // for (uint8_t j = 0; j < imgData[i]; j++) {
+    //   // if the current pixel is in bounds of the screen
+    //   if (col + x < ILI9488_WIDTH && row + y < ILI9488_HEIGHT) {
+    //     // calculating screen pixel index from current position within image
+    //     uint32_t globalpos = ILI9488_WIDTH * (y + row) + x + col;
+    //
+    //     if (i % 2) {
+    //       // pixel is high, 1 % 2 = 1
+    //       //  will always be high in overwrite and OR mode
+    //       SET_PIXEL(state.screenCopy, globalpos);
+    //     } else if (overWrite) {
+    //       // pixel is low and overwrite is on. if in OR mode, just leave
+    //       // current pixel as it is
+    //       CLR_PIXEL(state.screenCopy, globalpos);
+    //     }
+    //     decompiledImageSize++;
+    //   }
+    //   // incrementing the column and width
+    //   if (++col == imgWidth) {
+    //     col = 0;
+    //     row++;
+    //   }
+    // }
+
+    //
   }
 
   uint32_t finalTime = HAL_GetTick() - startTime;
@@ -531,6 +553,7 @@ bool ILI9488_LOAD_TEXT(
 
   // parsing the text
 
+  uint32_t startTime = HAL_GetTick();
   uint16_t charCount = 0;
   uint32_t decompiledImageSize = 0; // in pixels
   // iterating through every inputted character
@@ -571,6 +594,8 @@ bool ILI9488_LOAD_TEXT(
     }
     charCount++;
   }
+
+  uint32_t finalTime = startTime - HAL_GetTick();
 
   state.x = x;
   state.y = y;
