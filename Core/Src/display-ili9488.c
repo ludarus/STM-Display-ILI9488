@@ -387,7 +387,7 @@ bool ILI9488_REFRESH_DEBUG(SPI_HandleTypeDef *spi) {
     //		for (uint32_t i = 0; i < (480 * 320) / 2; i++) {
     //			uint8_t px = (
     //					GET_PIXEL(state.screenCopy, i * 2) ?
-    // 0xE0 : 0) 					|
+    // 0xE0000      : 0) 					|
     // (GET_PIXEL(state.screenCopy, 1 + i * 2) ?
     // 14 : 0); 			HAL_SPI_Transmit(spi, &px, 1,
     // HAL_MAX_DELAY);

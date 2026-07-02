@@ -1,3 +1,3 @@
-../Core/Src/commands-can.c:19:6:canCommandsInit	16	static
-../Core/Src/commands-can.c:24:6:canProcessCommand	16	static
-../Core/Src/commands-can.c:31:6:HAL_CAN_RxFifo0MsgPendingCallback	16	static
+../Core/Src/commands-can.c:19:6:canCommandsInit	64	static
+../Core/Src/commands-can.c:41:6:canProcessCommand	24	static
+../Core/Src/commands-can.c:52:6:HAL_CAN_RxFifo0MsgPendingCallback	16	static

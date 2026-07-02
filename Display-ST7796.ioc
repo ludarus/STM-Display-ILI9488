@@ -2,9 +2,15 @@
 CAD.formats=
 CAD.pinconfig=
 CAD.provider=
+CAN.BS1=CAN_BS1_11TQ
+CAN.BS2=CAN_BS2_4TQ
 CAN.CalculateBaudRate=1000000
-CAN.CalculateTimeQuantum=333.3333333333333
-CAN.IPParameters=CalculateTimeQuantum,CalculateBaudRate
+CAN.CalculateTimeBit=1000
+CAN.CalculateTimeQuantum=62.5
+CAN.IPParameters=CalculateTimeQuantum,CalculateBaudRate,NART,Prescaler,CalculateTimeBit,SJW,BS1,BS2
+CAN.NART=ENABLE
+CAN.Prescaler=3
+CAN.SJW=CAN_SJW_2TQ
 Dma.Request0=USART2_RX
 Dma.Request1=SPI1_TX
 Dma.RequestsNb=2

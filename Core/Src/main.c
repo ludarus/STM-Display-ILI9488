@@ -18,19 +18,19 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "commands-can.h"
-#include <commands-usart.h>
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "commands-can.h"
+#include "commands-usart.h"
 #include "display-ili9488.h"
 #include "font.h"
 
 #include "File_002_ObjNum_001_NEW_6_17_26.h"
 #include "File_005_ObjNum_004_480x320_6_18_26.h"
+#include "File_054_ObjNum_087_48x255_6_19_26.h"
 #include "File_072_ObjNum_135_480x320_6_18_26.h"
 #include "File_074_ObjNum_138_48x143_6_19_26.h"
-#include "File_054_ObjNum_087_48x255_6_19_26.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -115,6 +115,8 @@ int main(void) {
   ILI9488_INIT(&hspi1);
   // initializing commands
   usartCommandsInit(&huart2, &hspi1);
+  // initializing can interface
+  canCommandsInit(&hcan);
 
   // ILI9488_LOAD_IMAGE_DEBUG(&hspi1, 0, 0,
   // &File_072_ObjNum_135_480x320_6_18_26, true);
@@ -125,22 +127,27 @@ int main(void) {
 
   // HAL_Delay(1000);
 
-  // ILI9488_LOAD_IMAGE(&hspi1, 0, 0, &File_074_ObjNum_138_48x143_6_19_26, true);
+  // ILI9488_LOAD_IMAGE(&hspi1, 0, 0, &File_074_ObjNum_138_48x143_6_19_26,
+  // true);
 
   // HAL_Delay(1000);
-  // ILI9488_LOAD_IMAGE(&hspi1, 0, 0, &File_005_ObjNum_004_480x320_6_18_26, true);
+  // ILI9488_LOAD_IMAGE(&hspi1, 0, 0, &File_005_ObjNum_004_480x320_6_18_26,
+  // true);
   //
   // HAL_Delay(1000);
-  // ILI9488_LOAD_IMAGE(&hspi1, 8, 50, &File_072_ObjNum_135_480x320_6_18_26, true);
+  // ILI9488_LOAD_IMAGE(&hspi1, 8, 50, &File_072_ObjNum_135_480x320_6_18_26,
+  // true);
   //
   // HAL_Delay(10);
 
-  // ILI9488_LOAD_TEXT(&hspi1, 0, 0, "Lorem ipsum dol", font, CHARWIDTH, FONTSIZE,
+  // ILI9488_LOAD_TEXT(&hspi1, 0, 0, "Lorem ipsum dol", font, CHARWIDTH,
+  // FONTSIZE,
   //                   CHARHEIGHT);
   //
   // ILI9488_DRAW(&hspi1);
   //
-  // ILI9488_LOAD_TEXT(&hspi1, 8, 40, "or sit amet, co", font, CHARWIDTH, FONTSIZE,
+  // ILI9488_LOAD_TEXT(&hspi1, 8, 40, "or sit amet, co", font, CHARWIDTH,
+  // FONTSIZE,
   //                   CHARHEIGHT);
   //
   // ILI9488_DRAW(&hspi1);
@@ -172,7 +179,8 @@ int main(void) {
   //
   // HAL_Delay(10);
   //
-  // ILI9488_LOAD_TEXT(&hspi1, 48 + 8, 280, "etc .............................. ",
+  // ILI9488_LOAD_TEXT(&hspi1, 48 + 8, 280, "etc ..............................
+  // ",
   //                   font, CHARWIDTH, FONTSIZE, CHARHEIGHT);
   //
   // ILI9488_DRAW(&hspi1);
@@ -189,9 +197,9 @@ int main(void) {
   /* USER CODE BEGIN WHILE */
   while (1) {
     /* USER CODE END WHILE */
-    // processing the queue of can commands
-    canProcessCommand();
+
     /* USER CODE BEGIN 3 */
+    canProcessCommand(&huart2);
   }
   /* USER CODE END 3 */
 }
@@ -251,15 +259,15 @@ static void MX_CAN_Init(void) {
 
   /* USER CODE END CAN_Init 1 */
   hcan.Instance = CAN;
-  hcan.Init.Prescaler = 16;
+  hcan.Init.Prescaler = 3;
   hcan.Init.Mode = CAN_MODE_NORMAL;
-  hcan.Init.SyncJumpWidth = CAN_SJW_1TQ;
-  hcan.Init.TimeSeg1 = CAN_BS1_1TQ;
-  hcan.Init.TimeSeg2 = CAN_BS2_1TQ;
+  hcan.Init.SyncJumpWidth = CAN_SJW_2TQ;
+  hcan.Init.TimeSeg1 = CAN_BS1_11TQ;
+  hcan.Init.TimeSeg2 = CAN_BS2_4TQ;
   hcan.Init.TimeTriggeredMode = DISABLE;
   hcan.Init.AutoBusOff = DISABLE;
   hcan.Init.AutoWakeUp = DISABLE;
-  hcan.Init.AutoRetransmission = DISABLE;
+  hcan.Init.AutoRetransmission = ENABLE;
   hcan.Init.ReceiveFifoLocked = DISABLE;
   hcan.Init.TransmitFifoPriority = DISABLE;
   if (HAL_CAN_Init(&hcan) != HAL_OK) {
