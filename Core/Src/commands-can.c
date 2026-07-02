@@ -8,6 +8,8 @@
 #include "commands-can.h"
 #include "main.h"
 
+// store time of the last received message (can be done in the process function)
+
 // private declarations
 static uint8_t queuedMessages = 0;
 // 16 message queue

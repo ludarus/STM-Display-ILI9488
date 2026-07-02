@@ -80,6 +80,8 @@ bool ILI9488_REFRESH_DEBUG(SPI_HandleTypeDef *spi);
 void ILI9488_FILL(SPI_HandleTypeDef *spi);
 bool ILI9488_LOAD_IMAGE(SPI_HandleTypeDef *spi, uint16_t x, uint16_t y,
                         Image_t *image, bool overWrite);
+bool ILI9488_LOAD_IMAGE_DEBUG(SPI_HandleTypeDef *spi, uint16_t x, uint16_t y,
+                        Image_t *image, bool overWrite);
 bool ILI9488_LOAD_TEXT(SPI_HandleTypeDef *spi, uint16_t x, uint16_t y,
                        uint8_t text[], Character_t *font, uint8_t fontWidth,
                        /*number of characters in font*/ size_t fontSize,
