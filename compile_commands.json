@@ -1,0 +1,132 @@
+[
+  {
+    "directory": "/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Debug",
+    "command": "arm-none-eabi-gcc \"/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Core/Src/commands.c\" -mcpu\u003dcortex-m0 -std\u003dgnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F091xC -c -I../Core/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F0xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity --specs\u003dnano.specs -mfloat-abi\u003dsoft -mthumb -o \"/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Debug/Core/Src/commands.o\"",
+    "file": "/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Core/Src/commands.c"
+  },
+  {
+    "directory": "/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Debug",
+    "command": "arm-none-eabi-gcc \"/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Core/Src/display.c\" -mcpu\u003dcortex-m0 -std\u003dgnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F091xC -c -I../Core/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F0xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity --specs\u003dnano.specs -mfloat-abi\u003dsoft -mthumb -o \"/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Debug/Core/Src/display.o\"",
+    "file": "/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Core/Src/display.c"
+  },
+  {
+    "directory": "/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Debug",
+    "command": "arm-none-eabi-gcc \"/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Core/Src/main.c\" -mcpu\u003dcortex-m0 -std\u003dgnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F091xC -c -I../Core/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F0xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity --specs\u003dnano.specs -mfloat-abi\u003dsoft -mthumb -o \"/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Debug/Core/Src/main.o\"",
+    "file": "/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Core/Src/main.c"
+  },
+  {
+    "directory": "/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Debug",
+    "command": "arm-none-eabi-gcc \"/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Core/Src/stm32f0xx_hal_msp.c\" -mcpu\u003dcortex-m0 -std\u003dgnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F091xC -c -I../Core/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F0xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity --specs\u003dnano.specs -mfloat-abi\u003dsoft -mthumb -o \"/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Debug/Core/Src/stm32f0xx_hal_msp.o\"",
+    "file": "/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Core/Src/stm32f0xx_hal_msp.c"
+  },
+  {
+    "directory": "/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Debug",
+    "command": "arm-none-eabi-gcc \"/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Core/Src/stm32f0xx_it.c\" -mcpu\u003dcortex-m0 -std\u003dgnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F091xC -c -I../Core/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F0xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity --specs\u003dnano.specs -mfloat-abi\u003dsoft -mthumb -o \"/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Debug/Core/Src/stm32f0xx_it.o\"",
+    "file": "/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Core/Src/stm32f0xx_it.c"
+  },
+  {
+    "directory": "/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Debug",
+    "command": "arm-none-eabi-gcc \"/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Core/Src/syscalls.c\" -mcpu\u003dcortex-m0 -std\u003dgnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F091xC -c -I../Core/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F0xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity --specs\u003dnano.specs -mfloat-abi\u003dsoft -mthumb -o \"/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Debug/Core/Src/syscalls.o\"",
+    "file": "/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Core/Src/syscalls.c"
+  },
+  {
+    "directory": "/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Debug",
+    "command": "arm-none-eabi-gcc \"/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Core/Src/sysmem.c\" -mcpu\u003dcortex-m0 -std\u003dgnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F091xC -c -I../Core/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F0xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity --specs\u003dnano.specs -mfloat-abi\u003dsoft -mthumb -o \"/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Debug/Core/Src/sysmem.o\"",
+    "file": "/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Core/Src/sysmem.c"
+  },
+  {
+    "directory": "/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Debug",
+    "command": "arm-none-eabi-gcc \"/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Core/Src/system_stm32f0xx.c\" -mcpu\u003dcortex-m0 -std\u003dgnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F091xC -c -I../Core/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F0xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity --specs\u003dnano.specs -mfloat-abi\u003dsoft -mthumb -o \"/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Debug/Core/Src/system_stm32f0xx.o\"",
+    "file": "/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Core/Src/system_stm32f0xx.c"
+  },
+  {
+    "directory": "/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Debug",
+    "command": "arm-none-eabi-gcc -mcpu\u003dcortex-m0 -g3 -DDEBUG -c -x assembler-with-cpp --specs\u003dnano.specs -mfloat-abi\u003dsoft -mthumb -o \"/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Debug/Core/Startup/startup_stm32f091rctx.o\" \"/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Core/Startup/startup_stm32f091rctx.s\"",
+    "file": "/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Core/Startup/startup_stm32f091rctx.s"
+  },
+  {
+    "directory": "/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Debug",
+    "command": "arm-none-eabi-gcc \"/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal.c\" -mcpu\u003dcortex-m0 -std\u003dgnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F091xC -c -I../Core/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F0xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity --specs\u003dnano.specs -mfloat-abi\u003dsoft -mthumb -o \"/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Debug/Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal.o\"",
+    "file": "/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal.c"
+  },
+  {
+    "directory": "/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Debug",
+    "command": "arm-none-eabi-gcc \"/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_cortex.c\" -mcpu\u003dcortex-m0 -std\u003dgnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F091xC -c -I../Core/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F0xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity --specs\u003dnano.specs -mfloat-abi\u003dsoft -mthumb -o \"/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Debug/Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_cortex.o\"",
+    "file": "/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_cortex.c"
+  },
+  {
+    "directory": "/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Debug",
+    "command": "arm-none-eabi-gcc \"/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_dma.c\" -mcpu\u003dcortex-m0 -std\u003dgnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F091xC -c -I../Core/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F0xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity --specs\u003dnano.specs -mfloat-abi\u003dsoft -mthumb -o \"/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Debug/Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_dma.o\"",
+    "file": "/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_dma.c"
+  },
+  {
+    "directory": "/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Debug",
+    "command": "arm-none-eabi-gcc \"/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_exti.c\" -mcpu\u003dcortex-m0 -std\u003dgnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F091xC -c -I../Core/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F0xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity --specs\u003dnano.specs -mfloat-abi\u003dsoft -mthumb -o \"/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Debug/Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_exti.o\"",
+    "file": "/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_exti.c"
+  },
+  {
+    "directory": "/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Debug",
+    "command": "arm-none-eabi-gcc \"/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_flash.c\" -mcpu\u003dcortex-m0 -std\u003dgnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F091xC -c -I../Core/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F0xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity --specs\u003dnano.specs -mfloat-abi\u003dsoft -mthumb -o \"/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Debug/Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_flash.o\"",
+    "file": "/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_flash.c"
+  },
+  {
+    "directory": "/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Debug",
+    "command": "arm-none-eabi-gcc \"/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_flash_ex.c\" -mcpu\u003dcortex-m0 -std\u003dgnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F091xC -c -I../Core/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F0xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity --specs\u003dnano.specs -mfloat-abi\u003dsoft -mthumb -o \"/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Debug/Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_flash_ex.o\"",
+    "file": "/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_flash_ex.c"
+  },
+  {
+    "directory": "/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Debug",
+    "command": "arm-none-eabi-gcc \"/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_gpio.c\" -mcpu\u003dcortex-m0 -std\u003dgnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F091xC -c -I../Core/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F0xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity --specs\u003dnano.specs -mfloat-abi\u003dsoft -mthumb -o \"/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Debug/Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_gpio.o\"",
+    "file": "/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_gpio.c"
+  },
+  {
+    "directory": "/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Debug",
+    "command": "arm-none-eabi-gcc \"/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_i2c.c\" -mcpu\u003dcortex-m0 -std\u003dgnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F091xC -c -I../Core/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F0xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity --specs\u003dnano.specs -mfloat-abi\u003dsoft -mthumb -o \"/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Debug/Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_i2c.o\"",
+    "file": "/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_i2c.c"
+  },
+  {
+    "directory": "/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Debug",
+    "command": "arm-none-eabi-gcc \"/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_i2c_ex.c\" -mcpu\u003dcortex-m0 -std\u003dgnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F091xC -c -I../Core/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F0xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity --specs\u003dnano.specs -mfloat-abi\u003dsoft -mthumb -o \"/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Debug/Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_i2c_ex.o\"",
+    "file": "/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_i2c_ex.c"
+  },
+  {
+    "directory": "/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Debug",
+    "command": "arm-none-eabi-gcc \"/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_pwr.c\" -mcpu\u003dcortex-m0 -std\u003dgnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F091xC -c -I../Core/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F0xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity --specs\u003dnano.specs -mfloat-abi\u003dsoft -mthumb -o \"/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Debug/Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_pwr.o\"",
+    "file": "/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_pwr.c"
+  },
+  {
+    "directory": "/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Debug",
+    "command": "arm-none-eabi-gcc \"/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_pwr_ex.c\" -mcpu\u003dcortex-m0 -std\u003dgnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F091xC -c -I../Core/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F0xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity --specs\u003dnano.specs -mfloat-abi\u003dsoft -mthumb -o \"/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Debug/Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_pwr_ex.o\"",
+    "file": "/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_pwr_ex.c"
+  },
+  {
+    "directory": "/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Debug",
+    "command": "arm-none-eabi-gcc \"/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_rcc.c\" -mcpu\u003dcortex-m0 -std\u003dgnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F091xC -c -I../Core/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F0xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity --specs\u003dnano.specs -mfloat-abi\u003dsoft -mthumb -o \"/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Debug/Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_rcc.o\"",
+    "file": "/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_rcc.c"
+  },
+  {
+    "directory": "/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Debug",
+    "command": "arm-none-eabi-gcc \"/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_rcc_ex.c\" -mcpu\u003dcortex-m0 -std\u003dgnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F091xC -c -I../Core/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F0xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity --specs\u003dnano.specs -mfloat-abi\u003dsoft -mthumb -o \"/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Debug/Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_rcc_ex.o\"",
+    "file": "/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_rcc_ex.c"
+  },
+  {
+    "directory": "/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Debug",
+    "command": "arm-none-eabi-gcc \"/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_spi.c\" -mcpu\u003dcortex-m0 -std\u003dgnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F091xC -c -I../Core/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F0xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity --specs\u003dnano.specs -mfloat-abi\u003dsoft -mthumb -o \"/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Debug/Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_spi.o\"",
+    "file": "/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_spi.c"
+  },
+  {
+    "directory": "/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Debug",
+    "command": "arm-none-eabi-gcc \"/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_spi_ex.c\" -mcpu\u003dcortex-m0 -std\u003dgnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F091xC -c -I../Core/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F0xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity --specs\u003dnano.specs -mfloat-abi\u003dsoft -mthumb -o \"/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Debug/Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_spi_ex.o\"",
+    "file": "/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_spi_ex.c"
+  },
+  {
+    "directory": "/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Debug",
+    "command": "arm-none-eabi-gcc \"/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_uart.c\" -mcpu\u003dcortex-m0 -std\u003dgnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F091xC -c -I../Core/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F0xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity --specs\u003dnano.specs -mfloat-abi\u003dsoft -mthumb -o \"/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Debug/Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_uart.o\"",
+    "file": "/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_uart.c"
+  },
+  {
+    "directory": "/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Debug",
+    "command": "arm-none-eabi-gcc \"/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_uart_ex.c\" -mcpu\u003dcortex-m0 -std\u003dgnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F091xC -c -I../Core/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc -I../Drivers/STM32F0xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F0xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -fcyclomatic-complexity --specs\u003dnano.specs -mfloat-abi\u003dsoft -mthumb -o \"/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Debug/Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_uart_ex.o\"",
+    "file": "/home/joe/VMC/STM/stm32cubeide/realWorkspace_2.1.1/Display-ST7796/Drivers/STM32F0xx_HAL_Driver/Src/stm32f0xx_hal_uart_ex.c"
+  }
+]

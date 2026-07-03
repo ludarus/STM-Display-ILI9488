@@ -33,44 +33,33 @@
 #define GET_PIXEL(array, bit)                                                  \
   (((array)[(bit) / 8] >> ((bit) % 8)) & 1u) // returns 0u or 1u
 
-// TODO: optimize struct alignment for better memory usage
 // struct to store the current state of image rendering,
 // as drawing happens between functions and callbacks so shared state is needed
+// Reordered for optimal cache utilization and memory efficiency by claude
 typedef struct {
-  // a boolean that determines if the display is currently being written to
+  // state variables
   volatile bool currentlyDrawing;
-
-  // same thing as currentlyDrawing but for loading
   volatile bool currentlyLoading;
-
-  // a double buffer to expand bit packed image data into
-  // one side is transferring over SPI while the other side is being filled with
-  // new image data aligned for casting from uint32_t to uint8_t
-  uint8_t buf[2][CHUNK] __attribute__((aligned(4)));
-  // represents the active buffer
+  // buffer toggle
   volatile uint8_t activeBuf;
 
-  // parameters from the requested image to be displayed
+  // double buffer. aligned for lookup table casting (uint32_t -> uint8_t)
+  uint8_t buf[2][CHUNK] __attribute__((aligned(4)));
+
+  // --- Image transfer geometry, accessed together when setting up a transfer
   uint16_t x;      // in bytes
   uint16_t y;      // in pixels
   uint16_t width;  // in bytes
   uint16_t height; // in pixels
 
-  // current amount of bytes transferred
-  volatile uint32_t imageProgress;
-  // total amount of bytes to be transferred
-  uint32_t imageTarget;
+  // --- Progress tracking, accessed together during transfer ---
+  volatile uint32_t imageProgress; // in pixels
+  uint32_t imageTarget;            // in bytes/pixel
+  uint32_t imageSize;              // in pixels
 
-  // DEBUG
-  uint32_t startTime;
-  uint32_t finalTime;
-  volatile uint8_t THING;
-  // DEBUG
-
-  // bit packed array of the screen. bitpacked to save memory
-  uint8_t screenCopy[((480 * 320) + 7) / 8];
-  // size of the decoded image
-  uint32_t dcompImage_SIZE;
+  // large bit-packed buffer last: no alignment requirement, so it can
+  // safely absorb any odd byte count without forcing padding after it
+  uint8_t screenCopy[((480 * 320) + 7) / 8]; // in bytes
 } ImageTransferState_t;
 
 // public functions
@@ -79,11 +68,12 @@ bool ILI9488_REFRESH(SPI_HandleTypeDef *spi);
 bool ILI9488_REFRESH_DEBUG(SPI_HandleTypeDef *spi);
 void ILI9488_FILL(SPI_HandleTypeDef *spi);
 bool ILI9488_LOAD_IMAGE(SPI_HandleTypeDef *spi, uint16_t x, uint16_t y,
-                        Image_t *image, bool overWrite);
+                        const Image_t *image, bool overWrite);
 bool ILI9488_LOAD_IMAGE_DEBUG(SPI_HandleTypeDef *spi, uint16_t x, uint16_t y,
-                        Image_t *image, bool overWrite);
+                              const Image_t *image, bool overWrite);
 bool ILI9488_LOAD_TEXT(SPI_HandleTypeDef *spi, uint16_t x, uint16_t y,
-                       uint8_t text[], Character_t *font, uint8_t fontWidth,
+                       uint8_t text[], const Character_t *font,
+                       uint8_t fontWidth,
                        /*number of characters in font*/ size_t fontSize,
                        /*number of bytes in character*/ size_t characterHeight);
 bool ILI9488_DRAW(SPI_HandleTypeDef *spi);

@@ -8,7 +8,7 @@
 #ifndef INC_IMAGE_H_
 #define INC_IMAGE_H_
 
-#include "main.h"
+#include <stdint.h>
 
 typedef struct {
   const uint16_t width;

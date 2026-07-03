@@ -9,6 +9,7 @@
 #define INC_COMMANDS_USART_H_
 
 #include "image.h"
+#include "main.h"
 
 // public functions
 void usartCommandsInit(UART_HandleTypeDef *uartInterface,
@@ -23,9 +24,9 @@ typedef struct {
 // command struct
 typedef struct {
   // the keyword that must be inputted for the command
-  const uint8_t *keyword;
+  uint8_t *keyword;
   // the size of the keyword in bytes
-  const uint16_t keyword_size;
+  uint16_t keyword_size;
   // a function pointer to a handle that executes when the command is called
   const ByteArray_t (*action)(void);
 } Command_t;

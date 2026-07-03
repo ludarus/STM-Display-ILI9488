@@ -170,7 +170,7 @@ const Image_t *images[74] = {
 const uint8_t errorMsg[] = "\n\rCommand not found\r\n";
 
 // reference to spi interface. should be set upon initialization
-static const SPI_HandleTypeDef *spi;
+static SPI_HandleTypeDef *spi;
 
 // state for testing commands
 static uint8_t imageNum = 34;
@@ -205,7 +205,8 @@ const ByteArray_t helpCMD(void) {
 
 const ByteArray_t displayImageCMD(void) {
   // checking if the display is currently being written to
-  if (ILI9488_LOAD_IMAGE(spi, 0, 0, images[imageNum], !isOr)) {
+  if (ILI9488_LOAD_IMAGE(spi, 440, 269, images[imageNum], !isOr)) {
+	  ILI9488_DRAW(spi);
     // cycling through the images
     imageNum++;
     imageNum %= 74;
@@ -241,16 +242,14 @@ const ByteArray_t orCMD(void) {
 // commands
 // defining a keyword and handle for each command
 const Command_t commands[] = {
-    {.keyword = (const uint8_t *)"HELP\n",
-     .keyword_size = 5,
-     .action = helpCMD},
-    {.keyword = (const uint8_t *)"DISPLAY\n",
+    {.keyword = (uint8_t *)"HELP\n", .keyword_size = 5, .action = helpCMD},
+    {.keyword = (uint8_t *)"DISPLAY\n",
      .keyword_size = 8,
      .action = displayImageCMD},
-    {.keyword = (const uint8_t *)"REFRESH\n",
+    {.keyword = (uint8_t *)"REFRESH\n",
      .keyword_size = 8,
      .action = refreshCMD},
-    {.keyword = (const uint8_t *)"OR\n", .keyword_size = 3, .action = orCMD},
+    {.keyword = (uint8_t *)"OR\n", .keyword_size = 3, .action = orCMD},
 };
 
 //--------------------------------------------------------------------------------

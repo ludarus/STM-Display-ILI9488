@@ -8,7 +8,7 @@
 #include "commands-can.h"
 #include "main.h"
 
-// store time of the last received message (can be done in the process function)
+// TODO: store time of the last received message (can be done in the process function)
 
 // private declarations
 static uint8_t queuedMessages = 0;
@@ -17,6 +17,7 @@ static CanMessage_t queue[16];
 static const CAN_HandleTypeDef *can;
 
 void canCommandsInit(CAN_HandleTypeDef *canInterface) {
+  can = canInterface;
   // configuring filter
   CAN_FilterTypeDef sFilterConfig = {0};
 

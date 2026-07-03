@@ -11,7 +11,7 @@
 #include "main.h"
 
 void canCommandsInit(CAN_HandleTypeDef *canInterface);
-void canProcessCommand();
+void canProcessCommand(UART_HandleTypeDef *huart);
 
 typedef struct {
   CAN_RxHeaderTypeDef header;
