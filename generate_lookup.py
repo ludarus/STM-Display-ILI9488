@@ -2,7 +2,10 @@ import argparse
 
 
 def main():
+    # for command line arguments
     parser = argparse.ArgumentParser()
+
+    # mandatory arguments
     parser.add_argument(
         "onColour",
         type=int,
@@ -13,16 +16,20 @@ def main():
         type=int,
         help="Colour of the off pixels in integer form. The 3 bit format is R B G.",
     )
+
+    # parsing
     args = parser.parse_args()
 
     ON = args.onColour
     OFF = args.offColour
 
+    # input checking
     if args.onColour > 0b1110 or args.onColour < 0:
         ON = 0b1110
     if args.offColour > 0b1110 or args.offColour < 0:
         OFF = 0b1110
 
+    # outputs a sequence of 256 uint32_t's that maps a bitpacked byte into it's expanded version with the specified colours above
     print("const uint32_t table[256] = {")
 
     for i in range(256):

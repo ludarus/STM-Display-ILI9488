@@ -20,6 +20,21 @@
 - Bitpacking is used to compress the font characters
 - Chunking and a dual buffer is used to transmit the image data via the SPI connection
 
+# RLE Compression
+- Sequence begins with number of OFF bits in a row, then alternates between contiguous ON and OFF bits in a row in this form:
+    - **OFF, ON, OFF, ON**
+- Examples
+    - **7, 9, 3, 4, 1**
+    represents **7** off pixels, **9** on pixels, **3** off pixels, **4** on pixels, and **1** off pixel
+    - **0, 4, 8, 2** 
+    represents **4** on pixels, **8** off pixels, **2** on pixels
+- If there are more than **255** of the same pixel in a row:
+    - Insert **255, 0,** then continue with the rest of the number (n - 255)
+- Example
+    - **0, 600, 3** becomes 
+     **0, 255, 0, 255, 0, 90, 3**
+- This allows decoding based only on the divisibility by 2 of the index of any term in the compressed sequence 
+
 # BMP conversion
 - Use the [BMP_parser](BMP_parser.py) script to compress a 1bpp BMP file to a c header file.
 - The output directory should be [Core/Inc/](Core/Inc)
