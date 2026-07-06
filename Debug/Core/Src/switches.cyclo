@@ -1,0 +1,2 @@
+../Core/Src/switches.c:20:6:processSwitches	5
+../Core/Src/switches.c:67:6:HAL_TIM_PeriodElapsedCallback	2

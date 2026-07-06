@@ -1,3 +1,4 @@
+"./Core/Src/alarm.o"
 "./Core/Src/commands-can.o"
 "./Core/Src/commands-usart.o"
 "./Core/Src/display-ili9488.o"

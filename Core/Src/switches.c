@@ -31,10 +31,10 @@ void processSwitches(CAN_HandleTypeDef *canInterface) {
   // iterating through last 3 states
   for (uint8_t sw = 0; sw < 5; sw++) {
     // computing debounced state
-    switchState[3][sw] = (switchState[0][sw] == switchState[1][sw] &&
-                          switchState[1][sw] == switchState[2][sw])
-                             ? switchState[0][sw]
-                             : switchState[3][sw];
+    switchState[3][sw] =
+        (switchState[0][sw] == switchState[1][sw] && switchState[1][sw] == switchState[2][sw])
+            ? switchState[0][sw]
+            : switchState[3][sw];
   }
 
   // transmitting debounced state
