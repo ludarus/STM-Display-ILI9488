@@ -25,12 +25,14 @@
 #include "commands-usart.h"
 #include "display-ili9488.h"
 #include "font.h"
+#include "switches.h"
 
 #include "File_002_ObjNum_001_NEW_6_17_26.h"
 #include "File_005_ObjNum_004_480x320_6_18_26.h"
 #include "File_054_ObjNum_087_48x255_6_19_26.h"
 #include "File_072_ObjNum_135_480x320_6_18_26.h"
 #include "File_074_ObjNum_138_48x143_6_19_26.h"
+#include "stm32f0xx_hal_tim.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -54,6 +56,8 @@ CAN_HandleTypeDef hcan;
 SPI_HandleTypeDef hspi1;
 DMA_HandleTypeDef hdma_spi1_tx;
 
+TIM_HandleTypeDef htim2;
+
 UART_HandleTypeDef huart2;
 DMA_HandleTypeDef hdma_usart2_rx;
 
@@ -68,6 +72,7 @@ static void MX_DMA_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_SPI1_Init(void);
 static void MX_CAN_Init(void);
+static void MX_TIM2_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -109,14 +114,20 @@ int main(void) {
   MX_USART2_UART_Init();
   MX_SPI1_Init();
   MX_CAN_Init();
+  MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
 
   // initializing display
   ILI9488_INIT(&hspi1);
+
   // initializing commands
   usartCommandsInit(&huart2, &hspi1);
+
   // initializing can interface
-  canCommandsInit(&hcan);
+  canCommandsInit(&hcan, &hspi1, &huart2);
+
+  // starting timer for switches interrupt
+  HAL_TIM_Base_Start_IT(&htim2);
 
   // ILI9488_LOAD_IMAGE_DEBUG(&hspi1, 0, 0,
   // &File_072_ObjNum_135_480x320_6_18_26, true);
@@ -127,19 +138,13 @@ int main(void) {
 
   ILI9488_DRAW(&hspi1);
 
-  HAL_Delay(1000);
-
   ILI9488_LOAD_IMAGE(&hspi1, 0, 0, &File_074_ObjNum_138_48x143_6_19_26, true);
 
-  HAL_Delay(1000);
   ILI9488_LOAD_IMAGE(&hspi1, 0, 0, &File_005_ObjNum_004_480x320_6_18_26, true);
 
-  HAL_Delay(1000);
   ILI9488_LOAD_IMAGE(&hspi1, 8, 50, &File_072_ObjNum_135_480x320_6_18_26, true);
 
   ILI9488_REFRESH(&hspi1);
-
-  HAL_Delay(1000);
 
   ILI9488_LOAD_TEXT(&hspi1, 0, 0, "Lorem ipsum dol", font, CHARWIDTH, FONTSIZE,
                     CHARHEIGHT);
@@ -176,8 +181,6 @@ int main(void) {
 
   ILI9488_DRAW(&hspi1);
 
-  HAL_Delay(10);
-
   ILI9488_LOAD_TEXT(&hspi1, 48 + 8, 280, "etc ..............................",
                     font, CHARWIDTH, FONTSIZE, CHARHEIGHT);
 
@@ -196,7 +199,11 @@ int main(void) {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-    canProcessCommand(&huart2);
+    // process recieved can commands
+    canProcessCommands(&huart2);
+
+    // processing switch input
+    processSwitches(&hcan);
   }
   /* USER CODE END 3 */
 }
@@ -313,6 +320,46 @@ static void MX_SPI1_Init(void) {
 }
 
 /**
+ * @brief TIM2 Initialization Function
+ * @param None
+ * @retval None
+ */
+static void MX_TIM2_Init(void) {
+
+  /* USER CODE BEGIN TIM2_Init 0 */
+
+  /* USER CODE END TIM2_Init 0 */
+
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+  /* USER CODE BEGIN TIM2_Init 1 */
+
+  /* USER CODE END TIM2_Init 1 */
+  htim2.Instance = TIM2;
+  htim2.Init.Prescaler = 47999;
+  htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim2.Init.Period = 99;
+  htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+  if (HAL_TIM_Base_Init(&htim2) != HAL_OK) {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim2, &sClockSourceConfig) != HAL_OK) {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK) {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM2_Init 2 */
+
+  /* USER CODE END TIM2_Init 2 */
+}
+
+/**
  * @brief USART2 Initialization Function
  * @param None
  * @retval None
@@ -376,6 +423,7 @@ static void MX_GPIO_Init(void) {
   __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOF_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
+  __HAL_RCC_GPIOD_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
@@ -400,12 +448,38 @@ static void MX_GPIO_Init(void) {
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(DISPLAY_DC_GPIO_Port, &GPIO_InitStruct);
 
+  /*Configure GPIO pin : ALARM_Pin */
+  GPIO_InitStruct.Pin = ALARM_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  GPIO_InitStruct.Alternate = GPIO_AF2_TIM1;
+  HAL_GPIO_Init(ALARM_GPIO_Port, &GPIO_InitStruct);
+
   /*Configure GPIO pin : DISPLAY_CS_Pin */
   GPIO_InitStruct.Pin = DISPLAY_CS_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(DISPLAY_CS_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : SWITCH5_Pin SWITCH4_Pin */
+  GPIO_InitStruct.Pin = SWITCH5_Pin | SWITCH4_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : SWITCH3_Pin */
+  GPIO_InitStruct.Pin = SWITCH3_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(SWITCH3_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : SWITCH2_Pin SWITCH1_Pin */
+  GPIO_InitStruct.Pin = SWITCH2_Pin | SWITCH1_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /*Configure GPIO pins : DISPLAY_RESET_Pin DISPLAY_LED_Pin */
   GPIO_InitStruct.Pin = DISPLAY_RESET_Pin | DISPLAY_LED_Pin;

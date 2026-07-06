@@ -10,12 +10,14 @@
 
 #include "main.h"
 
-void canCommandsInit(CAN_HandleTypeDef *canInterface);
-void canProcessCommand(UART_HandleTypeDef *huart);
+void canCommandsInit(CAN_HandleTypeDef *canInterface,
+                     SPI_HandleTypeDef *displaySpiInterface,
+                     UART_HandleTypeDef *serialLoggingInterface);
+void canProcessCommands();
 
 typedef struct {
   CAN_RxHeaderTypeDef header;
   uint8_t data[8];
-} CanMessage_t;
+} CanRxMessage_t;
 
 #endif /* INC_COMMANDS_CAN_H_ */

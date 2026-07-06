@@ -28,9 +28,12 @@ Core/Src/commands-can.o: ../Core/Src/commands-can.c \
  ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_pwr_ex.h \
  ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_spi.h \
  ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_spi_ex.h \
+ ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_tim.h \
+ ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_tim_ex.h \
  ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_uart.h \
  ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_uart_ex.h \
- ../Core/Inc/main.h
+ ../Core/Inc/main.h \
+ ../Drivers/CMSIS/Device/ST/STM32F0xx/Include/stm32f091xc.h
 ../Core/Inc/commands-can.h:
 ../Core/Inc/main.h:
 ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal.h:
@@ -61,6 +64,9 @@ Core/Src/commands-can.o: ../Core/Src/commands-can.c \
 ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_pwr_ex.h:
 ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_spi.h:
 ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_spi_ex.h:
+../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_tim.h:
+../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_tim_ex.h:
 ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_uart.h:
 ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_uart_ex.h:
 ../Core/Inc/main.h:
+../Drivers/CMSIS/Device/ST/STM32F0xx/Include/stm32f091xc.h:

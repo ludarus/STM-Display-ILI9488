@@ -7,17 +7,31 @@
 
 #include "commands-can.h"
 #include "main.h"
+#include "stm32f091xc.h"
+#include "stm32f0xx_hal_can.h"
+#include "stm32f0xx_hal_spi.h"
+#include "stm32f0xx_hal_uart.h"
+#include <stdbool.h>
 
-// TODO: store time of the last received message (can be done in the process function)
+// TODO: store time of the last received message (can be done in the process
+// function)
 
 // private declarations
-static uint8_t queuedMessages = 0;
+static volatile uint8_t queuedMessages = 0;
 // 16 message queue
-static CanMessage_t queue[16];
-static const CAN_HandleTypeDef *can;
+static CanRxMessage_t queue[16];
+static CAN_HandleTypeDef *can;
+static SPI_HandleTypeDef *spi;
+static UART_HandleTypeDef *uart;
 
-void canCommandsInit(CAN_HandleTypeDef *canInterface) {
+void canCommandsInit(CAN_HandleTypeDef *canInterface,
+                     SPI_HandleTypeDef *displaySpiInterface,
+                     UART_HandleTypeDef *serialLoggingInterface) {
+
   can = canInterface;
+  spi = displaySpiInterface;
+  uart = serialLoggingInterface;
+
   // configuring filter
   CAN_FilterTypeDef sFilterConfig = {0};
 
@@ -39,12 +53,12 @@ void canCommandsInit(CAN_HandleTypeDef *canInterface) {
   HAL_CAN_ActivateNotification(canInterface, CAN_IT_RX_FIFO0_MSG_PENDING);
 }
 
-void canProcessCommand(UART_HandleTypeDef *huart) {
+void canProcessCommands() {
   for (uint8_t msgIdx = 0; msgIdx < queuedMessages; msgIdx++) {
     // iterating through every message
 
     // logging the message to serial device
-    HAL_UART_Transmit_IT(huart, queue[queuedMessages].data, 8);
+    HAL_UART_Transmit_IT(uart, queue[queuedMessages].data, 8);
   }
   queuedMessages = 0;
 }

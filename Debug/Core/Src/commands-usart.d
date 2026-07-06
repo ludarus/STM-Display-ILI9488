@@ -27,6 +27,8 @@ Core/Src/commands-usart.o: ../Core/Src/commands-usart.c \
  ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_pwr_ex.h \
  ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_spi.h \
  ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_spi_ex.h \
+ ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_tim.h \
+ ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_tim_ex.h \
  ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_uart.h \
  ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_uart_ex.h \
  ../Core/Inc/commands-usart.h ../Core/Inc/image.h ../Core/Inc/main.h \
@@ -134,6 +136,8 @@ Core/Src/commands-usart.o: ../Core/Src/commands-usart.c \
 ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_pwr_ex.h:
 ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_spi.h:
 ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_spi_ex.h:
+../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_tim.h:
+../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_tim_ex.h:
 ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_uart.h:
 ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_uart_ex.h:
 ../Core/Inc/commands-usart.h:

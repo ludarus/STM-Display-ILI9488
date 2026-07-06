@@ -27,12 +27,14 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_pwr_ex.h \
  ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_spi.h \
  ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_spi_ex.h \
+ ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_tim.h \
+ ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_tim_ex.h \
  ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_uart.h \
  ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_uart_ex.h \
  ../Core/Inc/commands-can.h ../Core/Inc/main.h \
  ../Core/Inc/commands-usart.h ../Core/Inc/image.h \
  ../Core/Inc/display-ili9488.h ../Core/Inc/character.h ../Core/Inc/font.h \
- ../Core/Inc/File_002_ObjNum_001_NEW_6_17_26.h \
+ ../Core/Inc/switches.h ../Core/Inc/File_002_ObjNum_001_NEW_6_17_26.h \
  ../Core/Inc/File_005_ObjNum_004_480x320_6_18_26.h \
  ../Core/Inc/File_054_ObjNum_087_48x255_6_19_26.h \
  ../Core/Inc/File_072_ObjNum_135_480x320_6_18_26.h \
@@ -66,6 +68,8 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_pwr_ex.h:
 ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_spi.h:
 ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_spi_ex.h:
+../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_tim.h:
+../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_tim_ex.h:
 ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_uart.h:
 ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_uart_ex.h:
 ../Core/Inc/commands-can.h:
@@ -75,6 +79,7 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 ../Core/Inc/display-ili9488.h:
 ../Core/Inc/character.h:
 ../Core/Inc/font.h:
+../Core/Inc/switches.h:
 ../Core/Inc/File_002_ObjNum_001_NEW_6_17_26.h:
 ../Core/Inc/File_005_ObjNum_004_480x320_6_18_26.h:
 ../Core/Inc/File_054_ObjNum_087_48x255_6_19_26.h:
