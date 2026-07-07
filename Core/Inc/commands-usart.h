@@ -10,9 +10,10 @@
 
 #include "image.h"
 #include "main.h"
+#include "stm32f0xx_hal_def.h"
 
 // public functions
-void usartCommandsInit(UART_HandleTypeDef *uartInterface,
+HAL_StatusTypeDef usartCommandsInit(UART_HandleTypeDef *uartInterface,
                        SPI_HandleTypeDef *spiInterface);
 
 // byte array struct to easily encode the size of a string

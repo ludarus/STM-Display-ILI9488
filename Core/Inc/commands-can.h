@@ -9,6 +9,7 @@
 #define INC_COMMANDS_CAN_H_
 
 #include "main.h"
+#include "stm32f0xx_hal_def.h"
 #include <stdbool.h>
 
 // data format enums. TODO get correct values for these
@@ -19,14 +20,11 @@
 #define DUTY_CYCLE 5
 #define FREQUENCY 6
 
-// TODO get correct version string
-const uint8_t version[8] = "DSP12345";
-
-void canCommandsInit(CAN_HandleTypeDef *canInterface,
-                     SPI_HandleTypeDef *displaySpiInterface,
-                     UART_HandleTypeDef *serialLoggingInterface,
-                     TIM_HandleTypeDef *alarmPWMTimerInterface);
-void canProcessCommands(void);
+HAL_StatusTypeDef canCommandsInit(CAN_HandleTypeDef *canInterface,
+                                  SPI_HandleTypeDef *displaySpiInterface,
+                                  UART_HandleTypeDef *serialLoggingInterface,
+                                  TIM_HandleTypeDef *alarmPWMTimerInterface);
+HAL_StatusTypeDef canProcessCommands(void);
 
 typedef struct {
   CAN_RxHeaderTypeDef header;
@@ -37,7 +35,7 @@ typedef struct {
   // the command number associated with this command
   uint8_t cmdNum;
   // a function pointer to a handle that executes when the command is called
-  bool (*handle)(CanRxMessage_t *);
+  HAL_StatusTypeDef (*handle)(CanRxMessage_t *);
 } CanCommand_t;
 
 #endif /* INC_COMMANDS_CAN_H_ */

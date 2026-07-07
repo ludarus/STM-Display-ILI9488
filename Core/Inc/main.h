@@ -47,6 +47,13 @@ extern "C" {
 /* Exported macro ------------------------------------------------------------*/
 /* USER CODE BEGIN EM */
 
+// macro to check the status of a function
+#define HAL_TRY(x)                                                             \
+  do {                                                                         \
+    if (x != HAL_OK) {                                                         \
+      return x;                                                                \
+    }                                                                          \
+  } while (0)
 /* USER CODE END EM */
 
 void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);

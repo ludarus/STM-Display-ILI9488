@@ -32,6 +32,7 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_uart.h \
  ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_uart_ex.h \
  ../Core/Inc/alarm.h ../Core/Inc/main.h ../Core/Inc/commands-can.h \
+ ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_def.h \
  ../Core/Inc/commands-usart.h ../Core/Inc/image.h \
  ../Core/Inc/display-ili9488.h ../Core/Inc/character.h ../Core/Inc/font.h \
  ../Core/Inc/switches.h ../Core/Inc/File_002_ObjNum_001_NEW_6_17_26.h \
@@ -75,6 +76,7 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 ../Core/Inc/alarm.h:
 ../Core/Inc/main.h:
 ../Core/Inc/commands-can.h:
+../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_def.h:
 ../Core/Inc/commands-usart.h:
 ../Core/Inc/image.h:
 ../Core/Inc/display-ili9488.h:

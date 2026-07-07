@@ -8,6 +8,7 @@
 #include "main.h"
 #include "stm32f0xx.h"
 #include "stm32f0xx_hal_can.h"
+#include "stm32f0xx_hal_def.h"
 #include "stm32f0xx_hal_gpio.h"
 #include <stdint.h>
 
@@ -17,7 +18,7 @@ static uint8_t currentIdx;
 static volatile uint8_t flag;
 
 // reads, debounces, and transmits the state of switches. run in main loop
-void processSwitches(CAN_HandleTypeDef *canInterface) {
+HAL_StatusTypeDef processSwitches(CAN_HandleTypeDef *canInterface) {
   // reading current switch state
   switchState[currentIdx][0] = HAL_GPIO_ReadPin(SWITCH1_GPIO_Port, SWITCH1_Pin);
   switchState[currentIdx][1] = HAL_GPIO_ReadPin(SWITCH2_GPIO_Port, SWITCH2_Pin);
@@ -61,11 +62,13 @@ void processSwitches(CAN_HandleTypeDef *canInterface) {
 
     uint32_t mailbox;
 
-    HAL_CAN_AddTxMessage(canInterface, &header, &debouncedState, &mailbox);
+    HAL_TRY(HAL_CAN_AddTxMessage(canInterface, &header, &debouncedState, &mailbox));
 
     // resetting flag
     flag = 0;
   }
+
+  return HAL_OK;
 }
 
 // interrupt

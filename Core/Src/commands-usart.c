@@ -84,6 +84,7 @@
 #include "File_077_ObjNum_147_480x320_6_18_26.h"
 #include "File_078_ObjNum_148_480x320_6_18_26.h"
 #include "File_079_ObjNum_149_480x320_6_17_26.h"
+#include "stm32f0xx_hal_def.h"
 
 // array containing every image
 static const Image_t *images[74] = {
@@ -183,13 +184,15 @@ uint8_t commandBuffer[255];
 // public functions
 
 // initialization sequence. currently just a setter that takes the serial input
-void usartCommandsInit(
+HAL_StatusTypeDef usartCommandsInit(
     /*the usart connection*/ UART_HandleTypeDef *uartInterface,
     /*for interfacing with the display*/ SPI_HandleTypeDef *spiInterface) {
   spi = spiInterface;
   // DMA serial command recieve until IDLE
-  HAL_UARTEx_ReceiveToIdle_DMA(uartInterface, commandBuffer,
-                               sizeof(commandBuffer));
+  HAL_TRY(HAL_UARTEx_ReceiveToIdle_DMA(uartInterface, commandBuffer,
+                                       sizeof(commandBuffer)));
+
+  return HAL_OK;
 }
 //--------------------------------------------------------------------------------
 // command handles

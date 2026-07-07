@@ -141,62 +141,62 @@ int main(void) {
   //
   // HAL_Delay(1000);
 
-  ILI9488_LOAD_IMAGE(&hspi1, 0, 0, &File_054_ObjNum_087_48x255_6_19_26, true,
-                     true);
+  // ILI9488_LOAD_IMAGE(&hspi1, 0, 0, &File_054_ObjNum_087_48x255_6_19_26, true,
+  //                    true);
 
-  ILI9488_DRAW(&hspi1);
-
-  ILI9488_LOAD_IMAGE(&hspi1, 0, 0, &File_074_ObjNum_138_48x143_6_19_26, true,
-                     true);
-
+  // ILI9488_DRAW(&hspi1);
+  //
+  // ILI9488_LOAD_IMAGE(&hspi1, 0, 0, &File_074_ObjNum_138_48x143_6_19_26, true,
+  //                    true);
+  //
   ILI9488_LOAD_IMAGE(&hspi1, 0, 0, &File_005_ObjNum_004_480x320_6_18_26, true,
                      true);
-
-  ILI9488_LOAD_IMAGE(&hspi1, 8, 50, &File_072_ObjNum_135_480x320_6_18_26, true,
-                     true);
-
-  ILI9488_REFRESH(&hspi1);
-
-  ILI9488_LOAD_TEXT(&hspi1, 0, 0, "Lorem ipsum dol", 15, font, CHARWIDTH,
-                    FONTSIZE, CHARHEIGHT, true);
-
-  ILI9488_DRAW(&hspi1);
-
-  ILI9488_LOAD_TEXT(&hspi1, 8, 40, "or sit amet, co", 15, font, CHARWIDTH,
-                    FONTSIZE, CHARHEIGHT, true);
-
-  ILI9488_DRAW(&hspi1);
-
-  ILI9488_LOAD_TEXT(&hspi1, 16, 80, "nsectetur adipi", 15, font, CHARWIDTH,
-                    FONTSIZE, CHARHEIGHT, true);
-
-  ILI9488_DRAW(&hspi1);
-
-  ILI9488_LOAD_TEXT(&hspi1, 24, 120, "scing elit, sed", 15, font, CHARWIDTH,
-                    FONTSIZE, CHARHEIGHT, true);
-
-  ILI9488_DRAW(&hspi1);
-
-  ILI9488_LOAD_TEXT(&hspi1, 32, 160, " do eiusmod tem", 15, font, CHARWIDTH,
-                    FONTSIZE, CHARHEIGHT, true);
-
-  ILI9488_DRAW(&hspi1);
-
-  ILI9488_LOAD_TEXT(&hspi1, 40, 200, "por incididunt ", 15, font, CHARWIDTH,
-                    FONTSIZE, CHARHEIGHT, true);
-
-  ILI9488_DRAW(&hspi1);
-
-  ILI9488_LOAD_TEXT(&hspi1, 48, 240, "ut labore et do", 15, font, CHARWIDTH,
-                    FONTSIZE, CHARHEIGHT, true);
-
-  ILI9488_DRAW(&hspi1);
-
-  ILI9488_LOAD_TEXT(&hspi1, 48 + 8, 280, "etc ..............................",
-                    15, font, CHARWIDTH, FONTSIZE, CHARHEIGHT, true);
-
-  ILI9488_DRAW(&hspi1);
-
+  //
+  // ILI9488_LOAD_IMAGE(&hspi1, 8, 50, &File_072_ObjNum_135_480x320_6_18_26, true,
+  //                    true);
+  //
+  // ILI9488_REFRESH(&hspi1);
+  //
+  // ILI9488_LOAD_TEXT(&hspi1, 0, 0, "Lorem ipsum dol", 15, font, CHARWIDTH,
+  //                   FONTSIZE, CHARHEIGHT, true);
+  //
+  // ILI9488_DRAW(&hspi1);
+  //
+  // ILI9488_LOAD_TEXT(&hspi1, 8, 40, "or sit amet, co", 15, font, CHARWIDTH,
+  //                   FONTSIZE, CHARHEIGHT, true);
+  //
+  // ILI9488_DRAW(&hspi1);
+  //
+  // ILI9488_LOAD_TEXT(&hspi1, 16, 80, "nsectetur adipi", 15, font, CHARWIDTH,
+  //                   FONTSIZE, CHARHEIGHT, true);
+  //
+  // ILI9488_DRAW(&hspi1);
+  //
+  // ILI9488_LOAD_TEXT(&hspi1, 24, 120, "scing elit, sed", 15, font, CHARWIDTH,
+  //                   FONTSIZE, CHARHEIGHT, true);
+  //
+  // ILI9488_DRAW(&hspi1);
+  //
+  // ILI9488_LOAD_TEXT(&hspi1, 32, 160, " do eiusmod tem", 15, font, CHARWIDTH,
+  //                   FONTSIZE, CHARHEIGHT, true);
+  //
+  // ILI9488_DRAW(&hspi1);
+  //
+  // ILI9488_LOAD_TEXT(&hspi1, 40, 200, "por incididunt ", 15, font, CHARWIDTH,
+  //                   FONTSIZE, CHARHEIGHT, true);
+  //
+  // ILI9488_DRAW(&hspi1);
+  //
+  // ILI9488_LOAD_TEXT(&hspi1, 48, 240, "ut labore et do", 15, font, CHARWIDTH,
+  //                   FONTSIZE, CHARHEIGHT, true);
+  //
+  // ILI9488_DRAW(&hspi1);
+  //
+  // ILI9488_LOAD_TEXT(&hspi1, 48 + 8, 280, "etc ..............................",
+  //                   15, font, CHARWIDTH, FONTSIZE, CHARHEIGHT, true);
+  //
+  // ILI9488_DRAW(&hspi1);
+  //
   // uint8_t brightnesstg = 0;
   // ILI9488_BRIGHTNESS(&hspi1, brightnesstg);
   // HAL_Delay(1000);

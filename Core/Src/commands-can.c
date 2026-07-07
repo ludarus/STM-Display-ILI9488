@@ -11,6 +11,7 @@
 #include "main.h"
 #include "stm32f0xx_hal.h"
 #include "stm32f0xx_hal_can.h"
+#include "stm32f0xx_hal_def.h"
 #include "stm32f0xx_hal_flash.h"
 #include "stm32f0xx_hal_flash_ex.h"
 #include "stm32f0xx_hal_spi.h"
@@ -118,7 +119,7 @@ static UART_HandleTypeDef *uart;
 static TIM_HandleTypeDef *tim;
 
 // handles. TODO finish them when given the objnum and groupnum to image mapping
-bool DispBackCmd(CanRxMessage_t *msg) {
+HAL_StatusTypeDef DispBackCmd(CanRxMessage_t *msg) {
   // cmdNum = 0x83
   // data format = LSB_OBJ_NUM, MSB_OBJ_NUM
   // assuming this means DLC = 2 bytes
@@ -134,10 +135,11 @@ bool DispBackCmd(CanRxMessage_t *msg) {
   // display according image
   // ILI9488_LOAD_IMAGE(spi, uint16_t x, uint16_t y, const Image_t *image, bool
   // overWrite, bool draw)
-  return true;
+
+  return HAL_OK;
 }
 
-bool DispTextCmd(CanRxMessage_t *msg) {
+HAL_StatusTypeDef DispTextCmd(CanRxMessage_t *msg) {
   // static function members for persistent scope
   static uint8_t remainingChars = 0;
   static uint8_t target = 0;
@@ -148,7 +150,8 @@ bool DispTextCmd(CanRxMessage_t *msg) {
 
   // checking if DLC is 0
   if (msg->header.DLC == 0) {
-    return false;
+    // ignore command
+    return HAL_OK;
   }
 
   if (remainingChars == 0 || msg->data[0] == 0) {
@@ -186,10 +189,10 @@ bool DispTextCmd(CanRxMessage_t *msg) {
     // characterHeight, true)
   }
 
-  return false;
+  return HAL_OK;
 }
 
-bool DispBMCmd(CanRxMessage_t *msg) {
+HAL_StatusTypeDef DispBMCmd(CanRxMessage_t *msg) {
 
   // cmdNum = 0x85
   // data format = LSB_OBJ_NUM, MSB_OBJ_NUM
@@ -206,10 +209,11 @@ bool DispBMCmd(CanRxMessage_t *msg) {
   // display according image
   // ILI9488_LOAD_IMAGE(spi, uint16_t x, uint16_t y, const Image_t *image, bool
   // overWrite, bool draw)
-  return true;
+
+  return HAL_OK;
 }
 
-bool DispGrpCmd(CanRxMessage_t *msg) {
+HAL_StatusTypeDef DispGrpCmd(CanRxMessage_t *msg) {
 
   // cmdNum = 0x86
   // data format = LSB_OBJ_NUM, MSB_OBJ_NUM
@@ -228,10 +232,10 @@ bool DispGrpCmd(CanRxMessage_t *msg) {
   // display according image
   // ILI9488_LOAD_IMAGE(spi, uint16_t x, uint16_t y, const Image_t *image, bool
   // overWrite, bool draw)
-  return true;
+  return HAL_OK;
 }
 
-bool SendVerCmd(CanRxMessage_t *msg) {
+HAL_StatusTypeDef SendVerCmd(CanRxMessage_t *msg) {
   // cmdNum 0x87
 
   CAN_TxHeaderTypeDef versionHeader = {0};
@@ -253,32 +257,32 @@ bool SendVerCmd(CanRxMessage_t *msg) {
   return HAL_CAN_AddTxMessage(can, &versionHeader, version, &mailbox);
 }
 
-bool SysFailCmd(CanRxMessage_t *msg) {
+HAL_StatusTypeDef SysFailCmd(CanRxMessage_t *msg) {
   // cmdNum 0x88
-  return ILI9488_LOAD_IMAGE(spi, 0, 0, &SYSFAIL_480x320_Gemini, true,
-                            true);
+  return ILI9488_LOAD_IMAGE(spi, 0, 0, &SYSFAIL_480x320_Gemini, true, true);
 }
 
-bool BrightCmd(CanRxMessage_t *msg) {
+HAL_StatusTypeDef BrightCmd(CanRxMessage_t *msg) {
   // cmdNum 0x89
   brightnessVal = msg->data[0];
 
   // setting brightness
-  ILI9488_BRIGHTNESS(spi, brightnessVal);
+  HAL_TRY(ILI9488_BRIGHTNESS(spi, brightnessVal));
 
   // setting flag to wait 5 seconds
   brightnessTick = HAL_GetTick();
 
-  return true;
+  return HAL_OK;
 }
 
-bool AlarmCmd(CanRxMessage_t *msg) {
+HAL_StatusTypeDef AlarmCmd(CanRxMessage_t *msg) {
   uint8_t dutyCycle = msg->data[0];
   uint8_t frequency = msg->data[1];
 
   // TODO implement duty cycle changing
   setAlarmFrequency(tim, frequency);
-  return true;
+
+  return HAL_OK;
 }
 
 // list of commands to be received
@@ -301,10 +305,10 @@ static const CanCommand_t commands[] = {
     {.cmdNum = 0x8A, .handle = AlarmCmd},
 };
 
-void canCommandsInit(CAN_HandleTypeDef *canInterface,
-                     SPI_HandleTypeDef *displaySpiInterface,
-                     UART_HandleTypeDef *serialLoggingInterface,
-                     TIM_HandleTypeDef *alarmPWMTimerInterface) {
+HAL_StatusTypeDef canCommandsInit(CAN_HandleTypeDef *canInterface,
+                                  SPI_HandleTypeDef *displaySpiInterface,
+                                  UART_HandleTypeDef *serialLoggingInterface,
+                                  TIM_HandleTypeDef *alarmPWMTimerInterface) {
 
   can = canInterface;
   spi = displaySpiInterface;
@@ -327,14 +331,17 @@ void canCommandsInit(CAN_HandleTypeDef *canInterface,
   sFilterConfig.SlaveStartFilterBank = 0;
   sFilterConfig.FilterActivation = CAN_FILTER_ENABLE;
 
-  HAL_CAN_ConfigFilter(canInterface, &sFilterConfig);
+  HAL_TRY(HAL_CAN_ConfigFilter(canInterface, &sFilterConfig));
   // starting device
-  HAL_CAN_Start(canInterface);
+  HAL_TRY(HAL_CAN_Start(canInterface));
   // enabling interrupt for can receive
-  HAL_CAN_ActivateNotification(canInterface, CAN_IT_RX_FIFO0_MSG_PENDING);
+  HAL_TRY(
+      HAL_CAN_ActivateNotification(canInterface, CAN_IT_RX_FIFO0_MSG_PENDING));
+
+  return HAL_OK;
 }
 
-void canProcessCommands(void) {
+HAL_StatusTypeDef canProcessCommands(void) {
   // if it's been 5 seconds since last brightness change
   if (brightnessTick != 0 && HAL_GetTick() - brightnessTick >= 5000) {
     brightnessTick = 0;
@@ -343,31 +350,35 @@ void canProcessCommands(void) {
     uint32_t pageError;
 
     // unlocking flash
-    HAL_FLASH_Unlock();
+    HAL_TRY(HAL_FLASH_Unlock());
 
     // erase the last page of flash memory
     erase.TypeErase = FLASH_TYPEERASE_PAGES;
     erase.PageAddress = BRIGHTNESS_PAGE_ADDR;
     erase.NbPages = 1;
 
-    if (HAL_FLASHEx_Erase(&erase, &pageError) != HAL_OK) {
-      HAL_FLASH_Lock();
+    HAL_StatusTypeDef status = HAL_FLASHEx_Erase(&erase, &pageError);
+    if (status != HAL_OK) {
+      HAL_TRY(HAL_FLASH_Lock());
       // TODO error handling here
-      return;
+      return status;
     }
 
     // minimum flash write resolution is 16 bit (halfword)
     uint16_t halfword = (uint16_t)brightnessVal | 0xFF00u;
-    HAL_FLASH_Program(FLASH_TYPEPROGRAM_HALFWORD, BRIGHTNESS_PAGE_ADDR,
-                      halfword);
+    HAL_TRY(HAL_FLASH_Program(FLASH_TYPEPROGRAM_HALFWORD, BRIGHTNESS_PAGE_ADDR,
+                              halfword));
 
-    HAL_FLASH_Lock();
+    HAL_TRY(HAL_FLASH_Lock());
   }
 
   // iterating through every message
   uint8_t snapshot = queuedMessages;
   for (uint8_t msgIdx = 0; msgIdx < snapshot; msgIdx++) {
-    // matching command
+
+    // logging the message to serial device. Not urgent so doesn't need error
+    // handling
+    HAL_UART_Transmit_IT(uart, queue[msgIdx].data, 8);
 
     uint8_t cmdNum = (uint8_t)(queue[msgIdx].header.StdId >> 3);
     // assuming the commandnums are contiguous and in the correct order
@@ -376,21 +387,24 @@ void canProcessCommands(void) {
             commands[0].cmdNum + (sizeof(commands) / sizeof(commands[0])) - 1) {
 
       // executing command
-      commands[cmdNum - commands[0].cmdNum].handle(&queue[msgIdx]);
+      HAL_TRY(commands[cmdNum - commands[0].cmdNum].handle(&queue[msgIdx]));
+
     } else {
       // if no commands match
+      // Maybe return a better error than this?
+      return HAL_ERROR;
     }
-
-    // logging the message to serial device
-    HAL_UART_Transmit_IT(uart, queue[msgIdx].data, 8);
+    queuedMessages--;
   }
-  queuedMessages = 0;
+
+  return HAL_OK;
 }
 
 // callback for received message
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan) {
   // queueing the command for processing in main loop
   if (queuedMessages < 48) {
+    // no error handling in interrupt. Possibly do something to fix this
     HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &queue[queuedMessages].header,
                          queue[queuedMessages].data);
   }

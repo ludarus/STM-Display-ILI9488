@@ -32,6 +32,7 @@ Core/Src/commands-usart.o: ../Core/Src/commands-usart.c \
  ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_uart.h \
  ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_uart_ex.h \
  ../Core/Inc/commands-usart.h ../Core/Inc/image.h ../Core/Inc/main.h \
+ ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_def.h \
  ../Core/Inc/display-ili9488.h ../Core/Inc/character.h \
  ../Core/Inc/File_002_ObjNum_001_NEW_6_17_26.h \
  ../Core/Inc/File_005_ObjNum_004_480x320_6_18_26.h \
@@ -143,6 +144,7 @@ Core/Src/commands-usart.o: ../Core/Src/commands-usart.c \
 ../Core/Inc/commands-usart.h:
 ../Core/Inc/image.h:
 ../Core/Inc/main.h:
+../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_def.h:
 ../Core/Inc/display-ili9488.h:
 ../Core/Inc/character.h:
 ../Core/Inc/File_002_ObjNum_001_NEW_6_17_26.h:
