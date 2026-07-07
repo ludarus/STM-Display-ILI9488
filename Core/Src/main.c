@@ -128,7 +128,7 @@ int main(void) {
   usartCommandsInit(&huart2, &hspi1);
 
   // initializing can interface
-  canCommandsInit(&hcan, &hspi1, &huart2);
+  canCommandsInit(&hcan, &hspi1, &huart2, &htim14);
 
   // starting timer for switches interrupt
   HAL_TIM_Base_Start_IT(&htim2);
@@ -141,57 +141,70 @@ int main(void) {
   //
   // HAL_Delay(1000);
 
-  ILI9488_LOAD_IMAGE(&hspi1, 0, 0, &File_054_ObjNum_087_48x255_6_19_26, true);
+  ILI9488_LOAD_IMAGE(&hspi1, 0, 0, &File_054_ObjNum_087_48x255_6_19_26, true,
+                     true);
 
   ILI9488_DRAW(&hspi1);
 
-  ILI9488_LOAD_IMAGE(&hspi1, 0, 0, &File_074_ObjNum_138_48x143_6_19_26, true);
+  ILI9488_LOAD_IMAGE(&hspi1, 0, 0, &File_074_ObjNum_138_48x143_6_19_26, true,
+                     true);
 
-  ILI9488_LOAD_IMAGE(&hspi1, 0, 0, &File_005_ObjNum_004_480x320_6_18_26, true);
+  ILI9488_LOAD_IMAGE(&hspi1, 0, 0, &File_005_ObjNum_004_480x320_6_18_26, true,
+                     true);
 
-  ILI9488_LOAD_IMAGE(&hspi1, 8, 50, &File_072_ObjNum_135_480x320_6_18_26, true);
+  ILI9488_LOAD_IMAGE(&hspi1, 8, 50, &File_072_ObjNum_135_480x320_6_18_26, true,
+                     true);
 
   ILI9488_REFRESH(&hspi1);
 
-  ILI9488_LOAD_TEXT(&hspi1, 0, 0, "Lorem ipsum dol", font, CHARWIDTH, FONTSIZE,
-                    CHARHEIGHT);
+  ILI9488_LOAD_TEXT(&hspi1, 0, 0, "Lorem ipsum dol", 15, font, CHARWIDTH,
+                    FONTSIZE, CHARHEIGHT, true);
 
   ILI9488_DRAW(&hspi1);
 
-  ILI9488_LOAD_TEXT(&hspi1, 8, 40, "or sit amet, co", font, CHARWIDTH, FONTSIZE,
-                    CHARHEIGHT);
+  ILI9488_LOAD_TEXT(&hspi1, 8, 40, "or sit amet, co", 15, font, CHARWIDTH,
+                    FONTSIZE, CHARHEIGHT, true);
 
   ILI9488_DRAW(&hspi1);
 
-  ILI9488_LOAD_TEXT(&hspi1, 16, 80, "nsectetur adipi", font, CHARWIDTH,
-                    FONTSIZE, CHARHEIGHT);
+  ILI9488_LOAD_TEXT(&hspi1, 16, 80, "nsectetur adipi", 15, font, CHARWIDTH,
+                    FONTSIZE, CHARHEIGHT, true);
 
   ILI9488_DRAW(&hspi1);
 
-  ILI9488_LOAD_TEXT(&hspi1, 24, 120, "scing elit, sed", font, CHARWIDTH,
-                    FONTSIZE, CHARHEIGHT);
+  ILI9488_LOAD_TEXT(&hspi1, 24, 120, "scing elit, sed", 15, font, CHARWIDTH,
+                    FONTSIZE, CHARHEIGHT, true);
 
   ILI9488_DRAW(&hspi1);
 
-  ILI9488_LOAD_TEXT(&hspi1, 32, 160, " do eiusmod tem", font, CHARWIDTH,
-                    FONTSIZE, CHARHEIGHT);
+  ILI9488_LOAD_TEXT(&hspi1, 32, 160, " do eiusmod tem", 15, font, CHARWIDTH,
+                    FONTSIZE, CHARHEIGHT, true);
 
   ILI9488_DRAW(&hspi1);
 
-  ILI9488_LOAD_TEXT(&hspi1, 40, 200, "por incididunt ", font, CHARWIDTH,
-                    FONTSIZE, CHARHEIGHT);
+  ILI9488_LOAD_TEXT(&hspi1, 40, 200, "por incididunt ", 15, font, CHARWIDTH,
+                    FONTSIZE, CHARHEIGHT, true);
 
   ILI9488_DRAW(&hspi1);
 
-  ILI9488_LOAD_TEXT(&hspi1, 48, 240, "ut labore et do", font, CHARWIDTH,
-                    FONTSIZE, CHARHEIGHT);
+  ILI9488_LOAD_TEXT(&hspi1, 48, 240, "ut labore et do", 15, font, CHARWIDTH,
+                    FONTSIZE, CHARHEIGHT, true);
 
   ILI9488_DRAW(&hspi1);
 
   ILI9488_LOAD_TEXT(&hspi1, 48 + 8, 280, "etc ..............................",
-                    font, CHARWIDTH, FONTSIZE, CHARHEIGHT);
+                    15, font, CHARWIDTH, FONTSIZE, CHARHEIGHT, true);
 
   ILI9488_DRAW(&hspi1);
+
+  // uint8_t brightnesstg = 0;
+  // ILI9488_BRIGHTNESS(&hspi1, brightnesstg);
+  // HAL_Delay(1000);
+  // brightnesstg = 128;
+  // ILI9488_BRIGHTNESS(&hspi1, brightnesstg);
+  // HAL_Delay(1000);
+  // brightnesstg = 255;
+  // ILI9488_BRIGHTNESS(&hspi1, brightnesstg);
 
   // ILI9488_REFRESH_DEBUG(&hspi1);
   // HAL_Delay(500);
@@ -207,7 +220,7 @@ int main(void) {
 
     /* USER CODE BEGIN 3 */
     // process recieved can commands
-    canProcessCommands(&huart2);
+    canProcessCommands();
 
     // processing switch input
     processSwitches(&hcan);

@@ -86,7 +86,7 @@
 #include "File_079_ObjNum_149_480x320_6_17_26.h"
 
 // array containing every image
-const Image_t *images[74] = {
+static const Image_t *images[74] = {
     &File_074_ObjNum_138_48x143_6_19_26,
     &File_054_ObjNum_087_48x255_6_19_26,
     &File_045_ObjNum_044_144x208_6_19_26,
@@ -205,8 +205,7 @@ const ByteArray_t helpCMD(void) {
 
 const ByteArray_t displayImageCMD(void) {
   // checking if the display is currently being written to
-  if (ILI9488_LOAD_IMAGE(spi, 440, 269, images[imageNum], !isOr)) {
-	  ILI9488_DRAW(spi);
+  if (ILI9488_LOAD_IMAGE(spi, 440, 269, images[imageNum], !isOr, true)) {
     // cycling through the images
     imageNum++;
     imageNum %= 74;
@@ -241,7 +240,7 @@ const ByteArray_t orCMD(void) {
 
 // commands
 // defining a keyword and handle for each command
-const Command_t commands[] = {
+static const UsartCommand_t commands[] = {
     {.keyword = (uint8_t *)"HELP\n", .keyword_size = 5, .action = helpCMD},
     {.keyword = (uint8_t *)"DISPLAY\n",
      .keyword_size = 8,

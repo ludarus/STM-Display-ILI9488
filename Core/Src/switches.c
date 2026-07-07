@@ -28,13 +28,18 @@ void processSwitches(CAN_HandleTypeDef *canInterface) {
   // incrementing index
   currentIdx = (currentIdx + 1) % 3;
 
+  uint8_t debouncedState = 0;
+
   // iterating through last 3 states
   for (uint8_t sw = 0; sw < 5; sw++) {
     // computing debounced state
-    switchState[3][sw] =
-        (switchState[0][sw] == switchState[1][sw] && switchState[1][sw] == switchState[2][sw])
-            ? switchState[0][sw]
-            : switchState[3][sw];
+    switchState[3][sw] = (switchState[0][sw] == switchState[1][sw] &&
+                          switchState[1][sw] == switchState[2][sw])
+                             ? switchState[0][sw]
+                             : switchState[3][sw];
+
+	 // packing payload
+    debouncedState |= switchState[3][sw] << sw;
   }
 
   // transmitting debounced state
@@ -45,8 +50,8 @@ void processSwitches(CAN_HandleTypeDef *canInterface) {
     // 5 bits of data, one per switch
     header.DLC = 5;
 
-    // medium priority id (2^5)
-    header.StdId = 0x20;
+    // as specified in protocol
+    header.StdId = 0x140;
 
     header.IDE = CAN_ID_STD;
     header.RTR = CAN_RTR_DATA;
@@ -56,7 +61,7 @@ void processSwitches(CAN_HandleTypeDef *canInterface) {
 
     uint32_t mailbox;
 
-    HAL_CAN_AddTxMessage(canInterface, &header, &switchState[3][0], &mailbox);
+    HAL_CAN_AddTxMessage(canInterface, &header, &debouncedState, &mailbox);
 
     // resetting flag
     flag = 0;

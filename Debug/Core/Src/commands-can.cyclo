@@ -1,3 +1,11 @@
-../Core/Src/commands-can.c:27:6:canCommandsInit	1
-../Core/Src/commands-can.c:56:6:canProcessCommands	2
-../Core/Src/commands-can.c:67:6:HAL_CAN_RxFifo0MsgPendingCallback	1
+../Core/Src/commands-can.c:121:6:DispBackCmd	1
+../Core/Src/commands-can.c:140:6:DispTextCmd	8
+../Core/Src/commands-can.c:192:6:DispBMCmd	1
+../Core/Src/commands-can.c:212:6:DispGrpCmd	1
+../Core/Src/commands-can.c:234:6:SendVerCmd	1
+../Core/Src/commands-can.c:256:6:SysFailCmd	1
+../Core/Src/commands-can.c:262:6:BrightCmd	1
+../Core/Src/commands-can.c:275:6:AlarmCmd	1
+../Core/Src/commands-can.c:304:6:canCommandsInit	1
+../Core/Src/commands-can.c:337:6:canProcessCommands	7
+../Core/Src/commands-can.c:391:6:HAL_CAN_RxFifo0MsgPendingCallback	2

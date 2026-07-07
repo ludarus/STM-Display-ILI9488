@@ -13,6 +13,7 @@
 #include "character.h"
 #include "image.h"
 #include "main.h"
+#include "stm32f0xx_hal.h"
 #include "stm32f0xx_hal_spi.h"
 #include <display-ili9488.h>
 #include <stdbool.h>
@@ -166,6 +167,11 @@ void ILI9488_SET_RANGE(SPI_HandleTypeDef *spi, uint16_t colStart,
 }
 
 //--------------------------------------------------------------------------------
+// sets brightness of display
+void ILI9488_BRIGHTNESS(SPI_HandleTypeDef *spi, uint8_t val) {
+  ILI9488_CMD(spi, 0x51);
+  ILI9488_DATA(spi, &val, 1);
+}
 // public functions
 
 // initializes the ILI9488
@@ -199,6 +205,12 @@ void ILI9488_INIT(SPI_HandleTypeDef *spi) {
   uint8_t madctl = 0x20;
   ILI9488_DATA(spi, &madctl, 1);
 
+  // configuring brightness control settings - instruction 53h WRCTRLD
+  ILI9488_CMD(spi, 0x53);
+  // 0 0 1 0 1 1 0 0
+  uint8_t brightnessCtl = 0x2C;
+  ILI9488_DATA(spi, &brightnessCtl, 1);
+
   // Interface Pixel Format - instruction 3Ah COLMOD
   ILI9488_CMD(spi, 0x3A);
   // Lowest available is 3bit/pixel
@@ -217,6 +229,9 @@ void ILI9488_INIT(SPI_HandleTypeDef *spi) {
 
   // display on
   ILI9488_CMD(spi, 0x29);
+
+  // reading from flash to set last brightness
+  // ILI9488_BRIGHTNESS(spi, *(__IO uint8_t *)BRIGHTNESS_PAGE_ADDR);
 }
 
 // debugging function to see filling order of screen
@@ -392,7 +407,7 @@ bool ILI9488_LOAD_IMAGE_DEBUG(SPI_HandleTypeDef *spi, uint16_t x, uint16_t y,
 
 // loads image to screen buffer
 bool ILI9488_LOAD_IMAGE(SPI_HandleTypeDef *spi, uint16_t x, uint16_t y,
-                        const Image_t *image, bool overWrite) {
+                        const Image_t *image, bool overWrite, bool draw) {
   if (!state.currentlyLoading) {
     state.currentlyLoading = true;
 
@@ -501,75 +516,92 @@ bool ILI9488_LOAD_IMAGE(SPI_HandleTypeDef *spi, uint16_t x, uint16_t y,
 
     state.currentlyLoading = false;
 
+    if (draw) {
+      return ILI9488_DRAW(spi);
+    }
+
     return true;
   } else {
     return false;
   }
 }
 
-bool ILI9488_LOAD_TEXT(
-    SPI_HandleTypeDef *spi, uint16_t x, uint16_t y, uint8_t text[],
-    const Character_t *font,
-    /*width of character in pixels*/ uint8_t characterWidth,
-    /*number of characters in font*/ size_t fontSize,
-    /*height of character in pixels*/ size_t characterHeight) {
+bool ILI9488_LOAD_TEXT(SPI_HandleTypeDef *spi, uint16_t x, uint16_t y,
+                       uint8_t text[], uint8_t textSize,
+                       const Character_t *font,
+                       /*width of character in pixels*/ uint8_t characterWidth,
+                       /*number of characters in font*/ size_t fontSize,
+                       /*height of character in pixels*/ size_t characterHeight,
+                       bool draw) {
 
-  // parsing the text
-  uint16_t charCount = 0;
-  uint32_t decompiledImageSize = 0; // in pixels
+  if (!state.currentlyLoading) {
+    state.currentlyLoading = true;
 
-  // iterating through every inputted character
-  for (uint16_t charIdx = 0; text[charIdx] != 0; charIdx++) {
-    if (charIdx > (ILI9488_WIDTH - x) / characterWidth) {
-      // cutting off string optimization
-      break;
+    // parsing the text
+    uint16_t charCount = 0;
+    uint32_t decompiledImageSize = 0; // in pixels
+
+    // iterating through every inputted character
+    for (uint16_t charIdx = 0; charIdx < textSize; charIdx++) {
+      if (charIdx > (ILI9488_WIDTH - x) / characterWidth) {
+        // cutting off string optimization
+        break;
+      }
+
+      // loading character
+      uint16_t startCol = ((charIdx * characterWidth) + x) / 8; // in bytes
+      uint16_t col = 0;                                         // in bytes
+      uint16_t row = 0;                                         // in pixels
+      // defining current character by using the character array with an ascii
+      // offset
+      const uint8_t *currentCharacter =
+          // if inputted character is out of range for the inputted font, set to
+          // a placeholder character
+          (text[charIdx] < 32 || (size_t)(text[charIdx] - 32) >= fontSize)
+              ? font[0].data
+              : font[text[charIdx] - 32].data;
+
+      uint16_t byteOffset = (ILI9488_SCALED_WIDTH * y) + startCol; // in bytes
+      uint16_t scaledCharacterWidth = characterWidth / 8;          // in bytes
+
+      // loading one byte at a time. This can be done easily as the screen width
+      // is a multiple of 8, the x coordinate is a multiple of 8, and the font
+      // width is a multiple of 8
+      for (uint32_t byte = 0; byte < (characterWidth * characterHeight) / 8;
+           byte++) {
+        uint32_t globalpos = byteOffset + (ILI9488_SCALED_WIDTH * row) + col;
+        // if the current byte is in bounds of the screen
+        if (col + startCol < ILI9488_SCALED_WIDTH && row + y < ILI9488_HEIGHT) {
+          // or mode
+          state.screenCopy[globalpos] |= currentCharacter[byte];
+          decompiledImageSize += 8;
+        }
+        // incrementing column and row
+        if (++col >= scaledCharacterWidth) {
+          col = 0;
+          row++;
+        }
+      }
+      charCount++;
     }
 
-    // loading character
-    uint16_t startCol = ((charIdx * characterWidth) + x) / 8; // in bytes
-    uint16_t col = 0;                                         // in bytes
-    uint16_t row = 0;                                         // in pixels
-    // defining current character by using the character array with an ascii
-    // offset
-    const uint8_t *currentCharacter =
-        // if inputted character is out of range for the inputted font, set to a
-        // placeholder character
-        (text[charIdx] < 32 || (size_t)(text[charIdx] - 32) >= fontSize)
-            ? font[0].data
-            : font[text[charIdx] - 32].data;
+    // setting state variables
+    state.x = x;
+    state.y = y;
+    state.width = charCount * characterWidth;
+    state.height = characterHeight;
+    state.imageSize = decompiledImageSize;
 
-    uint16_t byteOffset = (ILI9488_SCALED_WIDTH * y) + startCol; // in bytes
-    uint16_t scaledCharacterWidth = characterWidth / 8;          // in bytes
+    state.currentlyLoading = false;
 
-    // loading one byte at a time. This can be done easily as the screen width
-    // is a multiple of 8, the x coordinate is a multiple of 8, and the font
-    // width is a multiple of 8
-    for (uint32_t byte = 0; byte < (characterWidth * characterHeight) / 8;
-         byte++) {
-      uint32_t globalpos = byteOffset + (ILI9488_SCALED_WIDTH * row) + col;
-      // if the current byte is in bounds of the screen
-      if (col + startCol < ILI9488_SCALED_WIDTH && row + y < ILI9488_HEIGHT) {
-        // or mode
-        state.screenCopy[globalpos] |= currentCharacter[byte];
-        decompiledImageSize += 8;
-      }
-      // incrementing column and row
-      if (++col >= scaledCharacterWidth) {
-        col = 0;
-        row++;
-      }
+    if (draw) {
+      return ILI9488_DRAW(spi);
     }
-    charCount++;
+
+    return true;
+  } else {
+    return false;
   }
-
-  // setting state variables
-  state.x = x;
-  state.y = y;
-  state.width = charCount * characterWidth;
-  state.height = characterHeight;
-  state.imageSize = decompiledImageSize;
-
-  return true;
 }
 
 // x and y should be multiples of 8

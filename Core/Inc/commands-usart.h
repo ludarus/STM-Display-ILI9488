@@ -29,6 +29,6 @@ typedef struct {
   uint16_t keyword_size;
   // a function pointer to a handle that executes when the command is called
   const ByteArray_t (*action)(void);
-} Command_t;
+} UsartCommand_t;
 
 #endif /* INC_COMMANDS_USART_H_ */

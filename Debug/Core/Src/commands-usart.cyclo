@@ -1,8 +1,8 @@
 ../Core/Src/commands-usart.c:186:6:usartCommandsInit	1
 ../Core/Src/commands-usart.c:198:19:helpCMD	1
 ../Core/Src/commands-usart.c:206:19:displayImageCMD	2
-../Core/Src/commands-usart.c:221:19:refreshCMD	2
-../Core/Src/commands-usart.c:233:19:orCMD	1
-../Core/Src/commands-usart.c:258:6:stringsEqual	3
-../Core/Src/commands-usart.c:269:6:parseCommand	4
-../Core/Src/commands-usart.c:290:6:HAL_UARTEx_RxEventCallback	1
+../Core/Src/commands-usart.c:220:19:refreshCMD	2
+../Core/Src/commands-usart.c:232:19:orCMD	1
+../Core/Src/commands-usart.c:257:6:stringsEqual	3
+../Core/Src/commands-usart.c:268:6:parseCommand	4
+../Core/Src/commands-usart.c:289:6:HAL_UARTEx_RxEventCallback	1
