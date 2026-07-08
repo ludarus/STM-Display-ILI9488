@@ -15,6 +15,7 @@
 #include "main.h"
 #include "stm32f0xx_hal.h"
 #include "stm32f0xx_hal_def.h"
+#include "stm32f0xx_hal_gpio.h"
 #include "stm32f0xx_hal_spi.h"
 #include "stm32f0xx_hal_tim.h"
 #include <display-ili9488.h>
@@ -210,9 +211,10 @@ HAL_StatusTypeDef ILI9488_INIT(SPI_HandleTypeDef *spi,
   HAL_TRY(ILI9488_CMD(spi, 0x11));
   HAL_Delay(120);
 
-  // backlight on
-  // HAL_GPIO_WritePin(DISPLAY_LED_GPIO_Port, DISPLAY_LED_Pin, GPIO_PIN_SET);
+  // powering testing switches
+  HAL_GPIO_WritePin(SWITCH_POWER_GPIO_Port, SWITCH_POWER_Pin, GPIO_PIN_SET);
 
+  // backlight on
   // starting display backlight pwm timer
   HAL_TIM_PWM_Start(backlightTimer, TIM_CHANNEL_1);
 
@@ -564,7 +566,7 @@ ILI9488_LOAD_TEXT(SPI_HandleTypeDef *spi, uint16_t x, uint16_t y,
                   /*width of character in pixels*/ uint8_t characterWidth,
                   /*number of characters in font*/ size_t fontSize,
                   /*height of character in pixels*/ size_t characterHeight,
-                  bool draw) {
+                  bool overWrite, bool draw) {
 
   if (!state.currentlyLoading) {
     state.currentlyLoading = true;
@@ -604,8 +606,13 @@ ILI9488_LOAD_TEXT(SPI_HandleTypeDef *spi, uint16_t x, uint16_t y,
         uint32_t globalpos = byteOffset + (ILI9488_SCALED_WIDTH * row) + col;
         // if the current byte is in bounds of the screen
         if (col + startCol < ILI9488_SCALED_WIDTH && row + y < ILI9488_HEIGHT) {
-          // or mode
-          state.screenCopy[globalpos] |= currentCharacter[byte];
+          if (overWrite) {
+            // overwrite mode
+            state.screenCopy[globalpos] = currentCharacter[byte];
+          } else {
+            // or mode
+            state.screenCopy[globalpos] |= currentCharacter[byte];
+          }
           decompiledImageSize += 8;
         }
         // incrementing column and row

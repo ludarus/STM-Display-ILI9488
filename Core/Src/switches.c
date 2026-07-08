@@ -47,8 +47,8 @@ HAL_StatusTypeDef processSwitches(CAN_HandleTypeDef *canInterface) {
     // transmitting debounced state
     CAN_TxHeaderTypeDef header = {0};
 
-    // 5 bits of data, one per switch
-    header.DLC = 5;
+	 // 1 bytes of data, 1 bit per switch
+    header.DLC = 1;
 
     // as specified in protocol
     header.StdId = 0x140;

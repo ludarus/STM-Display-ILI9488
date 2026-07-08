@@ -76,6 +76,8 @@ void Error_Handler(void);
 #define ALARM_GPIO_Port GPIOA
 #define DISPLAY_DC_Pin GPIO_PIN_6
 #define DISPLAY_DC_GPIO_Port GPIOC
+#define SWITCH_POWER_Pin GPIO_PIN_8
+#define SWITCH_POWER_GPIO_Port GPIOA
 #define TMS_Pin GPIO_PIN_13
 #define TMS_GPIO_Port GPIOA
 #define TCK_Pin GPIO_PIN_14

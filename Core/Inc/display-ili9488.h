@@ -88,7 +88,7 @@ ILI9488_LOAD_TEXT(SPI_HandleTypeDef *spi, uint16_t x, uint16_t y,
                   /*width of character in pixels*/ uint8_t characterWidth,
                   /*number of characters in font*/ size_t fontSize,
                   /*height of character in pixels*/ size_t characterHeight,
-                  bool draw);
+                  bool overWrite, bool draw);
 HAL_StatusTypeDef ILI9488_DRAW(SPI_HandleTypeDef *spi);
 
 #endif /* INC_DISPLAY_ILI9488_H_ */

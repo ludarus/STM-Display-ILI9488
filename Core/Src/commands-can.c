@@ -8,6 +8,7 @@
 #include "commands-can.h"
 #include "alarm.h"
 #include "display-ili9488.h"
+#include "font.h"
 #include "main.h"
 #include "stm32f0xx_hal.h"
 #include "stm32f0xx_hal_can.h"
@@ -141,13 +142,13 @@ HAL_StatusTypeDef DispBackCmd(CanRxMessage_t *msg) {
 }
 
 HAL_StatusTypeDef DispTextCmd(CanRxMessage_t *msg) {
+  // cmdNum = 0x84
+
   // static function members for persistent scope
   static uint8_t remainingChars = 0;
   static uint8_t target = 0;
   static uint8_t charArray[256] = {0};
   static uint16_t objNum = 0;
-
-  // cmdNum = 0x84
 
   // checking if DLC is 0
   if (msg->header.DLC == 0) {
@@ -155,7 +156,7 @@ HAL_StatusTypeDef DispTextCmd(CanRxMessage_t *msg) {
     return HAL_OK;
   }
 
-  if (remainingChars == 0 || msg->data[0] == 0) {
+  if (msg->data[0] == 0) {
     // should have a value of 0
     uint8_t First_Pkt_Flag = msg->data[0];
     // number of characters in the string
@@ -175,19 +176,27 @@ HAL_StatusTypeDef DispTextCmd(CanRxMessage_t *msg) {
     }
   }
   // continuation of previous packet
-  else {
+  else if (target != 0) {
     uint8_t fill = (remainingChars > 8) ? 8 : remainingChars;
+    uint8_t offset = target - remainingChars;
     for (uint8_t i = 0; i < fill; i++) {
-      charArray[i + (target - remainingChars)] = msg->data[i];
+      charArray[i + offset] = msg->data[i];
       remainingChars--;
     }
   }
 
   // end condition
-  if (remainingChars == 0) {
-    // return ILI9488_LOAD_TEXT(spi, uint16_t x, uint16_t y, charArray,target,
-    // const Character_t *font, uint8_t characterWidth, size_t fontSize, size_t
-    // characterHeight, true)
+  if (remainingChars == 0 && target != 0) {
+	  // logging
+    HAL_UART_Transmit_IT(uart, (uint8_t *)"Received entire text", 20);
+
+	 // displaying
+    HAL_StatusTypeDef displayStatus =
+        ILI9488_LOAD_TEXT(spi, 0, 0, charArray, target, font, CHARWIDTH,
+                          FONTSIZE, CHARHEIGHT, true, true);
+	 // restting target
+    target = 0;
+    return displayStatus;
   }
 
   return HAL_OK;
@@ -375,8 +384,8 @@ HAL_StatusTypeDef canProcessCommands(void) {
     HAL_TRY(HAL_FLASH_Lock());
 
     // diagnostic
-    static uint8_t diagnosticMsg[] = "Successfully wrote brightness to flash";
-    HAL_UART_Transmit_IT(uart, diagnosticMsg, 38);
+    HAL_UART_Transmit_IT(
+        uart, (uint8_t *)"Successfully wrote brightness to flash", 38);
   }
 
   // iterating through every message
