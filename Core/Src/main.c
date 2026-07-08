@@ -140,7 +140,7 @@ int main(void) {
   HAL_TIM_Base_Start_IT(&htim2);
 
   HAL_UART_Transmit_IT(
-      &huart2, (uint8_t *)"Successfully initialized all interfaces", 39);
+      &huart2, (uint8_t *)"Successfully initialized all interfaces\n", 40);
 
   // ILI9488_LOAD_IMAGE_DEBUG(&hspi1, 0, 0,
   // &File_072_ObjNum_135_480x320_6_18_26, true);

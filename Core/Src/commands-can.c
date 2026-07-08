@@ -97,10 +97,6 @@
 #include "File_079_ObjNum_149_480x320_6_17_26.h"
 #include "SYSFAIL_480x320_Gemini.h"
 
-// TODO: store time of the last received message (can be done in the process
-// 	|-> Is this the actual UTC time or the tick of the system?
-// function)
-
 // TODO get correct version string
 const uint8_t version[8] = "DSP12345";
 
@@ -112,6 +108,8 @@ static CanRxMessage_t queue[48];
 // static brightness members
 static uint32_t brightnessTick;
 static uint8_t brightnessVal;
+
+static uint32_t lastMsgTick = 1;
 
 // interfaces
 static CAN_HandleTypeDef *can;
@@ -187,14 +185,14 @@ HAL_StatusTypeDef DispTextCmd(CanRxMessage_t *msg) {
 
   // end condition
   if (remainingChars == 0 && target != 0) {
-	  // logging
-    HAL_UART_Transmit_IT(uart, (uint8_t *)"Received entire text", 20);
+    // logging
+    HAL_UART_Transmit_IT(uart, (uint8_t *)"Received entire text\n", 21);
 
-	 // displaying
+    // displaying
     HAL_StatusTypeDef displayStatus =
         ILI9488_LOAD_TEXT(spi, 0, 0, charArray, target, font, CHARWIDTH,
                           FONTSIZE, CHARHEIGHT, true, true);
-	 // restting target
+    // restting target
     target = 0;
     return displayStatus;
   }
@@ -328,6 +326,8 @@ canCommandsInit(CAN_HandleTypeDef *canInterface,
   alarmTimer = alarmPWMTimerInterface;
   backlightTimer = backlightPWMTimerInterface;
 
+
+
   // configuring filter
   CAN_FilterTypeDef sFilterConfig = {0};
 
@@ -355,8 +355,19 @@ canCommandsInit(CAN_HandleTypeDef *canInterface,
 }
 
 HAL_StatusTypeDef canProcessCommands(void) {
+
+  // display error if the can bus is silent for 4 seconds
+  if (HAL_GetTick() - lastMsgTick > 4000 && lastMsgTick != 0) {
+    // display error image.
+	 HAL_UART_Transmit_IT(uart, "TIMEOUT: no command received in the last 4000ms\n", 48);
+    // TODO: Shut down bus or do anything else?
+    ILI9488_LOAD_IMAGE(spi, 0, 0, &SYSFAIL_480x320_Gemini, true, true);
+
+	 lastMsgTick = 0;
+  }
+
   // if it's been 5 seconds since last brightness change
-  if (brightnessTick != 0 && HAL_GetTick() - brightnessTick >= 5000) {
+  if (brightnessTick != 0 && HAL_GetTick() - brightnessTick > 5000) {
     brightnessTick = 0;
     // write current brightness value to flash
     FLASH_EraseInitTypeDef erase;
@@ -385,7 +396,7 @@ HAL_StatusTypeDef canProcessCommands(void) {
 
     // diagnostic
     HAL_UART_Transmit_IT(
-        uart, (uint8_t *)"Successfully wrote brightness to flash", 38);
+        uart, (uint8_t *)"Successfully wrote brightness to flash\n", 39);
   }
 
   // iterating through every message
@@ -419,11 +430,13 @@ HAL_StatusTypeDef canProcessCommands(void) {
 
 // callback for received message
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan) {
-  // queueing the command for processing in main loop
+  // queueing the command for processing in main loop. If too many messages,
+  // just overflow. Maybe change this later
   if (queuedMessages < 48) {
     // no error handling in interrupt. Possibly do something to fix this
     HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &queue[queuedMessages].header,
                          queue[queuedMessages].data);
+    queuedMessages++;
+    lastMsgTick = HAL_GetTick();
   }
-  queuedMessages++;
 }
