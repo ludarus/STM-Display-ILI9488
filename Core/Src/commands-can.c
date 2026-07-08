@@ -276,11 +276,11 @@ HAL_StatusTypeDef BrightCmd(CanRxMessage_t *msg) {
 }
 
 HAL_StatusTypeDef AlarmCmd(CanRxMessage_t *msg) {
+  // assuming dutyCycle is an 8 bit number where 0 is off and 255 is 100%
   uint8_t dutyCycle = msg->data[0];
   uint8_t frequency = msg->data[1];
 
-  // TODO implement duty cycle changing
-  setAlarmFrequency(tim, frequency);
+  setAlarmFrequency(tim, frequency, dutyCycle);
 
   return HAL_OK;
 }
@@ -318,8 +318,7 @@ HAL_StatusTypeDef canCommandsInit(CAN_HandleTypeDef *canInterface,
   // configuring filter
   CAN_FilterTypeDef sFilterConfig = {0};
 
-  // generic unconfigured filter
-  // TODO filter
+  // Keep filter open for now. TODO flesh out filter once full protocol is resolved
   sFilterConfig.FilterMaskIdHigh = 0;
   sFilterConfig.FilterMaskIdLow = 0;
   sFilterConfig.FilterIdHigh = 0;
@@ -360,7 +359,6 @@ HAL_StatusTypeDef canProcessCommands(void) {
     HAL_StatusTypeDef status = HAL_FLASHEx_Erase(&erase, &pageError);
     if (status != HAL_OK) {
       HAL_TRY(HAL_FLASH_Lock());
-      // TODO error handling here
       return status;
     }
 

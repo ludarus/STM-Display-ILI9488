@@ -29,23 +29,22 @@ HAL_StatusTypeDef processSwitches(CAN_HandleTypeDef *canInterface) {
   // incrementing index
   currentIdx = (currentIdx + 1) % 3;
 
-  uint8_t debouncedState = 0;
-
-  // iterating through last 3 states
-  for (uint8_t sw = 0; sw < 5; sw++) {
-    // computing debounced state
-    switchState[3][sw] = (switchState[0][sw] == switchState[1][sw] &&
-                          switchState[1][sw] == switchState[2][sw])
-                             ? switchState[0][sw]
-                             : switchState[3][sw];
-
-	 // packing payload
-    debouncedState |= switchState[3][sw] << sw;
-  }
-
-  // transmitting debounced state
-  // TODO: check how much of the function should be gated by the flag
   if (flag) {
+    uint8_t debouncedState = 0;
+
+    // iterating through last 3 states
+    for (uint8_t sw = 0; sw < 5; sw++) {
+      // computing debounced state
+      switchState[3][sw] = (switchState[0][sw] == switchState[1][sw] &&
+                            switchState[1][sw] == switchState[2][sw])
+                               ? switchState[0][sw]
+                               : switchState[3][sw];
+
+      // packing payload
+      debouncedState |= switchState[3][sw] << sw;
+    }
+
+    // transmitting debounced state
     CAN_TxHeaderTypeDef header = {0};
 
     // 5 bits of data, one per switch
@@ -62,7 +61,8 @@ HAL_StatusTypeDef processSwitches(CAN_HandleTypeDef *canInterface) {
 
     uint32_t mailbox;
 
-    HAL_TRY(HAL_CAN_AddTxMessage(canInterface, &header, &debouncedState, &mailbox));
+    HAL_TRY(
+        HAL_CAN_AddTxMessage(canInterface, &header, &debouncedState, &mailbox));
 
     // resetting flag
     flag = 0;

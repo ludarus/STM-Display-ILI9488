@@ -184,10 +184,10 @@ uint8_t commandBuffer[255];
 // public functions
 
 // initialization sequence. currently just a setter that takes the serial input
-HAL_StatusTypeDef usartCommandsInit(
-    /*the usart connection*/ UART_HandleTypeDef *uartInterface,
-    /*for interfacing with the display*/ SPI_HandleTypeDef *spiInterface) {
-  spi = spiInterface;
+HAL_StatusTypeDef usartCommandsInit(UART_HandleTypeDef *uartInterface,
+                                    SPI_HandleTypeDef *displayInterface) {
+
+  spi = displayInterface;
   // DMA serial command recieve until IDLE
   HAL_TRY(HAL_UARTEx_ReceiveToIdle_DMA(uartInterface, commandBuffer,
                                        sizeof(commandBuffer)));
@@ -197,18 +197,10 @@ HAL_StatusTypeDef usartCommandsInit(
 //--------------------------------------------------------------------------------
 // command handles
 
-// TODO: improve or remove this command
-const ByteArray_t helpCMD(void) {
-  // simply returns a help message. TODO: make this modular when there's time
-  static uint8_t msg[] =
-      "HELP MENU FOR ST7796S DISPLAY\n COMMANDS ARE: \nHELP (show this menu), "
-      "\nDISPLAY (display test)\n";
-  return (ByteArray_t){.data = msg, .size = sizeof(msg) - 1};
-}
-
 const ByteArray_t displayImageCMD(void) {
   // checking if the display is currently being written to
-  if (ILI9488_LOAD_IMAGE(spi, 440, 269, images[imageNum], !isOr, true)) {
+  if (ILI9488_LOAD_IMAGE(spi, 440, 269, images[imageNum], !isOr, true) ==
+      HAL_OK) {
     // cycling through the images
     imageNum++;
     imageNum %= 74;
@@ -222,7 +214,7 @@ const ByteArray_t displayImageCMD(void) {
 
 const ByteArray_t refreshCMD(void) {
   // checking if the display is currently being written to
-  if (ILI9488_REFRESH_DEBUG(spi)) {
+  if (ILI9488_REFRESH_DEBUG(spi) == HAL_OK) {
     imageNum++;
     static uint8_t msg[] = "SUCESSFULLY REFRESHED DISPLAY\n";
     return (ByteArray_t){.data = msg, .size = sizeof(msg) - 1};
@@ -244,7 +236,6 @@ const ByteArray_t orCMD(void) {
 // commands
 // defining a keyword and handle for each command
 static const UsartCommand_t commands[] = {
-    {.keyword = (uint8_t *)"HELP\n", .keyword_size = 5, .action = helpCMD},
     {.keyword = (uint8_t *)"DISPLAY\n",
      .keyword_size = 8,
      .action = displayImageCMD},

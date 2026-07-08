@@ -19,12 +19,11 @@
 #define CLOCK6 2052
 #define CLOCK7 28800
 
-void setAlarmFrequency(TIM_HandleTypeDef *alarmTimer, uint8_t frequencyIndex);
+void setAlarmFrequency(TIM_HandleTypeDef *alarmTimer, uint8_t frequencyIndex, uint8_t dutyCycle);
 
 typedef struct {
   uint16_t psc;
   uint16_t arr;
-  uint16_t duty;
 } PwmState_t;
 
 #endif /* INC_ALARM_H_ */

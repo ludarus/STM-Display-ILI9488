@@ -12,11 +12,13 @@
 
 static const PwmState_t frequencySettings[8] = {
     // psc = 0, duty cycle = 50%
-    {0, 3332, 1667},  {0, 6666, 3334},   {0, 9999, 5000},   {0, 13332, 6667},
-    {0, 16666, 8334}, {0, 19999, 10000}, {0, 23391, 11696}, {0, 1666, 834}};
+    {0, 3332},  {0, 6666},  {0, 9999},  {0, 13332},
+    {0, 16666}, {0, 19999}, {0, 23391}, {0, 1666}};
 
 // pass in a value from 0-7
-void setAlarmFrequency(TIM_HandleTypeDef *alarmTimer, uint8_t frequencyIndex) {
+void setAlarmFrequency(TIM_HandleTypeDef *alarmTimer, uint8_t frequencyIndex,
+                       uint8_t dutyCycle) {
+
   if (frequencyIndex > 7) {
     return;
   }
@@ -25,6 +27,7 @@ void setAlarmFrequency(TIM_HandleTypeDef *alarmTimer, uint8_t frequencyIndex) {
   // frequency
   __HAL_TIM_SET_PRESCALER(alarmTimer, frequencySettings[frequencyIndex].psc);
   __HAL_TIM_SET_AUTORELOAD(alarmTimer, frequencySettings[frequencyIndex].arr);
-  __HAL_TIM_SET_COMPARE(alarmTimer, TIM_CHANNEL_1,
-                        frequencySettings[frequencyIndex].duty);
+  __HAL_TIM_SET_COMPARE(
+      alarmTimer, TIM_CHANNEL_1,
+      (uint16_t)((frequencySettings[frequencyIndex].arr * dutyCycle) / 0xFF));
 }

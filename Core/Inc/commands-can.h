@@ -12,14 +12,6 @@
 #include "stm32f0xx_hal_def.h"
 #include <stdbool.h>
 
-// data format enums. TODO get correct values for these
-#define KEY_PAD_DATA 1
-#define LSB_OBJ_NUM 2
-#define MSB_OBJ_NUM 3
-#define INDEX 4
-#define DUTY_CYCLE 5
-#define FREQUENCY 6
-
 HAL_StatusTypeDef canCommandsInit(CAN_HandleTypeDef *canInterface,
                                   SPI_HandleTypeDef *displaySpiInterface,
                                   UART_HandleTypeDef *serialLoggingInterface,
