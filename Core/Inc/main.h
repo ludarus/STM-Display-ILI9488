@@ -92,7 +92,7 @@ void Error_Handler(void);
 #define SWITCH2_GPIO_Port GPIOB
 #define SWITCH1_Pin GPIO_PIN_4
 #define SWITCH1_GPIO_Port GPIOB
-#define DISPLAY_RESET_Pin GPIO_PIN_7
+#define DISPLAY_RESET_Pin GPIO_PIN_6
 #define DISPLAY_RESET_GPIO_Port GPIOB
 #define DISPLAY_LED_Pin GPIO_PIN_9
 #define DISPLAY_LED_GPIO_Port GPIOB

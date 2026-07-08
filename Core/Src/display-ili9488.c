@@ -16,6 +16,7 @@
 #include "stm32f0xx_hal.h"
 #include "stm32f0xx_hal_def.h"
 #include "stm32f0xx_hal_spi.h"
+#include "stm32f0xx_hal_tim.h"
 #include <display-ili9488.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -177,7 +178,13 @@ HAL_StatusTypeDef ILI9488_SET_RANGE(SPI_HandleTypeDef *spi, uint16_t colStart,
 
 //--------------------------------------------------------------------------------
 // sets brightness of display
-HAL_StatusTypeDef ILI9488_BRIGHTNESS(SPI_HandleTypeDef *spi, uint8_t val) {
+HAL_StatusTypeDef ILI9488_BRIGHTNESS(SPI_HandleTypeDef *spi,
+                                     TIM_HandleTypeDef *tim, uint8_t val) {
+
+  // for pwm driven brightness
+  __HAL_TIM_SET_COMPARE(tim, TIM_CHANNEL_1, val);
+
+  // for displays without a physical brightness pin
   HAL_TRY(ILI9488_CMD(spi, 0x51));
   HAL_TRY(ILI9488_DATA(spi, &val, 1));
 
@@ -186,7 +193,8 @@ HAL_StatusTypeDef ILI9488_BRIGHTNESS(SPI_HandleTypeDef *spi, uint8_t val) {
 // public functions
 
 // initializes the ILI9488
-HAL_StatusTypeDef ILI9488_INIT(SPI_HandleTypeDef *spi) {
+HAL_StatusTypeDef ILI9488_INIT(SPI_HandleTypeDef *spi,
+                               TIM_HandleTypeDef *backlightTimer) {
   // safety delays. can likely be removed
   HAL_Delay(200);
 
@@ -203,7 +211,10 @@ HAL_StatusTypeDef ILI9488_INIT(SPI_HandleTypeDef *spi) {
   HAL_Delay(120);
 
   // backlight on
-  HAL_GPIO_WritePin(DISPLAY_LED_GPIO_Port, DISPLAY_LED_Pin, GPIO_PIN_SET);
+  // HAL_GPIO_WritePin(DISPLAY_LED_GPIO_Port, DISPLAY_LED_Pin, GPIO_PIN_SET);
+
+  // starting display backlight pwm timer
+  HAL_TIM_PWM_Start(backlightTimer, TIM_CHANNEL_1);
 
   // configuring extended command set for spi write
   HAL_TRY(ILI9488_CMD(spi, 0xF7));
@@ -241,8 +252,9 @@ HAL_StatusTypeDef ILI9488_INIT(SPI_HandleTypeDef *spi) {
   // display on
   HAL_TRY(ILI9488_CMD(spi, 0x29));
 
-  // reading from flash to set last brightness
-  // ILI9488_BRIGHTNESS(spi, *(__IO uint8_t *)BRIGHTNESS_PAGE_ADDR);
+  // reading from flash to set brightness to last used
+  ILI9488_BRIGHTNESS(spi, backlightTimer,
+                     *(__IO uint8_t *)BRIGHTNESS_PAGE_ADDR);
 
   return HAL_OK;
 }

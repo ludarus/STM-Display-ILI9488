@@ -10,12 +10,15 @@
 
 #include "main.h"
 #include "stm32f0xx_hal_def.h"
+#include "stm32f0xx_hal_tim.h"
 #include <stdbool.h>
 
-HAL_StatusTypeDef canCommandsInit(CAN_HandleTypeDef *canInterface,
-                                  SPI_HandleTypeDef *displaySpiInterface,
-                                  UART_HandleTypeDef *serialLoggingInterface,
-                                  TIM_HandleTypeDef *alarmPWMTimerInterface);
+HAL_StatusTypeDef
+canCommandsInit(CAN_HandleTypeDef *canInterface,
+                SPI_HandleTypeDef *displaySpiInterface,
+                UART_HandleTypeDef *serialLoggingInterface,
+                TIM_HandleTypeDef *alarmPWMTimerInterface,
+                TIM_HandleTypeDef *backlightPWMTimerInterface);
 HAL_StatusTypeDef canProcessCommands(void);
 
 typedef struct {

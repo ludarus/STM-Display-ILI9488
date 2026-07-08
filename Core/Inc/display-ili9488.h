@@ -8,6 +8,7 @@
 #include "image.h"
 #include "main.h"
 #include "stm32f0xx_hal_def.h"
+#include "stm32f0xx_hal_tim.h"
 #include <stdbool.h>
 
 #ifndef INC_DISPLAY_ILI9488_H_
@@ -68,8 +69,10 @@ typedef struct {
 } ImageTransferState_t;
 
 // public functions
-HAL_StatusTypeDef ILI9488_BRIGHTNESS(SPI_HandleTypeDef *spi, uint8_t val);
-HAL_StatusTypeDef ILI9488_INIT(SPI_HandleTypeDef *spi);
+HAL_StatusTypeDef ILI9488_BRIGHTNESS(SPI_HandleTypeDef *spi,
+                                     TIM_HandleTypeDef *tim, uint8_t val);
+HAL_StatusTypeDef ILI9488_INIT(SPI_HandleTypeDef *spi,
+                               TIM_HandleTypeDef *backlightTimer);
 HAL_StatusTypeDef ILI9488_REFRESH(SPI_HandleTypeDef *spi);
 HAL_StatusTypeDef ILI9488_REFRESH_DEBUG(SPI_HandleTypeDef *spi);
 HAL_StatusTypeDef ILI9488_FILL(SPI_HandleTypeDef *spi);

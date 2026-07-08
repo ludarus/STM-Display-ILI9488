@@ -116,7 +116,8 @@ static uint8_t brightnessVal;
 static CAN_HandleTypeDef *can;
 static SPI_HandleTypeDef *spi;
 static UART_HandleTypeDef *uart;
-static TIM_HandleTypeDef *tim;
+static TIM_HandleTypeDef *alarmTimer;
+static TIM_HandleTypeDef *backlightTimer;
 
 // handles. TODO finish them when given the objnum and groupnum to image mapping
 HAL_StatusTypeDef DispBackCmd(CanRxMessage_t *msg) {
@@ -267,7 +268,7 @@ HAL_StatusTypeDef BrightCmd(CanRxMessage_t *msg) {
   brightnessVal = msg->data[0];
 
   // setting brightness
-  HAL_TRY(ILI9488_BRIGHTNESS(spi, brightnessVal));
+  HAL_TRY(ILI9488_BRIGHTNESS(spi, backlightTimer, brightnessVal));
 
   // setting flag to wait 5 seconds
   brightnessTick = HAL_GetTick();
@@ -280,7 +281,7 @@ HAL_StatusTypeDef AlarmCmd(CanRxMessage_t *msg) {
   uint8_t dutyCycle = msg->data[0];
   uint8_t frequency = msg->data[1];
 
-  setAlarmFrequency(tim, frequency, dutyCycle);
+  setAlarmFrequency(alarmTimer, frequency, dutyCycle);
 
   return HAL_OK;
 }
@@ -305,20 +306,24 @@ static const CanCommand_t commands[] = {
     {.cmdNum = 0x8A, .handle = AlarmCmd},
 };
 
-HAL_StatusTypeDef canCommandsInit(CAN_HandleTypeDef *canInterface,
-                                  SPI_HandleTypeDef *displaySpiInterface,
-                                  UART_HandleTypeDef *serialLoggingInterface,
-                                  TIM_HandleTypeDef *alarmPWMTimerInterface) {
+HAL_StatusTypeDef
+canCommandsInit(CAN_HandleTypeDef *canInterface,
+                SPI_HandleTypeDef *displaySpiInterface,
+                UART_HandleTypeDef *serialLoggingInterface,
+                TIM_HandleTypeDef *alarmPWMTimerInterface,
+                TIM_HandleTypeDef *backlightPWMTimerInterface) {
 
   can = canInterface;
   spi = displaySpiInterface;
   uart = serialLoggingInterface;
-  tim = alarmPWMTimerInterface;
+  alarmTimer = alarmPWMTimerInterface;
+  backlightTimer = backlightPWMTimerInterface;
 
   // configuring filter
   CAN_FilterTypeDef sFilterConfig = {0};
 
-  // Keep filter open for now. TODO flesh out filter once full protocol is resolved
+  // Keep filter open for now. TODO flesh out filter once full protocol is
+  // resolved
   sFilterConfig.FilterMaskIdHigh = 0;
   sFilterConfig.FilterMaskIdLow = 0;
   sFilterConfig.FilterIdHigh = 0;
@@ -368,6 +373,10 @@ HAL_StatusTypeDef canProcessCommands(void) {
                               halfword));
 
     HAL_TRY(HAL_FLASH_Lock());
+
+    // diagnostic
+    static uint8_t diagnosticMsg[] = "Successfully wrote brightness to flash";
+    HAL_UART_Transmit_IT(uart, diagnosticMsg, 38);
   }
 
   // iterating through every message
@@ -377,6 +386,8 @@ HAL_StatusTypeDef canProcessCommands(void) {
     // logging the message to serial device. Not urgent so doesn't need error
     // handling
     HAL_UART_Transmit_IT(uart, queue[msgIdx].data, 8);
+
+    queuedMessages--;
 
     uint8_t cmdNum = (uint8_t)(queue[msgIdx].header.StdId >> 3);
     // assuming the commandnums are contiguous and in the correct order
@@ -392,7 +403,6 @@ HAL_StatusTypeDef canProcessCommands(void) {
       // Maybe return a better error than this?
       return HAL_ERROR;
     }
-    queuedMessages--;
   }
 
   return HAL_OK;

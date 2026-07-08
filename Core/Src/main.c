@@ -59,6 +59,7 @@ DMA_HandleTypeDef hdma_spi1_tx;
 
 TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim14;
+TIM_HandleTypeDef htim17;
 
 UART_HandleTypeDef huart2;
 DMA_HandleTypeDef hdma_usart2_rx;
@@ -76,6 +77,7 @@ static void MX_SPI1_Init(void);
 static void MX_CAN_Init(void);
 static void MX_TIM2_Init(void);
 static void MX_TIM14_Init(void);
+static void MX_TIM17_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -119,22 +121,25 @@ int main(void) {
   MX_CAN_Init();
   MX_TIM2_Init();
   MX_TIM14_Init();
+  MX_TIM17_Init();
   /* USER CODE BEGIN 2 */
 
+  // starting alarm pwm timer
+  HAL_TIM_PWM_Start(&htim14, TIM_CHANNEL_1);
+
   // initializing display
-  ILI9488_INIT(&hspi1);
+  ILI9488_INIT(&hspi1, &htim17);
 
   // initializing commands
   usartCommandsInit(&huart2, &hspi1);
 
   // initializing can interface
-  canCommandsInit(&hcan, &hspi1, &huart2, &htim14);
+  canCommandsInit(&hcan, &hspi1, &huart2, &htim14, &htim17);
 
   // starting timer for switches interrupt
   HAL_TIM_Base_Start_IT(&htim2);
 
-  // setting alarm frequency
-  setAlarmFrequency(&htim14, 3);
+
 
   // ILI9488_LOAD_IMAGE_DEBUG(&hspi1, 0, 0,
   // &File_072_ObjNum_135_480x320_6_18_26, true);
@@ -152,7 +157,8 @@ int main(void) {
   ILI9488_LOAD_IMAGE(&hspi1, 0, 0, &File_005_ObjNum_004_480x320_6_18_26, true,
                      true);
   //
-  // ILI9488_LOAD_IMAGE(&hspi1, 8, 50, &File_072_ObjNum_135_480x320_6_18_26, true,
+  // ILI9488_LOAD_IMAGE(&hspi1, 8, 50, &File_072_ObjNum_135_480x320_6_18_26,
+  // true,
   //                    true);
   //
   // ILI9488_REFRESH(&hspi1);
@@ -192,7 +198,8 @@ int main(void) {
   //
   // ILI9488_DRAW(&hspi1);
   //
-  // ILI9488_LOAD_TEXT(&hspi1, 48 + 8, 280, "etc ..............................",
+  // ILI9488_LOAD_TEXT(&hspi1, 48 + 8, 280, "etc
+  // ..............................",
   //                   15, font, CHARWIDTH, FONTSIZE, CHARHEIGHT, true);
   //
   // ILI9488_DRAW(&hspi1);
@@ -421,6 +428,62 @@ static void MX_TIM14_Init(void) {
 }
 
 /**
+ * @brief TIM17 Initialization Function
+ * @param None
+ * @retval None
+ */
+static void MX_TIM17_Init(void) {
+
+  /* USER CODE BEGIN TIM17_Init 0 */
+
+  /* USER CODE END TIM17_Init 0 */
+
+  TIM_OC_InitTypeDef sConfigOC = {0};
+  TIM_BreakDeadTimeConfigTypeDef sBreakDeadTimeConfig = {0};
+
+  /* USER CODE BEGIN TIM17_Init 1 */
+
+  /* USER CODE END TIM17_Init 1 */
+  htim17.Instance = TIM17;
+  htim17.Init.Prescaler = 39;
+  htim17.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim17.Init.Period = 255;
+  htim17.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim17.Init.RepetitionCounter = 0;
+  htim17.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim17) != HAL_OK) {
+    Error_Handler();
+  }
+  if (HAL_TIM_PWM_Init(&htim17) != HAL_OK) {
+    Error_Handler();
+  }
+  sConfigOC.OCMode = TIM_OCMODE_PWM1;
+  sConfigOC.Pulse = 128;
+  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+  sConfigOC.OCNPolarity = TIM_OCNPOLARITY_HIGH;
+  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+  sConfigOC.OCIdleState = TIM_OCIDLESTATE_RESET;
+  sConfigOC.OCNIdleState = TIM_OCNIDLESTATE_RESET;
+  if (HAL_TIM_PWM_ConfigChannel(&htim17, &sConfigOC, TIM_CHANNEL_1) != HAL_OK) {
+    Error_Handler();
+  }
+  sBreakDeadTimeConfig.OffStateRunMode = TIM_OSSR_DISABLE;
+  sBreakDeadTimeConfig.OffStateIDLEMode = TIM_OSSI_DISABLE;
+  sBreakDeadTimeConfig.LockLevel = TIM_LOCKLEVEL_OFF;
+  sBreakDeadTimeConfig.DeadTime = 0;
+  sBreakDeadTimeConfig.BreakState = TIM_BREAK_DISABLE;
+  sBreakDeadTimeConfig.BreakPolarity = TIM_BREAKPOLARITY_HIGH;
+  sBreakDeadTimeConfig.AutomaticOutput = TIM_AUTOMATICOUTPUT_DISABLE;
+  if (HAL_TIMEx_ConfigBreakDeadTime(&htim17, &sBreakDeadTimeConfig) != HAL_OK) {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM17_Init 2 */
+
+  /* USER CODE END TIM17_Init 2 */
+  HAL_TIM_MspPostInit(&htim17);
+}
+
+/**
  * @brief USART2 Initialization Function
  * @param None
  * @retval None
@@ -494,7 +557,7 @@ static void MX_GPIO_Init(void) {
   HAL_GPIO_WritePin(DISPLAY_CS_GPIO_Port, DISPLAY_CS_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, DISPLAY_RESET_Pin | DISPLAY_LED_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(DISPLAY_RESET_GPIO_Port, DISPLAY_RESET_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : B1_Pin */
   GPIO_InitStruct.Pin = B1_Pin;
@@ -534,12 +597,12 @@ static void MX_GPIO_Init(void) {
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : DISPLAY_RESET_Pin DISPLAY_LED_Pin */
-  GPIO_InitStruct.Pin = DISPLAY_RESET_Pin | DISPLAY_LED_Pin;
+  /*Configure GPIO pin : DISPLAY_RESET_Pin */
+  GPIO_InitStruct.Pin = DISPLAY_RESET_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+  HAL_GPIO_Init(DISPLAY_RESET_GPIO_Port, &GPIO_InitStruct);
 
   /* USER CODE BEGIN MX_GPIO_Init_2 */
 
