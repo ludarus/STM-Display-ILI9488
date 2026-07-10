@@ -10,7 +10,7 @@
 ../Core/Src/display-ili9488.c:291:19:ILI9488_REFRESH	7
 ../Core/Src/display-ili9488.c:346:19:ILI9488_REFRESH_DEBUG	6
 ../Core/Src/display-ili9488.c:381:19:ILI9488_LOAD_IMAGE_DEBUG	9
-../Core/Src/display-ili9488.c:442:19:ILI9488_LOAD_IMAGE	23
-../Core/Src/display-ili9488.c:564:1:ILI9488_LOAD_TEXT	13
-../Core/Src/display-ili9488.c:648:19:ILI9488_DRAW	17
-../Core/Src/display-ili9488.c:763:6:HAL_SPI_TxCpltCallback	5
+../Core/Src/display-ili9488.c:442:19:ILI9488_LOAD_IMAGE	22
+../Core/Src/display-ili9488.c:562:1:ILI9488_LOAD_TEXT	13
+../Core/Src/display-ili9488.c:646:19:ILI9488_DRAW	17
+../Core/Src/display-ili9488.c:761:6:HAL_SPI_TxCpltCallback	5

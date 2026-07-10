@@ -25,11 +25,9 @@
 #define BRIGHTNESS_PAGE_ADDR 0x0803F800
 
 // the size of the buffers in bytes that will store the expanded image data
-// #define CHUNK 5360
-// #define CHUNK 64
-#define CHUNK 4096
+#define CHUNK 2048
 
-// macros to set bits in a bit packed array
+// macros to set bits in a bit packed array. Only used for debugging functions
 // sets pixel/bit to 1
 #define SET_PIXEL(array, bit)                                                  \
   ((array)[(bit) / 8] |= (1u << ((bit) % 8))) // returns void

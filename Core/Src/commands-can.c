@@ -6,6 +6,7 @@
  */
 
 #include "commands-can.h"
+#include "SYSFAIL_480x320.h"
 #include "alarm.h"
 #include "display-ili9488.h"
 #include "font.h"
@@ -19,6 +20,7 @@
 #include "stm32f0xx_hal_tim.h"
 #include "stm32f0xx_hal_uart.h"
 #include <stdbool.h>
+#include <stdio.h>
 
 // includes for every image
 #include "File_002_ObjNum_001_NEW_6_17_26.h"
@@ -95,14 +97,16 @@
 #include "File_077_ObjNum_147_480x320_6_18_26.h"
 #include "File_078_ObjNum_148_480x320_6_18_26.h"
 #include "File_079_ObjNum_149_480x320_6_17_26.h"
-#include "SYSFAIL_480x320_Gemini.h"
+#include "SYSFAIL_480x320.h"
 
 // TODO get correct version string
 const uint8_t version[8] = "DSP12345";
 
 // private declarations
+
+// number of queued messages to be processed
 static volatile uint8_t queuedMessages = 0;
-// 16 message queue
+// CAN message queue
 static CanRxMessage_t queue[48];
 
 // static brightness members
@@ -110,6 +114,9 @@ static uint32_t brightnessTick;
 static uint8_t brightnessVal;
 
 static uint32_t lastMsgTick = 1;
+
+// for serial diagnostics
+static uint8_t diagnosticMsg[64];
 
 // interfaces
 static CAN_HandleTypeDef *can;
@@ -121,6 +128,7 @@ static TIM_HandleTypeDef *backlightTimer;
 // handles. TODO finish them when given the objnum and groupnum to image mapping
 HAL_StatusTypeDef DispBackCmd(CanRxMessage_t *msg) {
   // cmdNum = 0x83
+  // id = 0x418
   // data format = LSB_OBJ_NUM, MSB_OBJ_NUM
   // assuming this means DLC = 2 bytes
 
@@ -136,11 +144,18 @@ HAL_StatusTypeDef DispBackCmd(CanRxMessage_t *msg) {
   // ILI9488_LOAD_IMAGE(spi, uint16_t x, uint16_t y, const Image_t *image, bool
   // overWrite, bool draw)
 
+  // diagnostic
+  uint8_t len = snprintf((char *)diagnosticMsg, sizeof(diagnosticMsg),
+                         "displayed background with objNum: %u\n", objNum);
+
+  HAL_UART_Transmit_IT(uart, diagnosticMsg, len);
+
   return HAL_OK;
 }
 
 HAL_StatusTypeDef DispTextCmd(CanRxMessage_t *msg) {
   // cmdNum = 0x84
+  // id = 0x420
 
   // static function members for persistent scope
   static uint8_t remainingChars = 0;
@@ -185,24 +200,30 @@ HAL_StatusTypeDef DispTextCmd(CanRxMessage_t *msg) {
 
   // end condition
   if (remainingChars == 0 && target != 0) {
-    // logging
-    HAL_UART_Transmit_IT(uart, (uint8_t *)"Received entire text\n", 21);
-
     // displaying
     HAL_StatusTypeDef displayStatus =
         ILI9488_LOAD_TEXT(spi, 0, 0, charArray, target, font, CHARWIDTH,
                           FONTSIZE, CHARHEIGHT, true, true);
+
+    uint8_t len = snprintf((char *)diagnosticMsg, sizeof(diagnosticMsg),
+                           "Displayed text: %.*s\n", target, charArray);
+
+    HAL_UART_Transmit_IT(uart, diagnosticMsg, len);
+
     // restting target
     target = 0;
     return displayStatus;
   }
 
+  // logging
+  HAL_UART_Transmit_IT(uart, (uint8_t *)"recieved partial text packet\n", 29);
+
   return HAL_OK;
 }
 
 HAL_StatusTypeDef DispBMCmd(CanRxMessage_t *msg) {
-
   // cmdNum = 0x85
+
   // data format = LSB_OBJ_NUM, MSB_OBJ_NUM
   // assuming this means DLC = 2 bytes
 
@@ -217,6 +238,12 @@ HAL_StatusTypeDef DispBMCmd(CanRxMessage_t *msg) {
   // display according image
   // ILI9488_LOAD_IMAGE(spi, uint16_t x, uint16_t y, const Image_t *image, bool
   // overWrite, bool draw)
+
+  // diagnostic
+  uint8_t len = snprintf((char *)diagnosticMsg, sizeof(diagnosticMsg),
+                         "displayed image with objNum: %u\n", objNum);
+
+  HAL_UART_Transmit_IT(uart, diagnosticMsg, len);
 
   return HAL_OK;
 }
@@ -240,6 +267,14 @@ HAL_StatusTypeDef DispGrpCmd(CanRxMessage_t *msg) {
   // display according image
   // ILI9488_LOAD_IMAGE(spi, uint16_t x, uint16_t y, const Image_t *image, bool
   // overWrite, bool draw)
+
+  // diagnostic
+  uint8_t len = snprintf((char *)diagnosticMsg, sizeof(diagnosticMsg),
+                         "displayed group with grpNum: %u and index: %u\n",
+                         grpNum, index);
+
+  HAL_UART_Transmit_IT(uart, diagnosticMsg, len);
+
   return HAL_OK;
 }
 
@@ -262,12 +297,16 @@ HAL_StatusTypeDef SendVerCmd(CanRxMessage_t *msg) {
 
   uint32_t mailbox;
 
+  HAL_UART_Transmit_IT(uart, (uint8_t *)"sending version\n", 16);
+
   return HAL_CAN_AddTxMessage(can, &versionHeader, version, &mailbox);
 }
 
 HAL_StatusTypeDef SysFailCmd(CanRxMessage_t *msg) {
   // cmdNum 0x88
-  return ILI9488_LOAD_IMAGE(spi, 0, 0, &SYSFAIL_480x320_Gemini, true, true);
+  HAL_UART_Transmit_IT(uart, (uint8_t *)"ERROR: SYSTEM FAILURE RECEIVED \n",
+                       32);
+  return ILI9488_LOAD_IMAGE(spi, 0, 0, &SYSFAIL_480x320, true, true);
 }
 
 HAL_StatusTypeDef BrightCmd(CanRxMessage_t *msg) {
@@ -280,6 +319,12 @@ HAL_StatusTypeDef BrightCmd(CanRxMessage_t *msg) {
   // setting flag to wait 5 seconds
   brightnessTick = HAL_GetTick();
 
+  // diagnostic
+  uint8_t len = snprintf((char *)diagnosticMsg, sizeof(diagnosticMsg),
+                         "changed display brightness to %u\n", brightnessVal);
+
+  HAL_UART_Transmit_IT(uart, diagnosticMsg, len);
+
   return HAL_OK;
 }
 
@@ -290,26 +335,49 @@ HAL_StatusTypeDef AlarmCmd(CanRxMessage_t *msg) {
 
   setAlarmFrequency(alarmTimer, frequency, dutyCycle);
 
+  uint8_t len =
+      snprintf((char *)diagnosticMsg, sizeof(diagnosticMsg),
+               "changed alarm to a frequency of %u and a duty of %u\n",
+               frequency, dutyCycle);
+
+  HAL_UART_Transmit_IT(uart, diagnosticMsg, len);
+
   return HAL_OK;
 }
 
 // list of commands to be received
 static const CanCommand_t commands[] = {
+
     // display background image
+    // 0x418
     {.cmdNum = 0x83, .handle = DispBackCmd},
+
     // display text
+    // 0x420
     {.cmdNum = 0x84, .handle = DispTextCmd},
+
     // display image
+    // 0x428
     {.cmdNum = 0x85, .handle = DispBMCmd},
+
     // display group
+    // 0x430
     {.cmdNum = 0x86, .handle = DispGrpCmd},
+
     // send version
+    // 0x438
     {.cmdNum = 0x87, .handle = SendVerCmd},
+
     // system failure
+    // 0x440
     {.cmdNum = 0x88, .handle = SysFailCmd},
+
     // adjust brightness
+    // 0x448
     {.cmdNum = 0x89, .handle = BrightCmd},
+
     // alarm
+    // 0x450
     {.cmdNum = 0x8A, .handle = AlarmCmd},
 };
 
@@ -326,7 +394,7 @@ canCommandsInit(CAN_HandleTypeDef *canInterface,
   alarmTimer = alarmPWMTimerInterface;
   backlightTimer = backlightPWMTimerInterface;
 
-
+  lastMsgTick = HAL_GetTick();
 
   // configuring filter
   CAN_FilterTypeDef sFilterConfig = {0};
@@ -359,11 +427,13 @@ HAL_StatusTypeDef canProcessCommands(void) {
   // display error if the can bus is silent for 4 seconds
   if (HAL_GetTick() - lastMsgTick > 4000 && lastMsgTick != 0) {
     // display error image.
-	 HAL_UART_Transmit_IT(uart, "TIMEOUT: no command received in the last 4000ms\n", 48);
+    HAL_UART_Transmit_IT(
+        uart, (uint8_t *)"TIMEOUT: no command received in the last 4000ms\n",
+        48);
     // TODO: Shut down bus or do anything else?
-    ILI9488_LOAD_IMAGE(spi, 0, 0, &SYSFAIL_480x320_Gemini, true, true);
+    ILI9488_LOAD_IMAGE(spi, 0, 0, &SYSFAIL_480x320, true, true);
 
-	 lastMsgTick = 0;
+    lastMsgTick = 0;
   }
 
   // if it's been 5 seconds since last brightness change
@@ -384,6 +454,8 @@ HAL_StatusTypeDef canProcessCommands(void) {
     HAL_StatusTypeDef status = HAL_FLASHEx_Erase(&erase, &pageError);
     if (status != HAL_OK) {
       HAL_TRY(HAL_FLASH_Lock());
+      HAL_UART_Transmit_IT(
+          uart, (uint8_t *)"Failed to write brightness to flash\n", 36);
       return status;
     }
 
@@ -403,9 +475,13 @@ HAL_StatusTypeDef canProcessCommands(void) {
   uint8_t snapshot = queuedMessages;
   for (uint8_t msgIdx = 0; msgIdx < snapshot; msgIdx++) {
 
-    // logging the message to serial device. Not urgent so doesn't need error
-    // handling
-    HAL_UART_Transmit_IT(uart, queue[msgIdx].data, 8);
+    // // Format the message
+    // uint8_t len = snprintf((char *)diagnosticMsg, sizeof(diagnosticMsg),
+    //                        "received CAN msg with id: 0x%03lX\n",
+    //                        (unsigned long)queue[msgIdx].header.StdId);
+    //
+    // // Transmit only the characters that were written
+    // HAL_UART_Transmit_IT(uart, diagnosticMsg, len);
 
     queuedMessages--;
 
@@ -431,7 +507,7 @@ HAL_StatusTypeDef canProcessCommands(void) {
 // callback for received message
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan) {
   // queueing the command for processing in main loop. If too many messages,
-  // just overflow. Maybe change this later
+  // just overflow. Maybe change this later TODO
   if (queuedMessages < 48) {
     // no error handling in interrupt. Possibly do something to fix this
     HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &queue[queuedMessages].header,

@@ -456,7 +456,7 @@ HAL_StatusTypeDef ILI9488_LOAD_IMAGE(SPI_HandleTypeDef *spi, uint16_t x,
     uint16_t imgWidth = image->width; // in pixels
     uint32_t decompiledImageSize = 0; // in pixels
     const uint8_t *imgData = image->data;
-    bool isColInBounds = x + imgWidth < ILI9488_WIDTH;
+    bool isColInBounds = x + imgWidth <= ILI9488_WIDTH;
 
     // iterating through compressed image
     for (uint32_t i = 0; i < image->size; i++) {
@@ -494,16 +494,14 @@ HAL_StatusTypeDef ILI9488_LOAD_IMAGE(SPI_HandleTypeDef *spi, uint16_t x,
           // leading bits
           // if the current position isn't byte aligned
           if (globalpos % 8 != 0) {
-            uint8_t leading = 8 - (globalpos % 8);
+            uint8_t offset = globalpos % 8;
+            uint8_t leading = 8 - offset;
             leading = leading > thisChunk ? thisChunk : leading;
+            uint8_t mask = (uint8_t)(((1u << leading) - 1u) << offset);
             if (isOn) {
-              // write pixels
-              // state.screenCopy[globalpos / 8] |= (0xFF >> leading) <<
-              // leading;
-              state.screenCopy[globalpos / 8] |= 0xFF << (8 - leading);
+              state.screenCopy[globalpos / 8] |= mask;
             } else if (overWrite) {
-              // clear pixels
-              state.screenCopy[globalpos / 8] &= 0xFF >> leading;
+              state.screenCopy[globalpos / 8] &= (uint8_t)~mask;
             }
             thisChunk -= leading;
             globalpos += leading;

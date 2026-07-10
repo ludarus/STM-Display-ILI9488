@@ -11,7 +11,7 @@
 #include <stdint.h>
 
 static const PwmState_t frequencySettings[8] = {
-    // psc = 0, duty cycle = 50%
+    // psc = 0 for highest granularity
     {0, 3332},  {0, 6666},  {0, 9999},  {0, 13332},
     {0, 16666}, {0, 19999}, {0, 23391}, {0, 1666}};
 

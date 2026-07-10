@@ -8,6 +8,7 @@
 #ifndef INC_COMMANDS_CAN_H_
 #define INC_COMMANDS_CAN_H_
 
+#include "image.h"
 #include "main.h"
 #include "stm32f0xx_hal_def.h"
 #include "stm32f0xx_hal_tim.h"
@@ -27,10 +28,22 @@ typedef struct {
 } CanRxMessage_t;
 
 typedef struct {
+  // grpnum
+  uint16_t id;
+  uint16_t x;
+  uint16_t y;
+  Image_t *img;
+} Obj_t;
+
+typedef struct {
+	// what even is this? please get clarification because it's currently just an array
+	// Image_t *images[];
+} Grp_t;
+
+typedef struct {
   // the command number associated with this command
   uint8_t cmdNum;
   // a function pointer to a handle that executes when the command is called
   HAL_StatusTypeDef (*handle)(CanRxMessage_t *);
 } CanCommand_t;
-
 #endif /* INC_COMMANDS_CAN_H_ */

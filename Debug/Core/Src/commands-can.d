@@ -1,5 +1,5 @@
 Core/Src/commands-can.o: ../Core/Src/commands-can.c \
- ../Core/Inc/commands-can.h ../Core/Inc/main.h \
+ ../Core/Inc/commands-can.h ../Core/Inc/image.h ../Core/Inc/main.h \
  ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal.h \
  ../Core/Inc/stm32f0xx_hal_conf.h \
  ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_rcc.h \
@@ -33,8 +33,8 @@ Core/Src/commands-can.o: ../Core/Src/commands-can.c \
  ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_uart.h \
  ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_uart_ex.h \
  ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_def.h \
- ../Core/Inc/alarm.h ../Core/Inc/display-ili9488.h \
- ../Core/Inc/character.h ../Core/Inc/image.h ../Core/Inc/font.h \
+ ../Core/Inc/SYSFAIL_480x320.h ../Core/Inc/alarm.h \
+ ../Core/Inc/display-ili9488.h ../Core/Inc/character.h ../Core/Inc/font.h \
  ../Core/Inc/main.h \
  ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_flash_ex.h \
  ../Core/Inc/File_002_ObjNum_001_NEW_6_17_26.h \
@@ -110,9 +110,9 @@ Core/Src/commands-can.o: ../Core/Src/commands-can.c \
  ../Core/Inc/File_076_ObjNum_143_368x40_6_19_26.h \
  ../Core/Inc/File_077_ObjNum_147_480x320_6_18_26.h \
  ../Core/Inc/File_078_ObjNum_148_480x320_6_18_26.h \
- ../Core/Inc/File_079_ObjNum_149_480x320_6_17_26.h \
- ../Core/Inc/SYSFAIL_480x320_Gemini.h
+ ../Core/Inc/File_079_ObjNum_149_480x320_6_17_26.h
 ../Core/Inc/commands-can.h:
+../Core/Inc/image.h:
 ../Core/Inc/main.h:
 ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal.h:
 ../Core/Inc/stm32f0xx_hal_conf.h:
@@ -147,10 +147,10 @@ Core/Src/commands-can.o: ../Core/Src/commands-can.c \
 ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_uart.h:
 ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_uart_ex.h:
 ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_def.h:
+../Core/Inc/SYSFAIL_480x320.h:
 ../Core/Inc/alarm.h:
 ../Core/Inc/display-ili9488.h:
 ../Core/Inc/character.h:
-../Core/Inc/image.h:
 ../Core/Inc/font.h:
 ../Core/Inc/main.h:
 ../Drivers/STM32F0xx_HAL_Driver/Inc/stm32f0xx_hal_flash_ex.h:
@@ -228,4 +228,3 @@ Core/Src/commands-can.o: ../Core/Src/commands-can.c \
 ../Core/Inc/File_077_ObjNum_147_480x320_6_18_26.h:
 ../Core/Inc/File_078_ObjNum_148_480x320_6_18_26.h:
 ../Core/Inc/File_079_ObjNum_149_480x320_6_17_26.h:
-../Core/Inc/SYSFAIL_480x320_Gemini.h:

@@ -33,6 +33,7 @@
 #include "File_054_ObjNum_087_48x255_6_19_26.h"
 #include "File_072_ObjNum_135_480x320_6_18_26.h"
 #include "File_074_ObjNum_138_48x143_6_19_26.h"
+#include "SYSFAIL_480x320.h"
 #include "stm32f0xx_hal_tim.h"
 /* USER CODE END Includes */
 
@@ -123,40 +124,56 @@ int main(void) {
   MX_TIM14_Init();
   MX_TIM17_Init();
   /* USER CODE BEGIN 2 */
+  HAL_UART_Transmit_IT(&huart2,
+                       (uint8_t *)"Configured peripherals, system clock, and "
+                                  "HAL layer initialized\n",
+                       64);
 
   // starting alarm pwm timer
   HAL_TIM_PWM_Start(&htim14, TIM_CHANNEL_1);
 
+  HAL_UART_Transmit_IT(&huart2, (uint8_t *)"Alarm PWM timer started\n", 25);
+
   // initializing display
   ILI9488_INIT(&hspi1, &htim17);
+
+  HAL_UART_Transmit_IT(&huart2, (uint8_t *)"Display initialized\n", 20);
 
   // initializing commands
   usartCommandsInit(&huart2, &hspi1);
 
+  HAL_UART_Transmit_IT(&huart2, (uint8_t *)"UART commands initialized\n", 26);
+
   // initializing can interface
   canCommandsInit(&hcan, &hspi1, &huart2, &htim14, &htim17);
+
+  HAL_UART_Transmit_IT(&huart2, (uint8_t *)"CAN protocol initialized\n", 25);
 
   // starting timer for switches interrupt
   HAL_TIM_Base_Start_IT(&htim2);
 
+  HAL_UART_Transmit_IT(&huart2, (uint8_t *)"Switches interrupt enabled\n", 27);
+
   HAL_UART_Transmit_IT(
       &huart2, (uint8_t *)"Successfully initialized all interfaces\n", 40);
 
-  // ILI9488_LOAD_IMAGE_DEBUG(&hspi1, 0, 0,
-  // &File_072_ObjNum_135_480x320_6_18_26, true);
-  //
-  // HAL_Delay(1000);
+  ILI9488_LOAD_IMAGE(&hspi1, 0, 0, &SYSFAIL_480x320, true, true);
+
+  // ILI9488_REFRESH(&hspi1);
+
+  // ILI9488_REFRESH_DEBUG(&hspi1);
 
   // ILI9488_LOAD_IMAGE(&hspi1, 0, 0, &File_054_ObjNum_087_48x255_6_19_26, true,
   //                    true);
 
   // ILI9488_DRAW(&hspi1);
-  //
+
   // ILI9488_LOAD_IMAGE(&hspi1, 0, 0, &File_074_ObjNum_138_48x143_6_19_26, true,
   //                    true);
-  
-  // ILI9488_LOAD_IMAGE(&hspi1, 0, 0, &File_005_ObjNum_004_480x320_6_18_26, true,
-  //                    true);
+
+  ILI9488_LOAD_IMAGE(&hspi1, 0, 0, &File_005_ObjNum_004_480x320_6_18_26, true,
+                     true);
+
   // ILI9488_LOAD_TEXT(&hspi1, 0, 0, "Lorem ipsum dol", 15, font, CHARWIDTH,
   //                   FONTSIZE, CHARHEIGHT, true);
   // ILI9488_LOAD_TEXT(&hspi1, 8, 40, "or sit amet, co", 15, font, CHARWIDTH,
@@ -171,9 +188,11 @@ int main(void) {
   // //
   // ILI9488_LOAD_TEXT(&hspi1, 48, 240, "ut labore et do", 15, font, CHARWIDTH,
   //                   FONTSIZE, CHARHEIGHT, true);
-  // ILI9488_LOAD_IMAGE(&hspi1, 0, 0, &File_005_ObjNum_004_480x320_6_18_26, true,
+  // ILI9488_LOAD_IMAGE(&hspi1, 0, 0, &File_005_ObjNum_004_480x320_6_18_26,
+  // true,
   //                    true);
-  // ILI9488_LOAD_TEXT(&hspi1, 48 + 8, 280, "etc ..............................",
+  // ILI9488_LOAD_TEXT(&hspi1, 48 + 8, 280, "etc
+  // ..............................",
   //                   15, font, CHARWIDTH, FONTSIZE, CHARHEIGHT, true);
   //
   /* USER CODE END 2 */
