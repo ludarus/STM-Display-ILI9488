@@ -28,16 +28,16 @@ typedef struct {
 } CanRxMessage_t;
 
 typedef struct {
-  // grpnum
+  // objNum. Should be the index in the array, so probably remove this field later
   uint16_t id;
   uint16_t x;
   uint16_t y;
-  Image_t *img;
+  const Image_t *img;
 } Obj_t;
 
 typedef struct {
-	// what even is this? please get clarification because it's currently just an array
-	// Image_t *images[];
+  // what even is this? please get clarification because it's currently just an
+  // array Image_t *images[];
 } Grp_t;
 
 typedef struct {
