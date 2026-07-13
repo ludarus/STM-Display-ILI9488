@@ -36,7 +36,7 @@
 - This allows decoding based only on the divisibility by 2 of the index of any term in the compressed sequence 
 
 # BMP conversion
-- Use the [BMP_parser](BMP_parser.py) script to compress a 1bpp BMP file to a c header file.
+- Use the [BMP_parser](scripts/BMP_parser.py) script to compress a 1bpp BMP file to a c header file.
 - The output directory should be [Core/Inc/](Core/Inc)
 
 **Single file usage**
@@ -54,7 +54,7 @@ $ python BMP_parser.py <input file> <output directory> -f -cw <character width i
 ```
 
 # Lookup table generation
-- Use the [generate_lookup](generate_lookup.py) script to generate a lookup table from the specified on and off colours
+- Use the [generate_lookup](scripts/generate_lookup.py) script to generate a lookup table from the specified on and off colours
 ```bash
 $ python generate_lookup.py <on colour in R B G> <off colour in R B G>
 ```
