@@ -159,6 +159,8 @@ int main(void) {
 
   ILI9488_LOAD_IMAGE(&hspi1, 0, 0, &SYSFAIL_480x320, true, true);
 
+  HAL_Delay(100);
+
   // ILI9488_REFRESH(&hspi1);
 
   // ILI9488_REFRESH_DEBUG(&hspi1);

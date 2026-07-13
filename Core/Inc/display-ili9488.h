@@ -56,6 +56,11 @@ typedef struct {
   uint16_t width;  // in bytes
   uint16_t height; // in pixels
 
+  // --- cursor location when loading image ---
+  uint32_t fillPos;
+  uint16_t fillCol;
+  uint16_t rowSkip;
+
   // --- Progress tracking, accessed together during transfer ---
   volatile uint32_t imageProgress; // in pixels
   uint32_t imageTarget;            // in bytes/pixel

@@ -75,6 +75,26 @@ const uint32_t table[256] = {
 //--------------------------------------------------------------------------------
 // private functions
 
+// Fills `count` table entries into dst, advancing state.fillPos/fillCol.
+inline void ILI9488_FILLCHUNK(uint32_t *dst, uint32_t count) {
+  uint32_t pos = state.fillPos;
+  uint16_t col = state.fillCol;
+  const uint16_t width = state.width;
+  const uint16_t rowSkip = state.rowSkip;
+
+  for (uint32_t i = 0; i < count; i++) {
+    dst[i] = table[state.screenCopy[pos]];
+    pos++;
+    if (++col == width) {
+      col = 0;
+      pos += rowSkip;
+    }
+  }
+
+  state.fillPos = pos;
+  state.fillCol = col;
+}
+
 // LCD hardware Reset, active low
 void ILI9488_RESET(void) {
   // setting the reset pin to low to signal a reset
@@ -318,21 +338,17 @@ HAL_StatusTypeDef ILI9488_REFRESH(SPI_HandleTypeDef *spi) {
     state.x = 0;
     state.y = 0;
 
-    // PRELOADING FIRST TWO CHUNKS
-    for (uint32_t i = 0; i < CHUNK / 4; i++) {
-      ((uint32_t *)state.buf[state.activeBuf])[i] = table[state.screenCopy[i]];
-    }
+    state.fillPos = 0;
+    state.fillCol = 0;
+    state.rowSkip = 0; // full-width refresh, rows are contiguous
+
+    state.activeBuf = 0;
+    ILI9488_FILLCHUNK((uint32_t *)state.buf[state.activeBuf], CHUNK / 4);
 
     state.imageProgress += CHUNK;
     state.activeBuf = !state.activeBuf;
-    uint16_t shift = state.imageProgress / 4;
-    for (uint32_t i = 0; i < CHUNK / 4; i++) {
-      ((uint32_t *)state.buf[state.activeBuf])[i] =
-          table[state.screenCopy[i + shift]];
-    }
+    ILI9488_FILLCHUNK((uint32_t *)state.buf[state.activeBuf], CHUNK / 4);
 
-    // transmitting the first chunk, then the interrupt will transmit the
-    // second chunk before loading the third etc
     HAL_TRY(HAL_SPI_Transmit_DMA(spi, state.buf[!state.activeBuf], CHUNK));
 
     return HAL_OK;
@@ -406,7 +422,7 @@ HAL_StatusTypeDef ILI9488_LOAD_IMAGE_DEBUG(SPI_HandleTypeDef *spi, uint16_t x,
 
           if (i % 2) {
             // pixel is high, 1 % 2 = 1
-            //  will always be high in overwrite and OR mode
+            // will always be high in overwrite and OR mode
             SET_PIXEL(state.screenCopy, globalpos);
           } else if (overWrite) {
             // pixel is low and overwrite is on. if in OR mode, just leave
@@ -573,9 +589,12 @@ ILI9488_LOAD_TEXT(SPI_HandleTypeDef *spi, uint16_t x, uint16_t y,
     uint16_t charCount = 0;
     uint32_t decompiledImageSize = 0; // in pixels
 
+    const uint16_t maxChars = (ILI9488_WIDTH - x) / characterWidth;
+    const uint32_t bytesPerChar = (characterWidth * characterHeight) / 8;
+
     // iterating through every inputted character
     for (uint16_t charIdx = 0; charIdx < textSize; charIdx++) {
-      if (charIdx > (ILI9488_WIDTH - x) / characterWidth) {
+      if (charIdx > maxChars) {
         // cutting off string optimization
         break;
       }
@@ -584,6 +603,7 @@ ILI9488_LOAD_TEXT(SPI_HandleTypeDef *spi, uint16_t x, uint16_t y,
       uint16_t startCol = ((charIdx * characterWidth) + x) / 8; // in bytes
       uint16_t col = 0;                                         // in bytes
       uint16_t row = 0;                                         // in pixels
+
       // defining current character by using the character array with an ascii
       // offset
       const uint8_t *currentCharacter =
@@ -599,8 +619,7 @@ ILI9488_LOAD_TEXT(SPI_HandleTypeDef *spi, uint16_t x, uint16_t y,
       // loading one byte at a time. This can be done easily as the screen width
       // is a multiple of 8, the x coordinate is a multiple of 8, and the font
       // width is a multiple of 8
-      for (uint32_t byte = 0; byte < (characterWidth * characterHeight) / 8;
-           byte++) {
+      for (uint32_t byte = 0; byte < bytesPerChar; byte++) {
         uint32_t globalpos = byteOffset + (ILI9488_SCALED_WIDTH * row) + col;
         // if the current byte is in bounds of the screen
         if (col + startCol < ILI9488_SCALED_WIDTH && row + y < ILI9488_HEIGHT) {
@@ -689,65 +708,24 @@ HAL_StatusTypeDef ILI9488_DRAW(SPI_HandleTypeDef *spi) {
 
     state.activeBuf = 0;
 
-    // checking if chunking is required or not
+    state.fillPos = (uint32_t)ILI9488_SCALED_WIDTH * state.y + state.x;
+    state.fillCol = 0;
+    state.rowSkip = ILI9488_SCALED_WIDTH - state.width;
+
     if (state.imageTarget <= CHUNK) {
-      // not required
-
-      // expanding to buffer
-      // scan 8 pixels at once, = 4 bytes
-      for (uint32_t i = 0; i < state.imageTarget / 4; i++) {
-        // converting image space index to screen space index
-        uint32_t globalpos =
-            ILI9488_SCALED_WIDTH * (state.y + (i / state.width)) + state.x +
-            (i % state.width);
-
-        // casting the lookup table output to uint8_t
-        ((uint32_t *)state.buf[state.activeBuf])[i] =
-            table[state.screenCopy[globalpos]];
-      }
-
-      // transmitting buffer
+      ILI9488_FILLCHUNK((uint32_t *)state.buf[state.activeBuf],
+                        state.imageTarget / 4);
       HAL_TRY(HAL_SPI_Transmit_DMA(spi, state.buf[state.activeBuf],
                                    state.imageTarget));
-
       state.imageProgress = state.imageTarget;
     } else {
-      // required
-      // PRELOADING FIRST TWO CHUNKS
-      for (uint32_t i = 0; i < CHUNK / 4; i++) {
-        // converting image space index to screen space index
-        uint32_t globalpos =
-            ILI9488_SCALED_WIDTH * (state.y + (i / state.width)) + state.x +
-            (i % state.width);
-
-        // casting the lookup table output to uint8_t
-        ((uint32_t *)state.buf[state.activeBuf])[i] =
-            table[state.screenCopy[globalpos]];
-      }
-
-      // incrementing image progress
+      ILI9488_FILLCHUNK((uint32_t *)state.buf[state.activeBuf], CHUNK / 4);
       state.imageProgress += CHUNK;
-      // toggling active buffer to load other one while transmitting
       state.activeBuf = !state.activeBuf;
-      // offsetting previously transferred image data
-      uint16_t shift = state.imageProgress / 4;
 
-      for (uint32_t i = 0;
-           i < (state.imageTarget - state.imageProgress < CHUNK
-                    ? (state.imageTarget - state.imageProgress) / 4
-                    : CHUNK / 4);
-           i++) {
-        // converting image space index to screen space index
-        uint32_t globalpos =
-            ILI9488_SCALED_WIDTH * (state.y + ((i + shift) / state.width)) +
-            state.x + ((i + shift) % state.width);
-
-        // casting the lookup table output to uint8_t
-        ((uint32_t *)state.buf[state.activeBuf])[i] =
-            table[state.screenCopy[globalpos]];
-      }
-      // transmitting the first chunk, then the interrupt will transmit the
-      // second chunk before loading the third etc
+      uint32_t remaining = state.imageTarget - state.imageProgress;
+      ILI9488_FILLCHUNK((uint32_t *)state.buf[state.activeBuf],
+                        (remaining < CHUNK ? remaining : CHUNK) / 4);
       HAL_TRY(HAL_SPI_Transmit_DMA(spi, state.buf[!state.activeBuf], CHUNK));
     }
 
@@ -788,24 +766,7 @@ void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi) {
       // toggling active buffer
       state.activeBuf = !state.activeBuf;
 
-      // defining local variables for pointer aliasing
-      const uint16_t shift = state.imageProgress / 4;
-      const uint16_t y = state.y;
-      const uint16_t x = state.x;
-      const uint16_t width = state.width;
-
-      // pointer to the active 4 byte section of memory
-      uint32_t *dst = (uint32_t *)state.buf[state.activeBuf];
-
-      for (uint32_t i = 0; i < CHUNK / 4; i++) {
-        // converting local image coordinates to screen coordinates
-        uint32_t globalpos =
-            ILI9488_SCALED_WIDTH * (y + ((i + shift) / width)) + x +
-            ((i + shift) % width);
-
-        // filling up buffer with lookup table output
-        *dst++ = table[state.screenCopy[globalpos]];
-      }
+      ILI9488_FILLCHUNK((uint32_t *)state.buf[state.activeBuf], CHUNK / 4);
     }
   }
 }

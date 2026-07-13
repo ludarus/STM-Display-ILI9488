@@ -100,6 +100,7 @@
 #include "SYSFAIL_480x320.h"
 
 static const Obj_t objects[] = {
+    // object 0 is not used
     {0},
     {1, 0, 0, &File_002_ObjNum_001_NEW_6_17_26},
     {2},
