@@ -274,9 +274,9 @@ HAL_StatusTypeDef ILI9488_INIT(SPI_HandleTypeDef *spi,
   // display on
   HAL_TRY(ILI9488_CMD(spi, 0x29));
 
-  // reading from flash to set brightness to last used
-  ILI9488_BRIGHTNESS(spi, backlightTimer,
-                     *(__IO uint8_t *)BRIGHTNESS_PAGE_ADDR);
+  // reading from flash to set brightness to last used. 
+  HAL_TRY(ILI9488_BRIGHTNESS(spi, backlightTimer,
+                             *(__IO uint8_t *)BRIGHTNESS_PAGE_ADDR));
 
   return HAL_OK;
 }

@@ -487,7 +487,7 @@ HAL_StatusTypeDef AlarmCmd(CanRxMessage_t *msg) {
   uint8_t dutyCycle = msg->data[0];
   uint8_t frequency = msg->data[1];
 
-  setAlarmFrequency(alarmTimer, frequency, dutyCycle);
+  setAlarm(alarmTimer, frequency, dutyCycle);
 
   uint8_t len =
       snprintf((char *)diagnosticMsg, sizeof(diagnosticMsg),

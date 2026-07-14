@@ -9,6 +9,7 @@
 #define INC_ALARM_H_
 
 #include "main.h"
+#include "stm32f0xx_hal_tim_ex.h"
 
 #define CLOCK0 14400
 #define CLOCK1 7200
@@ -19,11 +20,14 @@
 #define CLOCK6 2052
 #define CLOCK7 28800
 
-void setAlarmFrequency(TIM_HandleTypeDef *alarmTimer, uint8_t frequencyIndex, uint8_t dutyCycle);
+void setAlarm(TIM_HandleTypeDef *alarmTimer, uint8_t frequencyIndex,
+              uint8_t dutyCycle);
+void enableAlarm(TIM_HandleTypeDef*alarmTimer);
+void disableAlarm(TIM_HandleTypeDef*alarmTimer);
 
 typedef struct {
   uint16_t psc;
   uint16_t arr;
-} PwmState_t;
+} PwmSetting_t;
 
 #endif /* INC_ALARM_H_ */
