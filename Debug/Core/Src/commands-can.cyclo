@@ -7,6 +7,6 @@
 ../Core/Src/commands-can.c:497:19:SysFailCmd	1
 ../Core/Src/commands-can.c:504:19:BrightCmd	4
 ../Core/Src/commands-can.c:530:19:AlarmCmd	1
-../Core/Src/commands-can.c:586:1:canCommandsInit	4
-../Core/Src/commands-can.c:630:19:canProcessCommands	15
-../Core/Src/commands-can.c:740:6:HAL_CAN_RxFifo0MsgPendingCallback	2
+../Core/Src/commands-can.c:586:1:canCommandsInit	5
+../Core/Src/commands-can.c:640:19:canProcessCommands	15
+../Core/Src/commands-can.c:750:6:HAL_CAN_RxFifo0MsgPendingCallback	2

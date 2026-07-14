@@ -601,23 +601,33 @@ canCommandsInit(CAN_HandleTypeDef *canInterface,
   // display brightness
   brightnessInit();
 
-  // configuring filter
+  // configuring filter to specifically only accept the specific IDS mentioned
+  // in the raymond protocol
   CAN_FilterTypeDef sFilterConfig = {0};
 
-  // Keep filter open for now. TODO flesh out filter once full protocol is
-  // resolved
-  sFilterConfig.FilterMaskIdHigh = 0;
-  sFilterConfig.FilterMaskIdLow = 0;
-  sFilterConfig.FilterIdHigh = 0;
-  sFilterConfig.FilterIdLow = 0;
-  sFilterConfig.FilterFIFOAssignment = CAN_RX_FIFO0;
+  // Bank 0: 0x418, 0x420, 0x428, 0x430
   sFilterConfig.FilterBank = 0;
-  sFilterConfig.FilterMode = CAN_FILTERMODE_IDMASK;
+  sFilterConfig.FilterMode = CAN_FILTERMODE_IDLIST;
   sFilterConfig.FilterScale = CAN_FILTERSCALE_16BIT;
-  sFilterConfig.SlaveStartFilterBank = 0;
+  sFilterConfig.FilterIdLow = (0x418 << 5);      // 0x8300
+  sFilterConfig.FilterIdHigh = (0x420 << 5);     // 0x8400
+  sFilterConfig.FilterMaskIdLow = (0x428 << 5);  // 0x8500
+  sFilterConfig.FilterMaskIdHigh = (0x430 << 5); // 0x8600
+  sFilterConfig.FilterFIFOAssignment = CAN_FILTER_FIFO0;
   sFilterConfig.FilterActivation = CAN_FILTER_ENABLE;
 
   HAL_TRY(HAL_CAN_ConfigFilter(canInterface, &sFilterConfig));
+
+  // Bank 1: 0x438, 0x440, 0x448, 0x450
+  sFilterConfig.FilterBank = 1;
+  sFilterConfig.FilterIdLow = (0x438 << 5);      // 0x8700
+  sFilterConfig.FilterIdHigh = (0x440 << 5);     // 0x8800
+  sFilterConfig.FilterMaskIdLow = (0x448 << 5);  // 0x8900
+  sFilterConfig.FilterMaskIdHigh = (0x450 << 5); // 0x8A00
+
+  // Mode/scale/FIFO/activation carried over from above
+  HAL_TRY(HAL_CAN_ConfigFilter(canInterface, &sFilterConfig));
+
   // starting device
   HAL_TRY(HAL_CAN_Start(canInterface));
   // enabling interrupt for can receive
