@@ -27,7 +27,6 @@
 #include "display-ili9488.h"
 #include "font.h"
 #include "switches.h"
-
 #include "File_002_ObjNum_001_NEW_6_17_26.h"
 #include "File_005_ObjNum_004_480x320_6_18_26.h"
 #include "File_054_ObjNum_087_48x255_6_19_26.h"
@@ -35,6 +34,7 @@
 #include "File_074_ObjNum_138_48x143_6_19_26.h"
 #include "SYSFAIL_480x320.h"
 #include "stm32f0xx_hal_tim.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -131,6 +131,8 @@ int main(void) {
 
   // starting alarm pwm timer
   HAL_TIM_PWM_Start(&htim14, TIM_CHANNEL_1);
+
+  disableAlarm(&htim14);
 
   HAL_UART_Transmit_IT(&huart2, (uint8_t *)"Alarm PWM timer started\n", 25);
 

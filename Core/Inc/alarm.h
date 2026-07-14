@@ -24,6 +24,9 @@ void setAlarm(TIM_HandleTypeDef *alarmTimer, uint8_t frequencyIndex,
               uint8_t dutyCycle);
 void enableAlarm(TIM_HandleTypeDef*alarmTimer);
 void disableAlarm(TIM_HandleTypeDef*alarmTimer);
+void startBeep(TIM_HandleTypeDef*alarmTimer);
+void stopBeep(TIM_HandleTypeDef*alarmTimer);
+
 
 typedef struct {
   uint16_t psc;

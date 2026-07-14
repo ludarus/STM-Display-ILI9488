@@ -7,6 +7,7 @@
 
 #include "alarm.h"
 #include "stm32f0xx_hal_tim.h"
+#include <stdbool.h>
 #include <stdint.h>
 
 static const PwmSetting_t frequencySettings[8] = {
@@ -14,7 +15,9 @@ static const PwmSetting_t frequencySettings[8] = {
     {0, 3332},  {0, 6666},  {0, 9999},  {0, 13332},
     {0, 16666}, {0, 19999}, {0, 23391}, {0, 1666}};
 
-static PwmSetting_t alarmState = frequencySettings[0];
+// shard state
+static volatile PwmSetting_t alarmState;
+static volatile bool alarmEnabled = false;
 
 // pass in a value from 0-7 for frequency, and a value from 0-255 for duty cycle
 void setAlarm(TIM_HandleTypeDef *alarmTimer, uint8_t frequencyIndex,
@@ -25,6 +28,12 @@ void setAlarm(TIM_HandleTypeDef *alarmTimer, uint8_t frequencyIndex,
   }
 
   // setting alarm state
+  if (dutyCycle != 0) {
+    alarmEnabled = true;
+  } else {
+    alarmEnabled = false;
+  }
+
   alarmState.psc = frequencySettings[frequencyIndex].psc;
   alarmState.arr = frequencySettings[frequencyIndex].arr;
 
@@ -39,14 +48,27 @@ void setAlarm(TIM_HandleTypeDef *alarmTimer, uint8_t frequencyIndex,
 
 // using 50% duty cycle as on. TODO confirm this
 void enableAlarm(TIM_HandleTypeDef *alarmTimer) {
-  __HAL_TIM_SET_PRESCALER(alarmTimer, alarmState.psc);
-  __HAL_TIM_SET_AUTORELOAD(alarmTimer, alarmState.arr);
+  alarmEnabled = true;
   __HAL_TIM_SET_COMPARE(alarmTimer, TIM_CHANNEL_1,
                         (uint16_t)((alarmState.arr) / 2));
 }
 
 void disableAlarm(TIM_HandleTypeDef *alarmTimer) {
-  __HAL_TIM_SET_PRESCALER(alarmTimer, alarmState.psc);
-  __HAL_TIM_SET_AUTORELOAD(alarmTimer, alarmState.arr);
+  alarmEnabled = false;
   __HAL_TIM_SET_COMPARE(alarmTimer, TIM_CHANNEL_1, 0);
+}
+
+void startBeep(TIM_HandleTypeDef *alarmTimer) {
+  if (!alarmEnabled) {
+    __HAL_TIM_SET_PRESCALER(alarmTimer, frequencySettings[4].psc);
+    __HAL_TIM_SET_AUTORELOAD(alarmTimer, frequencySettings[4].arr);
+    __HAL_TIM_SET_COMPARE(alarmTimer, TIM_CHANNEL_1,
+                          (uint16_t)(frequencySettings[4].arr / 2));
+  }
+}
+
+void stopBeep(TIM_HandleTypeDef *alarmTimer) {
+  if (!alarmEnabled) {
+    __HAL_TIM_SET_COMPARE(alarmTimer, TIM_CHANNEL_1, 0);
+  }
 }

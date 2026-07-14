@@ -12,7 +12,6 @@
 // includes
 #include "character.h"
 #include "image.h"
-#include "main.h"
 #include "stm32f0xx_hal.h"
 #include "stm32f0xx_hal_def.h"
 #include "stm32f0xx_hal_gpio.h"
@@ -76,7 +75,7 @@ const uint32_t table[256] = {
 // private functions
 
 // Fills `count` table entries into dst, advancing state.fillPos/fillCol.
-inline void ILI9488_FILLCHUNK(uint32_t *dst, uint32_t count) {
+static inline void ILI9488_FILLCHUNK(uint32_t *dst, uint32_t count) {
   uint32_t pos = state.fillPos;
   uint16_t col = state.fillCol;
   const uint16_t width = state.width;

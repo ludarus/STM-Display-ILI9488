@@ -263,9 +263,12 @@ static volatile uint8_t queuedMessages = 0;
 // CAN message queue
 static CanRxMessage_t queue[48];
 
-// static brightness members
+// static brightness members (shared state)
 static uint32_t brightnessTick;
 static uint8_t brightnessVal;
+
+// alarm members
+static uint32_t alarmTick;
 
 static uint32_t lastMsgTick = 1;
 
@@ -473,6 +476,13 @@ HAL_StatusTypeDef BrightCmd(CanRxMessage_t *msg) {
   // setting flag to wait 5 seconds
   brightnessTick = HAL_GetTick();
 
+  // if max value has been reached TODO: check if this should only happen after
+  // the max value is already set
+  if (brightnessVal == 0xFF || brightnessVal == 0) {
+    startBeep(alarmTimer);
+    alarmTick = brightnessTick;
+  }
+
   // diagnostic
   uint8_t len = snprintf((char *)diagnosticMsg, sizeof(diagnosticMsg),
                          "changed display brightness to %u\n", brightnessVal);
@@ -588,6 +598,16 @@ HAL_StatusTypeDef canProcessCommands(void) {
     ILI9488_LOAD_IMAGE(spi, 0, 0, &SYSFAIL_480x320, true, true);
 
     lastMsgTick = 0;
+  }
+
+  // if the alarm has been on for 100 ms
+  if (HAL_GetTick() - alarmTick >= 100 && alarmTick != 0) {
+
+    HAL_UART_Transmit_IT(uart, (uint8_t *)"Brightness beep completed\n", 26);
+
+    stopBeep(alarmTimer);
+
+    alarmTick = 0;
   }
 
   // if it's been 5 seconds since last brightness change
