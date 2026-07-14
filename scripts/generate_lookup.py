@@ -5,7 +5,7 @@ def main():
     # for command line arguments
     parser = argparse.ArgumentParser()
 
-    # mandatory arguments
+    # required arguments
     parser.add_argument(
         "onColour",
         type=int,
