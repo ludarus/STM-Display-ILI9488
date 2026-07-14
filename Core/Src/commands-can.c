@@ -266,10 +266,12 @@ static CanRxMessage_t queue[48];
 // static brightness members (shared state)
 static uint32_t brightnessTick;
 static uint8_t brightnessVal;
+static uint16_t flashOffset;
 
 // alarm members
 static uint32_t alarmTick;
 
+// for error
 static uint32_t lastMsgTick = 1;
 
 // for serial diagnostics
@@ -281,6 +283,39 @@ static SPI_HandleTypeDef *spi;
 static UART_HandleTypeDef *uart;
 static TIM_HandleTypeDef *alarmTimer;
 static TIM_HandleTypeDef *backlightTimer;
+
+// private functions
+
+HAL_StatusTypeDef brightnessInit() {
+  // reading flash to get last value of pointer
+  // two bytes per half word
+  for (int32_t offset = FLASH_PAGE_SIZE - 2; offset >= 0; offset -= 2) {
+    // checking if the 16 bit half word is smaller than the default value
+    // protocol: store the brightness val in the first 8 bits of the halfword,
+    // then set the last 8 bits to 0 to indicate that the byte has been written
+    if (*(__IO uint16_t *)(offset + BRIGHTNESS_PAGE_ADDR) < 0xFFFF) {
+      flashOffset = (uint32_t)offset + 2;
+      // setting brightness
+      // diagnostic
+      uint8_t len =
+          snprintf((char *)diagnosticMsg, sizeof(diagnosticMsg),
+                   "successfully read previous brightness value, offset = %u\n",
+                   flashOffset);
+
+      HAL_UART_Transmit_IT(uart, diagnosticMsg, len);
+      return ILI9488_BRIGHTNESS(
+          spi, backlightTimer,
+          *(__IO uint8_t *)(offset + BRIGHTNESS_PAGE_ADDR));
+    }
+  }
+
+  // default value if one can't be found in flash
+  flashOffset = 0;
+  HAL_UART_Transmit_IT(uart, (uint8_t *)"could not find previous flash value\n",
+                       36);
+
+  return ILI9488_BRIGHTNESS(spi, backlightTimer, 0xFF);
+}
 
 // handles. TODO finish them when given the objnum and groupnum to image mapping
 HAL_StatusTypeDef DispBackCmd(CanRxMessage_t *msg) {
@@ -545,6 +580,8 @@ static const CanCommand_t commands[] = {
     {.cmdNum = 0x8A, .handle = AlarmCmd},
 };
 
+// public functions
+
 HAL_StatusTypeDef
 canCommandsInit(CAN_HandleTypeDef *canInterface,
                 SPI_HandleTypeDef *displaySpiInterface,
@@ -559,6 +596,10 @@ canCommandsInit(CAN_HandleTypeDef *canInterface,
   backlightTimer = backlightPWMTimerInterface;
 
   lastMsgTick = HAL_GetTick();
+
+  HAL_Delay(500);
+  // display brightness
+  brightnessInit();
 
   // configuring filter
   CAN_FilterTypeDef sFilterConfig = {0};
@@ -613,32 +654,49 @@ HAL_StatusTypeDef canProcessCommands(void) {
   // if it's been 5 seconds since last brightness change
   if (brightnessTick != 0 && HAL_GetTick() - brightnessTick > 5000) {
     brightnessTick = 0;
-    // write current brightness value to flash
-    FLASH_EraseInitTypeDef erase;
-    uint32_t pageError;
 
     // unlocking flash
     HAL_TRY(HAL_FLASH_Unlock());
 
-    // erase the last page of flash memory
-    erase.TypeErase = FLASH_TYPEERASE_PAGES;
-    erase.PageAddress = BRIGHTNESS_PAGE_ADDR;
-    erase.NbPages = 1;
+    // if the last page of flash is full
+    if (flashOffset >= FLASH_PAGE_SIZE) {
+      // erasing flash
+      FLASH_EraseInitTypeDef erase;
+      uint32_t pageError;
 
-    HAL_StatusTypeDef status = HAL_FLASHEx_Erase(&erase, &pageError);
-    if (status != HAL_OK) {
-      HAL_TRY(HAL_FLASH_Lock());
-      HAL_UART_Transmit_IT(
-          uart, (uint8_t *)"Failed to write brightness to flash\n", 36);
-      return status;
+      // erase the last page of flash memory
+      erase.TypeErase = FLASH_TYPEERASE_PAGES;
+      erase.PageAddress = BRIGHTNESS_PAGE_ADDR;
+      erase.NbPages = 1;
+
+      HAL_StatusTypeDef status = HAL_FLASHEx_Erase(&erase, &pageError);
+      if (status != HAL_OK) {
+        HAL_FLASH_Lock();
+        HAL_UART_Transmit_IT(uart,
+                             (uint8_t *)"Failed to write brightness to flash "
+                                        "(couldn't erase flash)\n",
+                             59);
+        return status;
+      }
+
+      flashOffset = 0;
     }
 
     // minimum flash write resolution is 16 bit (halfword)
-    uint16_t halfword = (uint16_t)brightnessVal | 0xFF00u;
-    HAL_TRY(HAL_FLASH_Program(FLASH_TYPEPROGRAM_HALFWORD, BRIGHTNESS_PAGE_ADDR,
-                              halfword));
+    // making second part off to indicate a write
+    uint16_t halfword = (uint16_t)brightnessVal | 0x0000u;
+    // TODO error handling here
+    HAL_StatusTypeDef progStatus =
+        HAL_FLASH_Program(FLASH_TYPEPROGRAM_HALFWORD,
+                          BRIGHTNESS_PAGE_ADDR + flashOffset, halfword);
+    HAL_FLASH_Lock();
 
-    HAL_TRY(HAL_FLASH_Lock());
+    if (progStatus != HAL_OK) {
+      return progStatus;
+    }
+
+    // incrementing offset
+    flashOffset += 2;
 
     // diagnostic
     HAL_UART_Transmit_IT(

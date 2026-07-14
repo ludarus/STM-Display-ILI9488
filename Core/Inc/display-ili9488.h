@@ -20,8 +20,12 @@
 
 #define ILI9488_SCALED_WIDTH (ILI9488_WIDTH / 8)
 
-// the page in flash that contains the saved display brightness (last page of
-// flash)
+// size of page in flash
+// previously defined in stm32f0xx_hal_flash_ex.h:150:9
+// 2048 bytes
+#define FLASH_PAGE_SIZE 0x800U
+
+// the address that contains the first value in the last page of flash
 #define BRIGHTNESS_PAGE_ADDR 0x0803F800
 
 // the size of the buffers in bytes that will store the expanded image data
