@@ -1,4 +1,4 @@
-../Core/Src/display-ili9488.c:77:20:ILI9488_FILLCHUNK	32	static
+../Core/Src/display-ili9488.c:77:20:EXPAND_TO_CHUNK	32	static
 ../Core/Src/display-ili9488.c:97:6:ILI9488_RESET	8	static
 ../Core/Src/display-ili9488.c:111:6:ILI9488_SELECT	8	static
 ../Core/Src/display-ili9488.c:116:6:ILI9488_DESELECT	8	static
@@ -12,8 +12,9 @@
 ../Core/Src/display-ili9488.c:322:19:ILI9488_REFRESH	24	static
 ../Core/Src/display-ili9488.c:373:19:ILI9488_REFRESH_DEBUG	32	static
 ../Core/Src/display-ili9488.c:410:20:BG_ADVANCE	24	static
-../Core/Src/display-ili9488.c:426:19:ILI9488_LOAD_IMAGE_DEBUG	72	static
-../Core/Src/display-ili9488.c:510:19:ILI9488_LOAD_IMAGE	64	static
-../Core/Src/display-ili9488.c:625:1:ILI9488_LOAD_TEXT	80	static
-../Core/Src/display-ili9488.c:712:19:ILI9488_DRAW	40	static
-../Core/Src/display-ili9488.c:786:6:HAL_SPI_TxCpltCallback	16	static
+../Core/Src/display-ili9488.c:426:19:ILI9488_LOAD_IMAGE_DEBUG	64	static
+../Core/Src/display-ili9488.c:513:20:FILL_SCREEN	40	static
+../Core/Src/display-ili9488.c:559:19:ILI9488_LOAD_IMAGE	96	static
+../Core/Src/display-ili9488.c:654:1:ILI9488_LOAD_TEXT	80	static
+../Core/Src/display-ili9488.c:741:19:ILI9488_DRAW	40	static
+../Core/Src/display-ili9488.c:815:6:HAL_SPI_TxCpltCallback	16	static

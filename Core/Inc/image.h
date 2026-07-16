@@ -18,4 +18,12 @@ typedef struct {
   const uint32_t size;
 } Image_t;
 
+// size = 19200 bytes
+// width = 480 px
+// height = 320 px
+// Bitpack compression
+typedef struct {
+  const uint8_t *data;
+} Background_t;
+
 #endif /* INC_IMAGE_H_ */

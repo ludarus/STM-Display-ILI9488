@@ -101,6 +101,7 @@
 #include "commands-usart.h"
 #include "display-ili9488.h"
 #include "font.h"
+#include "stm32f0xx_hal.h"
 #include "stm32f0xx_hal_tim.h"
 #include "switches.h"
 
@@ -228,18 +229,7 @@ int main(void) {
   HAL_UART_Transmit_IT(
       &huart2, (uint8_t *)"Successfully initialized all interfaces\n", 40);
 
-  // ILI9488_LOAD_IMAGE(&hspi1, 0, 0, &SYSFAIL_480x320, true, true);
-
-  // HAL_Delay(6000);
-
-  // ILI9488_REFRESH(&hspi1);
-
-  // ILI9488_REFRESH_DEBUG(&hspi1);
-
-  // ILI9488_LOAD_IMAGE(&hspi1, 0, 0, &File_054_ObjNum_087_48x255_6_19_26, true,
-  //                    true);
-
-  // ILI9488_DRAW(&hspi1);
+  ILI9488_LOAD_IMAGE(&hspi1, 0, 0, &SYSFAIL_480x320, true, true);
 
   // ILI9488_LOAD_IMAGE(&hspi1, 0, 0, &File_074_ObjNum_138_48x143_6_19_26, true,
   //                    true);
@@ -248,21 +238,24 @@ int main(void) {
   ILI9488_LOAD_IMAGE(&hspi1, 0, 0, &File_006_ObjNum_005_480x320_6_18_26_C, true,
                      true);
 
-
   // ILI9488_LOAD_IMAGE(&hspi1, 32, 8, &File_071_ObjNum_134_176x188_6_19_26,
   // true,
   //                    true);
 
-  HAL_Delay(2000);
+  HAL_Delay(1000);
 
-  ILI9488_LOAD_IMAGE_DEBUG(&hspi1, 32, 8, &File_047_ObjNum_046_144x208_6_19_26,
-                           false);
+  ILI9488_LOAD_IMAGE(&hspi1, 0, 0, &File_047_ObjNum_046_144x208_6_19_26, false,
+                     true);
 
-  ILI9488_DRAW(&hspi1);
+  // HAL_Delay(1000);
+
+  // ILI9488_LOAD_IMAGE_DEBUG(&hspi1, 32, 64,
+  // &File_047_ObjNum_046_144x208_6_19_26, true); ILI9488_DRAW(&hspi1);
 
   // HAL_Delay(2000);
   //
-  // ILI9488_LOAD_IMAGE(&hspi1, 32, 8, &File_047_ObjNum_046_144x208_6_19_26, true,
+  // ILI9488_LOAD_IMAGE(&hspi1, 32, 8, &File_047_ObjNum_046_144x208_6_19_26,
+  // true,
   //                    true);
 
   // ILI9488_LOAD_TEXT(&hspi1, 0, 0, "Lorem ipsum dol", 15, font, CHARWIDTH,
