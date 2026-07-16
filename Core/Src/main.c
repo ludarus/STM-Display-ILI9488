@@ -21,19 +21,88 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "File_002_ObjNum_001_NEW_6_17_26.h"
+#include "File_005_ObjNum_004_480x320_6_18_26.h"
+#include "File_006_ObjNum_005_480x320_6_18_26_C.h"
+#include "File_007_ObjNum_006_480x320_6_18_26.h"
+#include "File_008_ObjNum_007_96x190_6_18_26.h"
+#include "File_009_ObjNum_008_96x190_6_18_26.h"
+#include "File_010_ObjNum_009_96x190_6_18_26.h"
+#include "File_011_ObjNum_010_96x190_6_18_26.h"
+#include "File_012_ObjNum_011_96x190_6_18_26.h"
+#include "File_013_ObjNum_012_96x190_6_18_26.h"
+#include "File_014_ObjNum_013_96x190_6_18_26.h"
+#include "File_015_ObjNum_014_96x190_6_18_26.h"
+#include "File_016_ObjNum_015_96x190_6_18_26.h"
+#include "File_017_ObjNum_016_96x190_6_18_26.h"
+#include "File_018_ObjNum_017_96x190_6_16_26.h"
+#include "File_019_ObjNum_018_48x208_6_19_26.h"
+#include "File_020_ObjNum_019_48x208_6_19_26.h"
+#include "File_021_ObjNum_020_48x208_6_19_26.h"
+#include "File_022_ObjNum_021_48x208_6_19_26.h"
+#include "File_023_ObjNum_022_48x208_6_19_26.h"
+#include "File_024_ObjNum_023_48x208_6_19_26.h"
+#include "File_025_ObjNum_024_48x208_6_19_26.h"
+#include "File_026_ObjNum_025_48x208_6_19_26.h"
+#include "File_027_ObjNum_026_48x208_6_19_26.h"
+#include "File_028_ObjNum_027_48x208_6_19_26.h"
+#include "File_029_ObjNum_028_48x208_6_19_26.h"
+#include "File_030_ObjNum_029_64x25_6_19_26.h"
+#include "File_031_ObjNum_030_64x25_6_19_26.h"
+#include "File_032_ObjNum_031_96x190_6_19_26.h"
+#include "File_033_ObjNum_032_96x190_6_19_26.h"
+#include "File_034_ObjNum_033_96x190_6_19_26.h"
+#include "File_035_ObjNum_034_96x190_6_19_26.h"
+#include "File_036_ObjNum_035_96x190_6_19_26.h"
+#include "File_037_ObjNum_036_96x190_6_19_26.h"
+#include "File_038_ObjNum_037_96x190_6_19_26.h"
+#include "File_039_ObjNum_038_96x190_6_19_26.h"
+#include "File_040_ObjNum_039_96x190_6_19_26.h"
+#include "File_041_ObjNum_040_96x190_6_19_26.h"
+#include "File_042_ObjNum_041_96x190_6_19_26.h"
+#include "File_043_ObjNum_042_144x208_6_19_26.h"
+#include "File_044_ObjNum_043_144x208_6_19_26.h"
+#include "File_045_ObjNum_044_144x208_6_19_26.h"
+#include "File_046_ObjNum_045_144x208_6_19_26.h"
+#include "File_047_ObjNum_046_144x208_6_19_26.h"
+#include "File_048_ObjNum_052_144x183_6_19_26.h"
+#include "File_049_ObjNum_053_144x183_6_19_26.h"
+#include "File_050_ObjNum_054_144x183_6_19_26.h"
+#include "File_051_ObjNum_055_144x183_6_19_26.h"
+#include "File_052_ObjNum_057_144x30_6_19_26.h"
+#include "File_053_ObjNum_077_48x30_6_19_26.h"
+#include "File_054_ObjNum_087_48x255_6_19_26.h"
+#include "File_055_ObjNum_090_480x320_6_18_26.h"
+#include "File_056_ObjNum_091_480x320_6_18_26.h"
+#include "File_057_ObjNum_092_480x320_6_18_26.h"
+#include "File_058_ObjNum_093_480x320_6_18_26.h"
+#include "File_059_ObjNum_094_480x320_6_18_26.h"
+#include "File_062_ObjNum_097_480x40_6_19_26.h"
+#include "File_063_ObjNum_098_176x33_6_19_26.h"
+#include "File_064_ObjNum_099_48x63_6_19_26.h"
+#include "File_065_ObjNum_104_16x30_6_19_26.h"
+#include "File_066_ObjNum_109_96x80_6_19_26.h"
+#include "File_067_ObjNum_114_64x103_6_19_26.h"
+#include "File_068_ObjNum_119_64x103_6_19_26.h"
+#include "File_069_ObjNum_124_64x103_6_19_26.h"
+#include "File_070_ObjNum_129_96x80_6_19_26.h"
+#include "File_071_ObjNum_134_176x188_6_19_26.h"
+#include "File_072_ObjNum_135_480x320_6_18_26.h"
+#include "File_073_ObjNum_136_480x320_6_18_26.h"
+#include "File_074_ObjNum_138_48x143_6_19_26.h"
+#include "File_075_ObjNum_140_368x40_6_19_26.h"
+#include "File_076_ObjNum_143_368x40_6_19_26.h"
+#include "File_077_ObjNum_147_480x320_6_18_26.h"
+#include "File_078_ObjNum_148_480x320_6_18_26.h"
+#include "File_079_ObjNum_149_480x320_6_17_26.h"
+#include "SYSFAIL_480x320.h"
 #include "alarm.h"
 #include "commands-can.h"
 #include "commands-usart.h"
 #include "display-ili9488.h"
 #include "font.h"
-#include "switches.h"
-#include "File_002_ObjNum_001_NEW_6_17_26.h"
-#include "File_005_ObjNum_004_480x320_6_18_26.h"
-#include "File_054_ObjNum_087_48x255_6_19_26.h"
-#include "File_072_ObjNum_135_480x320_6_18_26.h"
-#include "File_074_ObjNum_138_48x143_6_19_26.h"
-#include "SYSFAIL_480x320.h"
 #include "stm32f0xx_hal_tim.h"
+#include "switches.h"
 
 /* USER CODE END Includes */
 
@@ -159,9 +228,9 @@ int main(void) {
   HAL_UART_Transmit_IT(
       &huart2, (uint8_t *)"Successfully initialized all interfaces\n", 40);
 
-  ILI9488_LOAD_IMAGE(&hspi1, 0, 0, &SYSFAIL_480x320, true, true);
+  // ILI9488_LOAD_IMAGE(&hspi1, 0, 0, &SYSFAIL_480x320, true, true);
 
-  HAL_Delay(100);
+  // HAL_Delay(6000);
 
   // ILI9488_REFRESH(&hspi1);
 
@@ -174,9 +243,27 @@ int main(void) {
 
   // ILI9488_LOAD_IMAGE(&hspi1, 0, 0, &File_074_ObjNum_138_48x143_6_19_26, true,
   //                    true);
+  ILI9488_SET_BACKGROUND((Image_t *)&File_006_ObjNum_005_480x320_6_18_26_C);
 
-  ILI9488_LOAD_IMAGE(&hspi1, 0, 0, &File_005_ObjNum_004_480x320_6_18_26, true,
+  ILI9488_LOAD_IMAGE(&hspi1, 0, 0, &File_006_ObjNum_005_480x320_6_18_26_C, true,
                      true);
+
+
+  // ILI9488_LOAD_IMAGE(&hspi1, 32, 8, &File_071_ObjNum_134_176x188_6_19_26,
+  // true,
+  //                    true);
+
+  HAL_Delay(2000);
+
+  ILI9488_LOAD_IMAGE_DEBUG(&hspi1, 32, 8, &File_047_ObjNum_046_144x208_6_19_26,
+                           false);
+
+  ILI9488_DRAW(&hspi1);
+
+  // HAL_Delay(2000);
+  //
+  // ILI9488_LOAD_IMAGE(&hspi1, 32, 8, &File_047_ObjNum_046_144x208_6_19_26, true,
+  //                    true);
 
   // ILI9488_LOAD_TEXT(&hspi1, 0, 0, "Lorem ipsum dol", 15, font, CHARWIDTH,
   //                   FONTSIZE, CHARHEIGHT, true);

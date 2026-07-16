@@ -65,6 +65,9 @@ typedef struct {
   uint16_t fillCol;
   uint16_t rowSkip;
 
+  // --- background image ---
+  Image_t *backgroundImage;
+
   // --- Progress tracking, accessed together during transfer ---
   volatile uint32_t imageProgress; // in pixels
   uint32_t imageTarget;            // in bytes/pixel
@@ -78,6 +81,7 @@ typedef struct {
 // public functions
 HAL_StatusTypeDef ILI9488_BRIGHTNESS(SPI_HandleTypeDef *spi,
                                      TIM_HandleTypeDef *tim, uint8_t val);
+HAL_StatusTypeDef ILI9488_SET_BACKGROUND(Image_t *bg);
 HAL_StatusTypeDef ILI9488_INIT(SPI_HandleTypeDef *spi,
                                TIM_HandleTypeDef *backlightTimer);
 HAL_StatusTypeDef ILI9488_REFRESH(SPI_HandleTypeDef *spi);

@@ -9,9 +9,8 @@
  *  LSB = first pixel in byte
  */
 
-// includes
-#include "character.h"
-#include "image.h"
+// includes #include "character.h" #include "image.h"
+#include "File_005_ObjNum_004_480x320_6_18_26.h"
 #include "stm32f0xx_hal.h"
 #include "stm32f0xx_hal_def.h"
 #include "stm32f0xx_hal_gpio.h"
@@ -197,6 +196,8 @@ HAL_StatusTypeDef ILI9488_SET_RANGE(SPI_HandleTypeDef *spi, uint16_t colStart,
 }
 
 //--------------------------------------------------------------------------------
+// public functions
+
 // sets brightness of display
 HAL_StatusTypeDef ILI9488_BRIGHTNESS(SPI_HandleTypeDef *spi,
                                      TIM_HandleTypeDef *tim, uint8_t val) {
@@ -210,11 +211,26 @@ HAL_StatusTypeDef ILI9488_BRIGHTNESS(SPI_HandleTypeDef *spi,
 
   return HAL_OK;
 }
-// public functions
+
+// setter for background image
+HAL_StatusTypeDef ILI9488_SET_BACKGROUND(Image_t *bg) {
+  // making sure requested image is full screen
+  if (bg->height != 320 || bg->width != 480) {
+    return HAL_ERROR;
+  }
+
+  state.backgroundImage = bg;
+
+  return HAL_OK;
+}
 
 // initializes the ILI9488
 HAL_StatusTypeDef ILI9488_INIT(SPI_HandleTypeDef *spi,
                                TIM_HandleTypeDef *backlightTimer) {
+
+  // initializing background to empty image
+  state.backgroundImage = (Image_t *)&File_005_ObjNum_004_480x320_6_18_26;
+
   // safety delays. can likely be removed
   HAL_Delay(200);
 
@@ -389,47 +405,88 @@ HAL_StatusTypeDef ILI9488_REFRESH_DEBUG(SPI_HandleTypeDef *spi) {
     return HAL_BUSY;
   }
 }
+
+// private incrementing function
+static inline void BG_ADVANCE(const uint8_t *data, uint32_t *remaining,
+                              uint32_t *index, uint32_t count) {
+  // traversing RLE stream to get to targetted value
+  while (count > 0 || *remaining == 0) {
+    if (*remaining > count) {
+      *remaining -= count;
+      return;
+    }
+    count -= *remaining;
+
+    (*index)++;
+    *remaining = data[*index];
+  }
+}
+
+// image is required to be drawn fully in the boundaries of the display
 HAL_StatusTypeDef ILI9488_LOAD_IMAGE_DEBUG(SPI_HandleTypeDef *spi, uint16_t x,
                                            uint16_t y, const Image_t *image,
                                            bool overWrite) {
   if (!state.currentlyLoading) {
+    // checking to make sure the image is in bounds:
+    if (x + image->width > ILI9488_WIDTH ||
+        y + image->height > ILI9488_HEIGHT) {
+      return HAL_ERROR;
+    }
+
     state.currentlyLoading = true;
 
-    // size of visible image in pixels
-    state.imageSize = 0;
-
     // copying state variables for compiler optimization (pointer aliasing)
-    uint16_t row = 0;                 // in pixels
-    uint16_t col = 0;                 // in pixels
-    uint16_t imgWidth = image->width; // in pixels
-    uint32_t decompiledImageSize = 0; // in pixels
+    uint16_t row = 0;                       // in pixels
+    uint16_t col = 0;                       // in pixels
+    const uint16_t imgWidth = image->width; // in pixels
     const uint8_t *imgData = image->data;
+
+    // background variables
+    const uint8_t *bgData = state.backgroundImage->data;
+    uint32_t rem = bgData[0]; // in pixels
+    uint32_t bgIdx = 0;
+    const uint32_t jump = ILI9488_WIDTH - imgWidth;
+
+    // getting correct background index for rle value
+    BG_ADVANCE(bgData, &rem, &bgIdx, (ILI9488_WIDTH * y) + x);
 
     // iterating through compressed image
     for (uint32_t i = 0; i < image->size; i++) {
 
       // iterating through the current RLE value
       for (uint8_t j = 0; j < imgData[i]; j++) {
-        // if the current pixel is in bounds of the screen
-        if (col + x < ILI9488_WIDTH && row + y < ILI9488_HEIGHT) {
-          // calculating screen pixel index from current position within image
-          uint32_t globalpos = ILI9488_WIDTH * (y + row) + x + col;
+        // calculating screen pixel index from current position within image
+        uint32_t globalpos = ILI9488_WIDTH * (y + row) + x + col;
 
-          if (i % 2) {
-            // pixel is high, 1 % 2 = 1
-            // will always be high in overwrite and OR mode
+        if (i % 2) {
+          // pixel is high, 1 % 2 = 1
+          // will always be high in overwrite and OR mode
+          SET_PIXEL(state.screenCopy, globalpos);
+        } else if (overWrite) {
+          // pixel is low and overwrite is on. If in OR mode, just leave
+          // current pixel as it is
+          CLR_PIXEL(state.screenCopy, globalpos);
+        } else {
+          // if pixel is low and OR mode is on, write background
+          // (bgIdx % 2) ? SET_PIXEL(state.screenCopy, globalpos)
+          //             : CLR_PIXEL(state.screenCopy, globalpos);
+          if (bgIdx % 2) {
             SET_PIXEL(state.screenCopy, globalpos);
-          } else if (overWrite) {
-            // pixel is low and overwrite is on. if in OR mode, just leave
-            // current pixel as it is
+          } else {
             CLR_PIXEL(state.screenCopy, globalpos);
           }
-          decompiledImageSize++;
         }
+
         // incrementing the column and width
         if (++col == imgWidth) {
           col = 0;
           row++;
+
+          // jump entire row
+          BG_ADVANCE(bgData, &rem, &bgIdx, jump + 1);
+        } else {
+          // incrementing singular pixel
+          BG_ADVANCE(bgData, &rem, &bgIdx, 1);
         }
       }
     }
@@ -439,7 +496,7 @@ HAL_StatusTypeDef ILI9488_LOAD_IMAGE_DEBUG(SPI_HandleTypeDef *spi, uint16_t x,
     state.y = y;
     state.width = image->width;
     state.height = image->height;
-    state.imageSize = decompiledImageSize;
+    state.imageSize = image->height * image->width;
 
     state.currentlyLoading = false;
 
@@ -454,20 +511,20 @@ HAL_StatusTypeDef ILI9488_LOAD_IMAGE(SPI_HandleTypeDef *spi, uint16_t x,
                                      uint16_t y, const Image_t *image,
                                      bool overWrite, bool draw) {
   if (!state.currentlyLoading) {
-    state.currentlyLoading = true;
+    // checking to make sure the image is in bounds:
+    if (x + image->width > ILI9488_WIDTH ||
+        y + image->height > ILI9488_HEIGHT) {
+      return HAL_ERROR;
+    }
 
-    // decompressing image to cloned buffer
-    // size of visible image
-    state.imageSize = 0;
+    state.currentlyLoading = true;
 
     // all pixels in image including ones that are clipped off by the edge of
     // copying state variables for compiler optimization (pointer aliasing)
     uint16_t row = 0;                 // in pixels
     uint16_t col = 0;                 // in pixels
     uint16_t imgWidth = image->width; // in pixels
-    uint32_t decompiledImageSize = 0; // in pixels
     const uint8_t *imgData = image->data;
-    bool isColInBounds = x + imgWidth <= ILI9488_WIDTH;
 
     // iterating through compressed image
     for (uint32_t i = 0; i < image->size; i++) {
@@ -478,71 +535,66 @@ HAL_StatusTypeDef ILI9488_LOAD_IMAGE(SPI_HandleTypeDef *spi, uint16_t x,
 
       while (remainingPx > 0) {
         // Sets the current chunk to the largest possible contiguous segment of
-        // pixels in the current visible row. If not visible, just gets the
-        // largest segment in current row
+        // pixels in the current row
+
         uint16_t chunk;
-        if (isColInBounds || !(y + row < ILI9488_HEIGHT) ||
-            (x + col >= ILI9488_WIDTH)) {
-          chunk = imgWidth - col;
-        } else {
-          chunk = ILI9488_WIDTH - (x + col);
-        }
+        chunk = imgWidth - col;
+
         // if chunk is more than the remaining pixels needed
         chunk = remainingPx > chunk ? chunk : remainingPx;
         remainingPx -= chunk;
+
         // checking if current position is in the bounds of the screen to load
         // the correct pixels
-        if (x + col < ILI9488_WIDTH && y + row < ILI9488_HEIGHT) {
-          uint16_t thisChunk = chunk;
 
-          // loading pixels
-          decompiledImageSize += thisChunk;
+        uint16_t thisChunk = chunk;
 
-          // uint32_t globalpos =
-          //     pxOffset + (row * ILI9488_WIDTH) + col; // in pixels
-          uint32_t globalpos = (uint32_t)(y + row) * ILI9488_WIDTH + (x + col);
+        // uint32_t globalpos =
+        //     pxOffset + (row * ILI9488_WIDTH) + col; // in pixels
+        uint32_t globalpos = (uint32_t)(y + row) * ILI9488_WIDTH + (x + col);
 
-          // leading bits
-          // if the current position isn't byte aligned
-          if (globalpos % 8 != 0) {
-            uint8_t offset = globalpos % 8;
-            uint8_t leading = 8 - offset;
-            leading = leading > thisChunk ? thisChunk : leading;
-            uint8_t mask = (uint8_t)(((1u << leading) - 1u) << offset);
-            if (isOn) {
-              state.screenCopy[globalpos / 8] |= mask;
-            } else if (overWrite) {
-              state.screenCopy[globalpos / 8] &= (uint8_t)~mask;
-            }
-            thisChunk -= leading;
-            globalpos += leading;
+        // leading bits
+        // if the current position isn't byte aligned
+        if (globalpos % 8 != 0) {
+          uint8_t offset = globalpos % 8;
+          uint8_t leading = 8 - offset;
+          leading = leading > thisChunk ? thisChunk : leading;
+          uint8_t mask = (uint8_t)(((1u << leading) - 1u) << offset);
+          if (isOn) {
+            state.screenCopy[globalpos / 8] |= mask;
+          } else if (overWrite) {
+            state.screenCopy[globalpos / 8] &= (uint8_t)~mask;
+          }
+          thisChunk -= leading;
+          globalpos += leading;
+        }
+
+        // middle bytes
+        for (uint8_t byte = 0; byte < thisChunk / 8; byte++) {
+          if (isOn) {
+            // write byte
+            state.screenCopy[globalpos / 8] = 0xFF;
+          } else if (overWrite) {
+            // clear byte
+            state.screenCopy[globalpos / 8] = 0;
           }
 
-          // middle bytes
-          for (uint8_t byte = 0; byte < thisChunk / 8; byte++) {
-            if (isOn) {
-              // write byte
-              state.screenCopy[globalpos / 8] = 0xFF;
-            } else if (overWrite) {
-              // clear byte
-              state.screenCopy[globalpos / 8] = 0;
-            }
+          // incrementing global position
+          globalpos += 8;
+        }
 
-            // incrementing global position
-            globalpos += 8;
-          }
-
-          // trailing bits
-          uint8_t trailing = thisChunk % 8;
-          // check to make sure there's unaligned bits
-          if (trailing != 0) {
-            if (isOn) {
-              state.screenCopy[globalpos / 8] |= 0xFF >> (8 - trailing);
-            } else if (overWrite) {
-              state.screenCopy[globalpos / 8] &= 0xFF << trailing;
-            }
+        // trailing bits
+        uint8_t trailing = thisChunk % 8;
+        // check to make sure there's unaligned bits
+        if (trailing != 0) {
+          if (isOn) {
+            state.screenCopy[globalpos / 8] |= 0xFF >> (8 - trailing);
+          } else if (overWrite) {
+            state.screenCopy[globalpos / 8] &= 0xFF << trailing;
           }
         }
+
+        // incrementing row and col
         if ((col += chunk) >= imgWidth) {
           col = 0;
           row++;
@@ -555,7 +607,7 @@ HAL_StatusTypeDef ILI9488_LOAD_IMAGE(SPI_HandleTypeDef *spi, uint16_t x,
     state.y = y;
     state.width = image->width;
     state.height = image->height;
-    state.imageSize = decompiledImageSize;
+    state.imageSize = image->height * image->width;
 
     state.currentlyLoading = false;
 

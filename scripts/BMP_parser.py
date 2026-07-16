@@ -416,6 +416,9 @@ def main():
             # helpful array of pointers to each image for cycling and indexing each image
             images_array = []
 
+            # total size
+            total_size = 0
+
             # iterating through every file in the provided directory
             for possibleFile in os.listdir(dirName):
                 if os.path.isfile(f"{dirName}/{possibleFile}"):
@@ -458,6 +461,7 @@ def main():
                         )
                         includes.append(f'#include "{var_name}.h"')
                         images_array.append(f"   &{var_name},")
+                        total_size += len(compressed_data)
                         count += 1
             # final output
             if not args.preview:
@@ -468,6 +472,7 @@ def main():
                 )
                 print("include statement: \n" + "\n".join(includes))
                 print("images array: \n" + "\n".join(images_array))
+                print(f"total size: {total_size}B")
 
         except ValueError as e:
             print(f"ERROR: {e}", file=sys.stderr)

@@ -645,8 +645,8 @@ HAL_StatusTypeDef canProcessCommands(void) {
     HAL_UART_Transmit_IT(
         uart, (uint8_t *)"TIMEOUT: no command received in the last 4000ms\n",
         48);
-    // TODO: Shut down bus or do anything else?
-    ILI9488_LOAD_IMAGE(spi, 0, 0, &SYSFAIL_480x320, true, true);
+
+    // ILI9488_LOAD_IMAGE(spi, 0, 0, &SYSFAIL_480x320, true, true);
 
     lastMsgTick = 0;
   }

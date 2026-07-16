@@ -8,5 +8,5 @@
 ../Core/Src/commands-can.c:504:19:BrightCmd	24	static
 ../Core/Src/commands-can.c:530:19:AlarmCmd	40	static
 ../Core/Src/commands-can.c:586:1:canCommandsInit	72	static
-../Core/Src/commands-can.c:640:19:canProcessCommands	56	static
+../Core/Src/commands-can.c:640:19:canProcessCommands	48	static
 ../Core/Src/commands-can.c:750:6:HAL_CAN_RxFifo0MsgPendingCallback	16	static
