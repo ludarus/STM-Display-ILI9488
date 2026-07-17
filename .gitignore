@@ -1,1 +1,6 @@
 .settings/
+Debug/
+Drivers/
+*.d
+*.o
+*.list
