@@ -229,25 +229,27 @@ int main(void) {
   HAL_UART_Transmit_IT(
       &huart2, (uint8_t *)"Successfully initialized all interfaces\n", 40);
 
-  ILI9488_LOAD_IMAGE(&hspi1, 0, 0, &SYSFAIL_480x320, true, true);
+  // ILI9488_LOAD_IMAGE(&hspi1, 0, 0, &SYSFAIL_480x320, true, true);
 
   // ILI9488_LOAD_IMAGE(&hspi1, 0, 0, &File_074_ObjNum_138_48x143_6_19_26, true,
   //                    true);
   ILI9488_SET_BACKGROUND((Image_t *)&File_006_ObjNum_005_480x320_6_18_26_C);
 
-  ILI9488_LOAD_IMAGE(&hspi1, 0, 0, &File_006_ObjNum_005_480x320_6_18_26_C, true,
-                     true);
+  // ILI9488_LOAD_IMAGE(&hspi1, 0, 0, &File_006_ObjNum_005_480x320_6_18_26_C,
+  // true,
+  //                    true);
 
   // ILI9488_LOAD_IMAGE(&hspi1, 32, 8, &File_071_ObjNum_134_176x188_6_19_26,
   // true,
   //                    true);
 
-  HAL_Delay(1000);
+  // HAL_Delay(1000);
 
-  ILI9488_LOAD_IMAGE(&hspi1, 0, 0, &File_047_ObjNum_046_144x208_6_19_26, false,
+  ILI9488_LOAD_IMAGE(&hspi1, 0, 0, &File_047_ObjNum_046_144x208_6_19_26,
+  false,
                      true);
 
-  // HAL_Delay(1000);
+  HAL_Delay(1000);
 
   // ILI9488_LOAD_IMAGE_DEBUG(&hspi1, 32, 64,
   // &File_047_ObjNum_046_144x208_6_19_26, true); ILI9488_DRAW(&hspi1);
@@ -258,26 +260,24 @@ int main(void) {
   // true,
   //                    true);
 
-  // ILI9488_LOAD_TEXT(&hspi1, 0, 0, "Lorem ipsum dol", 15, font, CHARWIDTH,
-  //                   FONTSIZE, CHARHEIGHT, true);
-  // ILI9488_LOAD_TEXT(&hspi1, 8, 40, "or sit amet, co", 15, font, CHARWIDTH,
-  //                   FONTSIZE, CHARHEIGHT, true);
-  // ILI9488_LOAD_TEXT(&hspi1, 16, 80, "nsectetur adipi", 15, font, CHARWIDTH,
-  //                   FONTSIZE, CHARHEIGHT, true);
-  // ILI9488_LOAD_TEXT(&hspi1, 24, 120, "scing elit, sed", 15, font, CHARWIDTH,
-  //                   FONTSIZE, CHARHEIGHT, true);
-  // ILI9488_LOAD_TEXT(&hspi1, 32, 160, " do eiusmod tem", 15, font, CHARWIDTH,
-  //                   FONTSIZE, CHARHEIGHT, true);
-  // ILI9488_LOAD_TEXT(&hspi1, 40, 200, "por incididunt ", 15, font, CHARWIDTH,
-  // //
-  // ILI9488_LOAD_TEXT(&hspi1, 48, 240, "ut labore et do", 15, font, CHARWIDTH,
-  //                   FONTSIZE, CHARHEIGHT, true);
-  // ILI9488_LOAD_IMAGE(&hspi1, 0, 0, &File_005_ObjNum_004_480x320_6_18_26,
-  // true,
+  ILI9488_LOAD_TEXT(&hspi1, 0, 0, "Lorem ipsum etc", 15, font, CHARWIDTH,
+                    FONTSIZE, CHARHEIGHT, true, true);
+  // HAL_Delay(500);
+  // ILI9488_REFRESH(&hspi1);
+  // ILI9488_LOAD_TEXT(&hspi1, 0, 40, "or sit amet, co", 15, font, CHARWIDTH,
+  //                   FONTSIZE, CHARHEIGHT, true, true);
+  // ILI9488_LOAD_TEXT(&hspi1, 0, 80, "nsectetur adipi", 15, font, CHARWIDTH,
+  //                   FONTSIZE, CHARHEIGHT, true, true);
+  // ILI9488_LOAD_TEXT(&hspi1, 0, 120, "scing elit, sed", 15, font, CHARWIDTH,
+  //                   FONTSIZE, CHARHEIGHT, true, true);
+  // ILI9488_LOAD_TEXT(&hspi1, 0, 160, " do eiusmod tem", 15, font, CHARWIDTH,
+  //                   FONTSIZE, CHARHEIGHT, true, true);
+  // ILI9488_LOAD_TEXT(&hspi1, 0, 200, "por incididunt ", 15, font, CHARWIDTH,
+  //                   FONTSIZE, CHARHEIGHT, true, true);
+  // ILI9488_LOAD_TEXT(&hspi1, 0, 240, "ut labore et do", 15, font, CHARWIDTH,
+  //                   FONTSIZE, CHARHEIGHT, true, true);
+  // ILI9488_LOAD_IMAGE(&hspi1, 0, 0, &File_005_ObjNum_004_480x320_6_18_26, true,
   //                    true);
-  // ILI9488_LOAD_TEXT(&hspi1, 48 + 8, 280, "etc
-  // ..............................",
-  //                   15, font, CHARWIDTH, FONTSIZE, CHARHEIGHT, true);
   //
   /* USER CODE END 2 */
 
