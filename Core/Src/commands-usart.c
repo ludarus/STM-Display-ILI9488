@@ -199,7 +199,7 @@ HAL_StatusTypeDef usartCommandsInit(UART_HandleTypeDef *uartInterface,
 
 const ByteArray_t displayImageCMD(void) {
   // checking if the display is currently being written to
-  if (ILI9488_LOAD_IMAGE(spi, 16, 16, images[imageNum], !isOr, true) ==
+  if (ILI9488_LOAD_IMAGE(spi, 16, 16, images[imageNum], !isOr, false, true) ==
       HAL_OK) {
     // cycling through the images
     imageNum++;

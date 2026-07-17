@@ -88,8 +88,8 @@ HAL_StatusTypeDef ILI9488_REFRESH(SPI_HandleTypeDef *spi);
 HAL_StatusTypeDef ILI9488_REFRESH_DEBUG(SPI_HandleTypeDef *spi);
 HAL_StatusTypeDef ILI9488_FILL(SPI_HandleTypeDef *spi);
 HAL_StatusTypeDef ILI9488_LOAD_IMAGE(SPI_HandleTypeDef *spi, uint16_t x,
-                                     uint16_t y, const Image_t *image,
-                                     bool overWrite, bool draw);
+                                          uint16_t y, const Image_t *image,
+                                          bool overWrite, bool bg, bool draw);
 HAL_StatusTypeDef ILI9488_LOAD_IMAGE_DEBUG(SPI_HandleTypeDef *spi, uint16_t x,
                                            uint16_t y, const Image_t *image,
                                            bool overWrite);
@@ -99,7 +99,7 @@ ILI9488_LOAD_TEXT(SPI_HandleTypeDef *spi, uint16_t x, uint16_t y,
                   /*width of character in pixels*/ uint8_t characterWidth,
                   /*number of characters in font*/ size_t fontSize,
                   /*height of character in pixels*/ size_t characterHeight,
-                  bool overWrite, bool draw);
+                  bool overWrite, bool bg, bool draw);
 HAL_StatusTypeDef ILI9488_DRAW(SPI_HandleTypeDef *spi);
 
 #endif /* INC_DISPLAY_ILI9488_H_ */

@@ -245,9 +245,8 @@ int main(void) {
 
   // HAL_Delay(1000);
 
-  ILI9488_LOAD_IMAGE(&hspi1, 0, 0, &File_047_ObjNum_046_144x208_6_19_26,
-  false,
-                     true);
+  ILI9488_LOAD_IMAGE(&hspi1, 0, 0, &File_047_ObjNum_046_144x208_6_19_26, false,
+                     true, true);
 
   HAL_Delay(1000);
 
@@ -260,8 +259,13 @@ int main(void) {
   // true,
   //                    true);
 
-  ILI9488_LOAD_TEXT(&hspi1, 0, 0, "Lorem ipsum etc", 15, font, CHARWIDTH,
-                    FONTSIZE, CHARHEIGHT, true, true);
+  ILI9488_LOAD_TEXT(&hspi1, 0, 96, "Lorem ipsum etc", 15, font, CHARWIDTH,
+                    FONTSIZE, CHARHEIGHT, false, true, true);
+
+  HAL_Delay(1000);
+
+  ILI9488_REFRESH(&hspi1);
+
   // HAL_Delay(500);
   // ILI9488_REFRESH(&hspi1);
   // ILI9488_LOAD_TEXT(&hspi1, 0, 40, "or sit amet, co", 15, font, CHARWIDTH,
@@ -276,7 +280,8 @@ int main(void) {
   //                   FONTSIZE, CHARHEIGHT, true, true);
   // ILI9488_LOAD_TEXT(&hspi1, 0, 240, "ut labore et do", 15, font, CHARWIDTH,
   //                   FONTSIZE, CHARHEIGHT, true, true);
-  // ILI9488_LOAD_IMAGE(&hspi1, 0, 0, &File_005_ObjNum_004_480x320_6_18_26, true,
+  // ILI9488_LOAD_IMAGE(&hspi1, 0, 0, &File_005_ObjNum_004_480x320_6_18_26,
+  // true,
   //                    true);
   //
   /* USER CODE END 2 */

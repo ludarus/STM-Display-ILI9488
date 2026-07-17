@@ -395,7 +395,7 @@ HAL_StatusTypeDef DispTextCmd(CanRxMessage_t *msg) {
     // displaying
     HAL_StatusTypeDef displayStatus =
         ILI9488_LOAD_TEXT(spi, 0, 0, charArray, target, font, CHARWIDTH,
-                          FONTSIZE, CHARHEIGHT, true, true);
+                          FONTSIZE, CHARHEIGHT, true, false, true);
 
     uint8_t len = snprintf((char *)diagnosticMsg, sizeof(diagnosticMsg),
                            "Displayed text: %.*s\n", target, charArray);
@@ -498,7 +498,7 @@ HAL_StatusTypeDef SysFailCmd(CanRxMessage_t *msg) {
   // cmdNum 0x88
   HAL_UART_Transmit_IT(uart, (uint8_t *)"ERROR: SYSTEM FAILURE RECEIVED \n",
                        32);
-  return ILI9488_LOAD_IMAGE(spi, 0, 0, &SYSFAIL_480x320, true, true);
+  return ILI9488_LOAD_IMAGE(spi, 0, 0, &SYSFAIL_480x320, true, false, true);
 }
 
 HAL_StatusTypeDef BrightCmd(CanRxMessage_t *msg) {

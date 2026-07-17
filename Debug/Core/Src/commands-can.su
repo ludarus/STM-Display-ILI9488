@@ -4,7 +4,7 @@
 ../Core/Src/commands-can.c:416:19:DispBMCmd	32	static
 ../Core/Src/commands-can.c:443:19:DispGrpCmd	40	static
 ../Core/Src/commands-can.c:473:19:SendVerCmd	56	static
-../Core/Src/commands-can.c:497:19:SysFailCmd	24	static
+../Core/Src/commands-can.c:497:19:SysFailCmd	32	static
 ../Core/Src/commands-can.c:504:19:BrightCmd	24	static
 ../Core/Src/commands-can.c:530:19:AlarmCmd	40	static
 ../Core/Src/commands-can.c:586:1:canCommandsInit	72	static

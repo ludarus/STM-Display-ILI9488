@@ -1,5 +1,5 @@
 ../Core/Src/commands-usart.c:187:19:usartCommandsInit	16	static
-../Core/Src/commands-usart.c:200:19:displayImageCMD	40	static
+../Core/Src/commands-usart.c:200:19:displayImageCMD	48	static
 ../Core/Src/commands-usart.c:215:19:refreshCMD	32	static
 ../Core/Src/commands-usart.c:227:19:orCMD	24	static
 ../Core/Src/commands-usart.c:251:6:stringsEqual	24	static

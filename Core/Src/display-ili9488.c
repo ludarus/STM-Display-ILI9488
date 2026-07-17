@@ -558,7 +558,7 @@ static inline void FILL_SCREEN(uint8_t *buffer, uint32_t *position,
 // loads image to screen buffer
 HAL_StatusTypeDef ILI9488_LOAD_IMAGE(SPI_HandleTypeDef *spi, uint16_t x,
                                      uint16_t y, const Image_t *image,
-                                     bool overWrite, bool draw) {
+                                     bool overWrite, bool bg, bool draw) {
   if (!state.currentlyLoading) {
     // checking to make sure the image is in bounds:
     if (x + image->width > ILI9488_WIDTH ||
@@ -579,7 +579,7 @@ HAL_StatusTypeDef ILI9488_LOAD_IMAGE(SPI_HandleTypeDef *spi, uint16_t x,
     uint8_t *screenData = state.screenCopy;
 
     // pre loading background if OR mode is enabled
-    if (!overWrite) {
+    if (!overWrite && bg) {
       const uint8_t *bgData = state.backgroundImage->data;
       uint32_t bgRem = bgData[0]; // in pixels
       uint32_t bgIdx = 0;
@@ -594,7 +594,7 @@ HAL_StatusTypeDef ILI9488_LOAD_IMAGE(SPI_HandleTypeDef *spi, uint16_t x,
           uint16_t chunk = (remainingPx > bgRem) ? bgRem : remainingPx;
           remainingPx -= chunk;
 
-          FILL_SCREEN(screenData, &pos, chunk, bgIdx % 2, overWrite);
+          FILL_SCREEN(screenData, &pos, chunk, bgIdx % 2, true);
 
           BG_ADVANCE(bgData, &bgRem, &bgIdx, chunk);
         }
@@ -650,13 +650,14 @@ HAL_StatusTypeDef ILI9488_LOAD_IMAGE(SPI_HandleTypeDef *spi, uint16_t x,
   }
 }
 
+// loads text with transparent background on OR mode
 HAL_StatusTypeDef
 ILI9488_LOAD_TEXT(SPI_HandleTypeDef *spi, uint16_t x, uint16_t y,
                   uint8_t text[], uint8_t textSize, const Character_t *font,
                   /*width of character in pixels*/ uint8_t characterWidth,
                   /*number of characters in font*/ size_t fontSize,
                   /*height of character in pixels*/ size_t characterHeight,
-                  bool overWrite, bool draw) {
+                  bool overWrite, bool bg, bool draw) {
 
   if (!state.currentlyLoading) {
     // checking to make sure the text is in bounds
@@ -668,16 +669,52 @@ ILI9488_LOAD_TEXT(SPI_HandleTypeDef *spi, uint16_t x, uint16_t y,
 
     state.currentlyLoading = true;
 
-    const uint32_t bytesPerChar = (characterWidth * characterHeight) / 8;
-    const uint8_t scaledCharWidth = characterWidth / 8;
-    const uint16_t rowskip = ILI9488_SCALED_WIDTH - scaledCharWidth; // in bytes
+    const uint32_t bytesPerChar =
+        (characterWidth * characterHeight) / 8;         // in bytes
+    const uint8_t scaledCharWidth = characterWidth / 8; // in bytes
+    uint16_t rowskip;
 
+    uint8_t *screenData = state.screenCopy;
+
+    const uint16_t boundsWidth = characterWidth * textSize; // in pixels
+
+    uint32_t pos;
+
+    // pre loading background if OR mode is enabled
+    if (!overWrite && bg) {
+      const uint8_t *bgData = state.backgroundImage->data;
+      uint32_t bgRem = bgData[0]; // in pixels
+      uint32_t bgIdx = 0;
+      rowskip = ILI9488_WIDTH - boundsWidth; // in pixels
+
+      pos = (ILI9488_WIDTH * y) + x;
+
+      // getting correct background index for rle value
+      BG_ADVANCE(bgData, &bgRem, &bgIdx, (ILI9488_WIDTH * y) + x);
+
+      for (uint16_t row = 0; row < characterHeight; row++) {
+        uint16_t remainingPx = boundsWidth;
+
+        while (remainingPx > 0) {
+          uint16_t chunk = (remainingPx > bgRem) ? bgRem : remainingPx;
+          remainingPx -= chunk;
+
+          FILL_SCREEN(screenData, &pos, chunk, bgIdx % 2, true);
+
+          BG_ADVANCE(bgData, &bgRem, &bgIdx, chunk);
+        }
+        BG_ADVANCE(bgData, &bgRem, &bgIdx, rowskip);
+        pos += rowskip;
+      }
+    }
+
+    rowskip = ILI9488_SCALED_WIDTH - scaledCharWidth; // in bytes
     // iterating through every inputted character
     for (uint16_t charIdx = 0; charIdx < textSize; charIdx++) {
       // loading character
       uint16_t col = 0; // in bytes
-      uint32_t pos = (ILI9488_SCALED_WIDTH * (y / 8)) + (x / 8) +
-                     (charIdx * scaledCharWidth); // in bytes
+      pos = (ILI9488_SCALED_WIDTH * y) + (x / 8) +
+            (charIdx * scaledCharWidth); // in bytes
 
       // defining current character by using the character array with an ascii
       // offset
@@ -695,11 +732,12 @@ ILI9488_LOAD_TEXT(SPI_HandleTypeDef *spi, uint16_t x, uint16_t y,
         // if the current byte is in bounds of the screen
         if (overWrite) {
           // overwrite mode
-          state.screenCopy[pos] = currentCharacter[byte];
+          screenData[pos] = currentCharacter[byte];
         } else {
           // or mode
-          state.screenCopy[pos] |= currentCharacter[byte];
+          screenData[pos] |= currentCharacter[byte];
         }
+
         pos++;
         // incrementing column and row
         if (++col >= characterWidth / 8) {
@@ -712,9 +750,9 @@ ILI9488_LOAD_TEXT(SPI_HandleTypeDef *spi, uint16_t x, uint16_t y,
     // setting state variables
     state.x = x;
     state.y = y;
-    state.width = textSize * characterWidth;
+    state.width = boundsWidth;
     state.height = characterHeight;
-    state.imageSize = characterWidth * characterHeight * textSize;
+    state.imageSize = boundsWidth * characterHeight;
 
     state.currentlyLoading = false;
 
