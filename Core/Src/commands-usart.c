@@ -184,7 +184,7 @@ uint8_t commandBuffer[255];
 // public functions
 
 // initialization sequence. currently just a setter that takes the serial input
-HAL_StatusTypeDef usartCommandsInit(UART_HandleTypeDef *uartInterface,
+HAL_StatusTypeDef UART_CMDS_Init(UART_HandleTypeDef *uartInterface,
                                     SPI_HandleTypeDef *displayInterface) {
 
   spi = displayInterface;
@@ -197,9 +197,9 @@ HAL_StatusTypeDef usartCommandsInit(UART_HandleTypeDef *uartInterface,
 //--------------------------------------------------------------------------------
 // command handles
 
-const ByteArray_t displayImageCMD(void) {
+const ByteArray_t CMD_DisplayImage(void) {
   // checking if the display is currently being written to
-  if (ILI9488_LOAD_IMAGE(spi, 16, 16, images[imageNum], !isOr, false, true) ==
+  if (ILI9488_LoadImage(spi, 16, 16, images[imageNum], !isOr, false, true) ==
       HAL_OK) {
     // cycling through the images
     imageNum++;
@@ -212,9 +212,9 @@ const ByteArray_t displayImageCMD(void) {
   }
 }
 
-const ByteArray_t refreshCMD(void) {
+const ByteArray_t CMD_Refresh(void) {
   // checking if the display is currently being written to
-  if (ILI9488_REFRESH(spi) == HAL_OK) {
+  if (ILI9488_Refresh(spi) == HAL_OK) {
     imageNum++;
     static uint8_t msg[] = "SUCESSFULLY REFRESHED DISPLAY\n";
     return (ByteArray_t){.data = msg, .size = sizeof(msg) - 1};
@@ -224,7 +224,7 @@ const ByteArray_t refreshCMD(void) {
   }
 }
 
-const ByteArray_t orCMD(void) {
+const ByteArray_t CMD_Or(void) {
   // or toggle
   isOr = !isOr;
   static uint8_t msg[] = "TOGGLED OR MODE\n";
@@ -238,11 +238,11 @@ const ByteArray_t orCMD(void) {
 static const UsartCommand_t commands[] = {
     {.keyword = (uint8_t *)"DISPLAY\n",
      .keyword_size = 8,
-     .action = displayImageCMD},
+     .action = CMD_DisplayImage},
     {.keyword = (uint8_t *)"REFRESH\n",
      .keyword_size = 8,
-     .action = refreshCMD},
-    {.keyword = (uint8_t *)"OR\n", .keyword_size = 3, .action = orCMD},
+     .action = CMD_Refresh},
+    {.keyword = (uint8_t *)"OR\n", .keyword_size = 3, .action = CMD_Or},
 };
 
 //--------------------------------------------------------------------------------

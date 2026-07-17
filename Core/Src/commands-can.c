@@ -286,6 +286,7 @@ static TIM_HandleTypeDef *backlightTimer;
 
 // private functions
 
+// TODO move this?
 HAL_StatusTypeDef brightnessInit() {
   // reading flash to get last value of pointer
   // two bytes per half word
@@ -303,7 +304,7 @@ HAL_StatusTypeDef brightnessInit() {
                    flashOffset);
 
       HAL_UART_Transmit_IT(uart, diagnosticMsg, len);
-      return ILI9488_BRIGHTNESS(
+      return ILI9488_SetBrightness(
           spi, backlightTimer,
           *(__IO uint8_t *)(offset + BRIGHTNESS_PAGE_ADDR));
     }
@@ -314,11 +315,11 @@ HAL_StatusTypeDef brightnessInit() {
   HAL_UART_Transmit_IT(uart, (uint8_t *)"could not find previous flash value\n",
                        36);
 
-  return ILI9488_BRIGHTNESS(spi, backlightTimer, 0xFF);
+  return ILI9488_SetBrightness(spi, backlightTimer, 0xFF);
 }
 
 // handles. TODO finish them when given the objnum and groupnum to image mapping
-HAL_StatusTypeDef DispBackCmd(CanRxMessage_t *msg) {
+HAL_StatusTypeDef CMD_DispBg(CanRxMessage_t *msg) {
   // cmdNum = 0x83
   // id = 0x418
   // data format = LSB_OBJ_NUM, MSB_OBJ_NUM
@@ -345,7 +346,7 @@ HAL_StatusTypeDef DispBackCmd(CanRxMessage_t *msg) {
   return HAL_OK;
 }
 
-HAL_StatusTypeDef DispTextCmd(CanRxMessage_t *msg) {
+HAL_StatusTypeDef CMD_DispText(CanRxMessage_t *msg) {
   // cmdNum = 0x84
   // id = 0x420
 
@@ -394,7 +395,7 @@ HAL_StatusTypeDef DispTextCmd(CanRxMessage_t *msg) {
   if (remainingChars == 0 && target != 0) {
     // displaying
     HAL_StatusTypeDef displayStatus =
-        ILI9488_LOAD_TEXT(spi, 0, 0, charArray, target, font, CHARWIDTH,
+        ILI9488_LoadText(spi, 0, 0, charArray, target, font, CHARWIDTH,
                           FONTSIZE, CHARHEIGHT, true, false, true);
 
     uint8_t len = snprintf((char *)diagnosticMsg, sizeof(diagnosticMsg),
@@ -413,7 +414,7 @@ HAL_StatusTypeDef DispTextCmd(CanRxMessage_t *msg) {
   return HAL_OK;
 }
 
-HAL_StatusTypeDef DispBMCmd(CanRxMessage_t *msg) {
+HAL_StatusTypeDef CMD_DispImage(CanRxMessage_t *msg) {
   // cmdNum = 0x85
 
   // data format = LSB_OBJ_NUM, MSB_OBJ_NUM
@@ -440,7 +441,7 @@ HAL_StatusTypeDef DispBMCmd(CanRxMessage_t *msg) {
   return HAL_OK;
 }
 
-HAL_StatusTypeDef DispGrpCmd(CanRxMessage_t *msg) {
+HAL_StatusTypeDef CMD_DispGrp(CanRxMessage_t *msg) {
 
   // cmdNum = 0x86
   // data format = LSB_OBJ_NUM, MSB_OBJ_NUM
@@ -470,7 +471,7 @@ HAL_StatusTypeDef DispGrpCmd(CanRxMessage_t *msg) {
   return HAL_OK;
 }
 
-HAL_StatusTypeDef SendVerCmd(CanRxMessage_t *msg) {
+HAL_StatusTypeDef CMD_SendVersion(CanRxMessage_t *msg) {
   // cmdNum 0x87
 
   CAN_TxHeaderTypeDef versionHeader = {0};
@@ -494,19 +495,19 @@ HAL_StatusTypeDef SendVerCmd(CanRxMessage_t *msg) {
   return HAL_CAN_AddTxMessage(can, &versionHeader, version, &mailbox);
 }
 
-HAL_StatusTypeDef SysFailCmd(CanRxMessage_t *msg) {
+HAL_StatusTypeDef CMD_SysFail(CanRxMessage_t *msg) {
   // cmdNum 0x88
   HAL_UART_Transmit_IT(uart, (uint8_t *)"ERROR: SYSTEM FAILURE RECEIVED \n",
                        32);
-  return ILI9488_LOAD_IMAGE(spi, 0, 0, &SYSFAIL_480x320, true, false, true);
+  return ILI9488_LoadImage(spi, 0, 0, &SYSFAIL_480x320, true, false, true);
 }
 
-HAL_StatusTypeDef BrightCmd(CanRxMessage_t *msg) {
+HAL_StatusTypeDef CMD_Brightness(CanRxMessage_t *msg) {
   // cmdNum 0x89
   brightnessVal = msg->data[0];
 
   // setting brightness
-  HAL_TRY(ILI9488_BRIGHTNESS(spi, backlightTimer, brightnessVal));
+  HAL_TRY(ILI9488_SetBrightness(spi, backlightTimer, brightnessVal));
 
   // setting flag to wait 5 seconds
   brightnessTick = HAL_GetTick();
@@ -514,7 +515,7 @@ HAL_StatusTypeDef BrightCmd(CanRxMessage_t *msg) {
   // if max value has been reached TODO: check if this should only happen after
   // the max value is already set
   if (brightnessVal == 0xFF || brightnessVal == 0) {
-    startBeep(alarmTimer);
+    ALARM_StartBeep(alarmTimer);
     alarmTick = brightnessTick;
   }
 
@@ -527,12 +528,12 @@ HAL_StatusTypeDef BrightCmd(CanRxMessage_t *msg) {
   return HAL_OK;
 }
 
-HAL_StatusTypeDef AlarmCmd(CanRxMessage_t *msg) {
+HAL_StatusTypeDef CMD_Alarm(CanRxMessage_t *msg) {
   // assuming dutyCycle is an 8 bit number where 0 is off and 255 is 100%
   uint8_t dutyCycle = msg->data[0];
   uint8_t frequency = msg->data[1];
 
-  setAlarm(alarmTimer, frequency, dutyCycle);
+  ALARM_Set(alarmTimer, frequency, dutyCycle);
 
   uint8_t len =
       snprintf((char *)diagnosticMsg, sizeof(diagnosticMsg),
@@ -549,41 +550,41 @@ static const CanCommand_t commands[] = {
 
     // display background image
     // 0x418
-    {.cmdNum = 0x83, .handle = DispBackCmd},
+    {.cmdNum = 0x83, .handle = CMD_DispBg},
 
     // display text
     // 0x420
-    {.cmdNum = 0x84, .handle = DispTextCmd},
+    {.cmdNum = 0x84, .handle = CMD_DispText},
 
     // display image
     // 0x428
-    {.cmdNum = 0x85, .handle = DispBMCmd},
+    {.cmdNum = 0x85, .handle = CMD_DispImage},
 
     // display group
     // 0x430
-    {.cmdNum = 0x86, .handle = DispGrpCmd},
+    {.cmdNum = 0x86, .handle = CMD_DispGrp},
 
     // send version
     // 0x438
-    {.cmdNum = 0x87, .handle = SendVerCmd},
+    {.cmdNum = 0x87, .handle = CMD_SendVersion},
 
     // system failure
     // 0x440
-    {.cmdNum = 0x88, .handle = SysFailCmd},
+    {.cmdNum = 0x88, .handle = CMD_SysFail},
 
     // adjust brightness
     // 0x448
-    {.cmdNum = 0x89, .handle = BrightCmd},
+    {.cmdNum = 0x89, .handle = CMD_Brightness},
 
     // alarm
     // 0x450
-    {.cmdNum = 0x8A, .handle = AlarmCmd},
+    {.cmdNum = 0x8A, .handle = CMD_Alarm},
 };
 
 // public functions
 
 HAL_StatusTypeDef
-canCommandsInit(CAN_HandleTypeDef *canInterface,
+CAN_CMDS_Init(CAN_HandleTypeDef *canInterface,
                 SPI_HandleTypeDef *displaySpiInterface,
                 UART_HandleTypeDef *serialLoggingInterface,
                 TIM_HandleTypeDef *alarmPWMTimerInterface,
@@ -637,7 +638,7 @@ canCommandsInit(CAN_HandleTypeDef *canInterface,
   return HAL_OK;
 }
 
-HAL_StatusTypeDef canProcessCommands(void) {
+HAL_StatusTypeDef CAN_CMDS_Process(void) {
 
   // display error if the can bus is silent for 4 seconds
   if (HAL_GetTick() - lastMsgTick > 4000 && lastMsgTick != 0) {
@@ -656,7 +657,7 @@ HAL_StatusTypeDef canProcessCommands(void) {
 
     HAL_UART_Transmit_IT(uart, (uint8_t *)"Brightness beep completed\n", 26);
 
-    stopBeep(alarmTimer);
+    ALARM_StopBeep(alarmTimer);
 
     alarmTick = 0;
   }

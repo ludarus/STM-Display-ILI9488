@@ -20,7 +20,7 @@ static volatile PwmSetting_t alarmState;
 static volatile bool alarmEnabled = false;
 
 // pass in a value from 0-7 for frequency, and a value from 0-255 for duty cycle
-void setAlarm(TIM_HandleTypeDef *alarmTimer, uint8_t frequencyIndex,
+void ALARM_Set(TIM_HandleTypeDef *alarmTimer, uint8_t frequencyIndex,
               uint8_t dutyCycle) {
 
   if (frequencyIndex > 7) {
@@ -47,18 +47,18 @@ void setAlarm(TIM_HandleTypeDef *alarmTimer, uint8_t frequencyIndex,
 }
 
 // using 50% duty cycle as on. TODO confirm this
-void enableAlarm(TIM_HandleTypeDef *alarmTimer) {
+void ALARM_Enable(TIM_HandleTypeDef *alarmTimer) {
   alarmEnabled = true;
   __HAL_TIM_SET_COMPARE(alarmTimer, TIM_CHANNEL_1,
                         (uint16_t)((alarmState.arr) / 2));
 }
 
-void disableAlarm(TIM_HandleTypeDef *alarmTimer) {
+void ALARM_Disable(TIM_HandleTypeDef *alarmTimer) {
   alarmEnabled = false;
   __HAL_TIM_SET_COMPARE(alarmTimer, TIM_CHANNEL_1, 0);
 }
 
-void startBeep(TIM_HandleTypeDef *alarmTimer) {
+void ALARM_StartBeep(TIM_HandleTypeDef *alarmTimer) {
   if (!alarmEnabled) {
     __HAL_TIM_SET_PRESCALER(alarmTimer, frequencySettings[4].psc);
     __HAL_TIM_SET_AUTORELOAD(alarmTimer, frequencySettings[4].arr);
@@ -67,7 +67,7 @@ void startBeep(TIM_HandleTypeDef *alarmTimer) {
   }
 }
 
-void stopBeep(TIM_HandleTypeDef *alarmTimer) {
+void ALARM_StopBeep(TIM_HandleTypeDef *alarmTimer) {
   if (!alarmEnabled) {
     __HAL_TIM_SET_COMPARE(alarmTimer, TIM_CHANNEL_1, 0);
   }

@@ -15,12 +15,12 @@
 #include <stdbool.h>
 
 HAL_StatusTypeDef
-canCommandsInit(CAN_HandleTypeDef *canInterface,
+CAN_CMDS_Init(CAN_HandleTypeDef *canInterface,
                 SPI_HandleTypeDef *displaySpiInterface,
                 UART_HandleTypeDef *serialLoggingInterface,
                 TIM_HandleTypeDef *alarmPWMTimerInterface,
                 TIM_HandleTypeDef *backlightPWMTimerInterface);
-HAL_StatusTypeDef canProcessCommands(void);
+HAL_StatusTypeDef CAN_CMDS_Process(void);
 
 typedef struct {
   CAN_RxHeaderTypeDef header;
@@ -46,4 +46,5 @@ typedef struct {
   // a function pointer to a handle that executes when the command is called
   HAL_StatusTypeDef (*handle)(CanRxMessage_t *);
 } CanCommand_t;
+
 #endif /* INC_COMMANDS_CAN_H_ */

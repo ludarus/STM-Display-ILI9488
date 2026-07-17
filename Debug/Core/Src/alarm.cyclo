@@ -1,5 +1,5 @@
-../Core/Src/alarm.c:23:6:setAlarm	3
-../Core/Src/alarm.c:50:6:enableAlarm	1
-../Core/Src/alarm.c:56:6:disableAlarm	1
-../Core/Src/alarm.c:61:6:startBeep	2
-../Core/Src/alarm.c:70:6:stopBeep	2
+../Core/Src/alarm.c:23:6:ALARM_Set	3
+../Core/Src/alarm.c:50:6:ALARM_Enable	1
+../Core/Src/alarm.c:56:6:ALARM_Disable	1
+../Core/Src/alarm.c:61:6:ALARM_StartBeep	2
+../Core/Src/alarm.c:70:6:ALARM_StopBeep	2

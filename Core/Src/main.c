@@ -202,22 +202,22 @@ int main(void) {
   // starting alarm pwm timer
   HAL_TIM_PWM_Start(&htim14, TIM_CHANNEL_1);
 
-  disableAlarm(&htim14);
+  ALARM_Disable(&htim14);
 
   HAL_UART_Transmit_IT(&huart2, (uint8_t *)"Alarm PWM timer started\n", 25);
 
   // initializing display
-  ILI9488_INIT(&hspi1, &htim17);
+  ILI9488_Init(&hspi1, &htim17);
 
   HAL_UART_Transmit_IT(&huart2, (uint8_t *)"Display initialized\n", 20);
 
   // initializing commands
-  usartCommandsInit(&huart2, &hspi1);
+  UART_CMDS_Init(&huart2, &hspi1);
 
   HAL_UART_Transmit_IT(&huart2, (uint8_t *)"UART commands initialized\n", 26);
 
   // initializing can interface
-  canCommandsInit(&hcan, &hspi1, &huart2, &htim14, &htim17);
+  CAN_CMDS_Init(&hcan, &hspi1, &huart2, &htim14, &htim17);
 
   HAL_UART_Transmit_IT(&huart2, (uint8_t *)"CAN protocol initialized\n", 25);
 
@@ -233,7 +233,7 @@ int main(void) {
 
   // ILI9488_LOAD_IMAGE(&hspi1, 0, 0, &File_074_ObjNum_138_48x143_6_19_26, true,
   //                    true);
-  ILI9488_SET_BACKGROUND((Image_t *)&File_006_ObjNum_005_480x320_6_18_26_C);
+  ILI9488_SetBackground((Image_t *)&File_006_ObjNum_005_480x320_6_18_26_C);
 
   // ILI9488_LOAD_IMAGE(&hspi1, 0, 0, &File_006_ObjNum_005_480x320_6_18_26_C,
   // true,
@@ -245,7 +245,7 @@ int main(void) {
 
   // HAL_Delay(1000);
 
-  ILI9488_LOAD_IMAGE(&hspi1, 0, 0, &File_047_ObjNum_046_144x208_6_19_26, false,
+  ILI9488_LoadImage(&hspi1, 0, 0, &File_047_ObjNum_046_144x208_6_19_26, false,
                      true, true);
 
   HAL_Delay(1000);
@@ -259,12 +259,12 @@ int main(void) {
   // true,
   //                    true);
 
-  ILI9488_LOAD_TEXT(&hspi1, 0, 96, "Lorem ipsum etc", 15, font, CHARWIDTH,
+  ILI9488_LoadText(&hspi1, 0, 96, "Lorem ipsum etc", 15, font, CHARWIDTH,
                     FONTSIZE, CHARHEIGHT, false, true, true);
 
   HAL_Delay(1000);
 
-  ILI9488_REFRESH(&hspi1);
+  ILI9488_Refresh(&hspi1);
 
   // HAL_Delay(500);
   // ILI9488_REFRESH(&hspi1);
@@ -293,10 +293,10 @@ int main(void) {
 
     /* USER CODE BEGIN 3 */
     // process recieved can commands
-    canProcessCommands();
+    CAN_CMDS_Process();
 
     // processing switch input
-    processSwitches(&hcan);
+    SWITCHES_Process(&hcan);
   }
   /* USER CODE END 3 */
 }

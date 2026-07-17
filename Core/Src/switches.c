@@ -18,7 +18,7 @@ static uint8_t currentIdx;
 static volatile uint8_t flag;
 
 // reads, debounces, and transmits the state of switches. run in main loop
-HAL_StatusTypeDef processSwitches(CAN_HandleTypeDef *canInterface) {
+HAL_StatusTypeDef SWITCHES_Process(CAN_HandleTypeDef *canInterface) {
   // reading current switch state
   switchState[currentIdx][0] = HAL_GPIO_ReadPin(SWITCH1_GPIO_Port, SWITCH1_Pin);
   switchState[currentIdx][1] = HAL_GPIO_ReadPin(SWITCH2_GPIO_Port, SWITCH2_Pin);

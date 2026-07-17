@@ -13,7 +13,7 @@
 #include "stm32f0xx_hal_def.h"
 
 // public functions
-HAL_StatusTypeDef usartCommandsInit(UART_HandleTypeDef *uartInterface,
+HAL_StatusTypeDef UART_CMDS_Init(UART_HandleTypeDef *uartInterface,
                        SPI_HandleTypeDef *spiInterface);
 
 // byte array struct to easily encode the size of a string

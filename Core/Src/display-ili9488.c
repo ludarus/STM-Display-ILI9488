@@ -71,17 +71,18 @@ const uint32_t table[256] = {
     0xAAAAAA00, 0xAAAAAAA0, 0xAAAAAA0A, 0xAAAAAAAA};
 
 //--------------------------------------------------------------------------------
-// private functions
+// private inline utility functions: ----
 
-// Fills `count` table entries into dst, advancing state.fillPos/fillCol.
-static inline void EXPAND_TO_CHUNK(uint32_t *dst, uint32_t count) {
+// TODO make this one better
+static inline void expandToChunk(uint8_t *screenData, uint32_t *dst,
+                                 const uint32_t count) {
   uint32_t pos = state.fillPos;
   uint16_t col = state.fillCol;
   const uint16_t width = state.width;
   const uint16_t rowSkip = state.rowSkip;
 
   for (uint32_t i = 0; i < count; i++) {
-    dst[i] = table[state.screenCopy[pos]];
+    dst[i] = table[screenData[pos]];
     pos++;
     if (++col == width) {
       col = 0;
@@ -93,283 +94,8 @@ static inline void EXPAND_TO_CHUNK(uint32_t *dst, uint32_t count) {
   state.fillCol = col;
 }
 
-// LCD hardware Reset, active low
-void ILI9488_RESET(void) {
-  // setting the reset pin to low to signal a reset
-  HAL_GPIO_WritePin(DISPLAY_RESET_GPIO_Port, DISPLAY_RESET_Pin, GPIO_PIN_RESET);
-
-  // small delay
-  HAL_Delay(10);
-
-  // setting the pin to high (default state)
-  HAL_GPIO_WritePin(DISPLAY_RESET_GPIO_Port, DISPLAY_RESET_Pin, GPIO_PIN_SET);
-
-  HAL_Delay(100);
-}
-
-// LCD chip select signal, active low
-void ILI9488_SELECT(void) {
-  // setting the select pin to low
-  HAL_GPIO_WritePin(DISPLAY_CS_GPIO_Port, DISPLAY_CS_Pin, GPIO_PIN_RESET);
-}
-
-void ILI9488_DESELECT(void) {
-  // setting the select pin to high
-  HAL_GPIO_WritePin(DISPLAY_CS_GPIO_Port, DISPLAY_CS_Pin, GPIO_PIN_SET);
-}
-
-// sends command to controller
-HAL_StatusTypeDef ILI9488_CMD(SPI_HandleTypeDef *spi, uint8_t cmd) {
-  // setting DC pin to command mode (low)
-  HAL_GPIO_WritePin(DISPLAY_DC_GPIO_Port, DISPLAY_DC_Pin, GPIO_PIN_RESET);
-
-  // selecting SPI device
-  ILI9488_SELECT();
-
-  // using SPI to transmit data
-  HAL_StatusTypeDef status = HAL_SPI_Transmit(spi, &cmd, 1, HAL_MAX_DELAY);
-
-  // deselecting SPI device
-  ILI9488_DESELECT();
-
-  return status;
-}
-
-// sends data to controller
-HAL_StatusTypeDef ILI9488_DATA(SPI_HandleTypeDef *spi, uint8_t *data,
-                               uint16_t size) {
-  // setting DC pin to command mode (high)
-  HAL_GPIO_WritePin(DISPLAY_DC_GPIO_Port, DISPLAY_DC_Pin, GPIO_PIN_SET);
-
-  // selecting SPI device
-  ILI9488_SELECT();
-
-  // using SPI to transmit data
-  HAL_StatusTypeDef status = HAL_SPI_Transmit(spi, data, size, HAL_MAX_DELAY);
-
-  // deselecting SPI device
-  ILI9488_DESELECT();
-
-  return status;
-}
-
-// utility function to set the writing range of the controller
-HAL_StatusTypeDef ILI9488_SET_RANGE(SPI_HandleTypeDef *spi, uint16_t colStart,
-                                    uint16_t colEnd, uint16_t rowStart,
-                                    uint16_t rowEnd) {
-  // set column address command
-  HAL_TRY(ILI9488_CMD(spi, 0x2A));
-
-  // parameters: starting col MSB, starting col LSB, ending col MSB, ending
-  // col LSB
-  uint8_t caset[] = {
-
-      (uint8_t)(colStart >> 8),
-
-      (uint8_t)(colStart & 0xFF),
-
-      (uint8_t)(colEnd >> 8),
-
-      (uint8_t)(colEnd & 0xFF)
-
-  };
-
-  HAL_TRY(ILI9488_DATA(spi, caset, 4));
-
-  // set row address command
-  HAL_TRY(ILI9488_CMD(spi, 0x2B));
-  // parameters: starting row MSB, starting row LSB, ending row MSB, ending
-  // row LSB
-  uint8_t raset[] = {
-
-      (uint8_t)(rowStart >> 8),
-
-      (uint8_t)(rowStart & 0xFF),
-
-      (uint8_t)(rowEnd >> 8),
-
-      (uint8_t)(rowEnd & 0xFF)};
-
-  HAL_TRY(ILI9488_DATA(spi, raset, 4));
-
-  return HAL_OK;
-}
-
-//--------------------------------------------------------------------------------
-// public functions
-
-// sets brightness of display
-HAL_StatusTypeDef ILI9488_BRIGHTNESS(SPI_HandleTypeDef *spi,
-                                     TIM_HandleTypeDef *tim, uint8_t val) {
-
-  // for pwm driven brightness
-  __HAL_TIM_SET_COMPARE(tim, TIM_CHANNEL_1, val);
-
-  // for displays without a physical brightness pin
-  HAL_TRY(ILI9488_CMD(spi, 0x51));
-  HAL_TRY(ILI9488_DATA(spi, &val, 1));
-
-  return HAL_OK;
-}
-
-// setter for background image
-HAL_StatusTypeDef ILI9488_SET_BACKGROUND(Image_t *bg) {
-  // making sure requested image is full screen
-  if (bg->height != 320 || bg->width != 480) {
-    return HAL_ERROR;
-  }
-
-  state.backgroundImage = bg;
-
-  return HAL_OK;
-}
-
-// initializes the ILI9488
-HAL_StatusTypeDef ILI9488_INIT(SPI_HandleTypeDef *spi,
-                               TIM_HandleTypeDef *backlightTimer) {
-
-  // initializing background to empty image
-  ILI9488_SET_BACKGROUND((Image_t *)&File_005_ObjNum_004_480x320_6_18_26);
-
-  // safety delays. can likely be removed
-  HAL_Delay(200);
-
-  // hardware reset
-  ILI9488_RESET();
-  HAL_Delay(200);
-
-  // software reset
-  HAL_TRY(ILI9488_CMD(spi, 0x01));
-  HAL_Delay(120);
-
-  // exit sleep mode
-  HAL_TRY(ILI9488_CMD(spi, 0x11));
-  HAL_Delay(120);
-
-  // powering testing switches
-  HAL_GPIO_WritePin(SWITCH_POWER_GPIO_Port, SWITCH_POWER_Pin, GPIO_PIN_SET);
-
-  // backlight on
-  // starting display backlight pwm timer
-  HAL_TIM_PWM_Start(backlightTimer, TIM_CHANNEL_1);
-
-  // configuring extended command set for spi write
-  HAL_TRY(ILI9488_CMD(spi, 0xF7));
-  uint8_t unlockData[] = {0xA9, 0x51, 0x2C, 0x82};
-  HAL_TRY(ILI9488_DATA(spi, &unlockData[0], 2));
-
-  // memory data access control - instruction 36h MADCTL
-  HAL_TRY(ILI9488_CMD(spi, 0x36));
-  // same as st7796s
-  uint8_t madctl = 0x20;
-  HAL_TRY(ILI9488_DATA(spi, &madctl, 1));
-
-  // configuring brightness control settings - instruction 53h WRCTRLD
-  HAL_TRY(ILI9488_CMD(spi, 0x53));
-  // 0 0 1 0 1 1 0 0
-  uint8_t brightnessCtl = 0x2C;
-  HAL_TRY(ILI9488_DATA(spi, &brightnessCtl, 1));
-
-  // Interface Pixel Format - instruction 3Ah COLMOD
-  HAL_TRY(ILI9488_CMD(spi, 0x3A));
-  // Lowest available is 3bit/pixel
-  // 00000001
-  // format: R G B 0 R G B 0
-  // each byte = two pixels due to padding
-  uint8_t colmod = 0x01;
-  HAL_TRY(ILI9488_DATA(spi, &colmod, 1));
-
-  // Column inversion for display longevity
-  // update: seems to cause flicker on this display?
-  // 1 dot mode
-  //	ILI9488_CMD(spi, 0xB4);
-  //	uint8_t inversion = 0x01;
-  //	ILI9488_DATA(spi, &inversion, 1);
-
-  // display on
-  HAL_TRY(ILI9488_CMD(spi, 0x29));
-
-  return HAL_OK;
-}
-
-// debugging function to see filling order of screen
-HAL_StatusTypeDef ILI9488_FILL(SPI_HandleTypeDef *spi) {
-
-  // setting fill range
-  HAL_TRY(ILI9488_SET_RANGE(spi, 0, ILI9488_WIDTH - 1, 0, ILI9488_HEIGHT - 1));
-
-  // write data command
-  HAL_TRY(ILI9488_CMD(spi, 0x2C));
-
-  // setting to data mode
-  HAL_GPIO_WritePin(DISPLAY_DC_GPIO_Port, DISPLAY_DC_Pin, GPIO_PIN_SET);
-
-  // selecting spi device
-  ILI9488_SELECT();
-
-  // each byte contains two bits
-  uint8_t padded = 238;
-  for (uint32_t r = 0; r < 76800; r++) {
-    HAL_TRY(HAL_SPI_Transmit(spi, &padded, 1, HAL_MAX_DELAY));
-  }
-
-  ILI9488_DESELECT();
-
-  return HAL_OK;
-}
-
-// fast refreshing using chunking
-HAL_StatusTypeDef ILI9488_REFRESH(SPI_HandleTypeDef *spi) {
-  // checking if the display is already being modified
-  if (!state.currentlyDrawing) {
-    // setting status to busy
-
-    state.currentlyDrawing = true;
-
-    HAL_TRY(
-        ILI9488_SET_RANGE(spi, 0, ILI9488_WIDTH - 1, 0, ILI9488_HEIGHT - 1));
-
-    // write data command
-    HAL_TRY(ILI9488_CMD(spi, 0x2C));
-
-    // setting to data mode
-    HAL_GPIO_WritePin(DISPLAY_DC_GPIO_Port, DISPLAY_DC_Pin, GPIO_PIN_SET);
-
-    // selecting spi device
-    ILI9488_SELECT();
-
-    state.activeBuf = 0;
-    state.imageProgress = 0;
-
-    // setting state to reuse the other callback
-    state.imageSize = ILI9488_WIDTH * ILI9488_HEIGHT;
-    state.imageTarget = state.imageSize / 2;
-    state.width = ILI9488_WIDTH / 8;
-    state.height = ILI9488_HEIGHT;
-    state.x = 0;
-    state.y = 0;
-
-    state.fillPos = 0;
-    state.fillCol = 0;
-    state.rowSkip = 0; // full-width refresh, rows are contiguous
-
-    state.activeBuf = 0;
-    EXPAND_TO_CHUNK((uint32_t *)state.buf[state.activeBuf], CHUNK / 4);
-
-    state.imageProgress += CHUNK;
-    state.activeBuf = !state.activeBuf;
-    EXPAND_TO_CHUNK((uint32_t *)state.buf[state.activeBuf], CHUNK / 4);
-
-    HAL_TRY(HAL_SPI_Transmit_DMA(spi, state.buf[!state.activeBuf], CHUNK));
-
-    return HAL_OK;
-  } else {
-    return HAL_BUSY;
-  }
-}
-
-// private incrementing function
-static inline void BG_ADVANCE(const uint8_t *data, uint32_t *remaining,
+// walks through RLE encoded image
+static inline void rleAdvance(const uint8_t *data, uint32_t *remaining,
                               uint32_t *index, uint32_t count) {
   // traversing RLE stream to get to targetted value
   while (count > 0 || *remaining == 0) {
@@ -384,9 +110,10 @@ static inline void BG_ADVANCE(const uint8_t *data, uint32_t *remaining,
   }
 }
 
-// bitpacks a contiguous section of a buffer
-static inline void FILL_SCREEN(uint8_t *buffer, uint32_t *position,
-                               uint16_t count, bool isOn, bool overWrite) {
+// bitpacks a contiguous section of a buffer while advancing position pointer
+static inline void fillScreen(uint8_t *buffer, uint32_t *position,
+                              uint16_t count, const bool isOn,
+                              const bool overWrite) {
   // leading bits
   // if the current position isn't byte aligned
   if ((*position) % 8 != 0) {
@@ -430,8 +157,314 @@ static inline void FILL_SCREEN(uint8_t *buffer, uint32_t *position,
   }
 }
 
+static inline void bgPreload(const uint8_t *bgData, uint8_t *screenData,
+                             uint32_t position, const uint16_t width,
+                             const uint16_t height) {
+
+  const uint16_t rowSkip = ILI9488_WIDTH - width;
+
+  uint32_t bgRem = bgData[0]; // in pixels
+  uint32_t bgIdx = 0;
+
+  // getting correct background index for rle value
+  rleAdvance(bgData, &bgRem, &bgIdx, position);
+
+  for (uint16_t row = 0; row < height; row++) {
+    uint16_t remainingPx = width;
+
+    while (remainingPx > 0) {
+      uint16_t chunk = (remainingPx > bgRem) ? bgRem : remainingPx;
+      remainingPx -= chunk;
+
+      fillScreen(screenData, &position, chunk, bgIdx % 2, true);
+
+      rleAdvance(bgData, &bgRem, &bgIdx, chunk);
+    }
+    rleAdvance(bgData, &bgRem, &bgIdx, rowSkip);
+    position += rowSkip;
+  }
+}
+
+// private display functions
+
+// LCD hardware Reset, active low
+void ILI9488_Reset(void) {
+  // setting the reset pin to low to signal a reset
+  HAL_GPIO_WritePin(DISPLAY_RESET_GPIO_Port, DISPLAY_RESET_Pin, GPIO_PIN_RESET);
+
+  // small delay
+  HAL_Delay(10);
+
+  // setting the pin to high (default state)
+  HAL_GPIO_WritePin(DISPLAY_RESET_GPIO_Port, DISPLAY_RESET_Pin, GPIO_PIN_SET);
+
+  HAL_Delay(100);
+}
+
+// LCD chip select signal, active low
+void ILI9488_Select(void) {
+  // setting the select pin to low
+  HAL_GPIO_WritePin(DISPLAY_CS_GPIO_Port, DISPLAY_CS_Pin, GPIO_PIN_RESET);
+}
+
+void ILI9488_Deselect(void) {
+  // setting the select pin to high
+  HAL_GPIO_WritePin(DISPLAY_CS_GPIO_Port, DISPLAY_CS_Pin, GPIO_PIN_SET);
+}
+
+// sends command to controller
+HAL_StatusTypeDef ILI9488_Cmd(SPI_HandleTypeDef *spi, uint8_t cmd) {
+  // setting DC pin to command mode (low)
+  HAL_GPIO_WritePin(DISPLAY_DC_GPIO_Port, DISPLAY_DC_Pin, GPIO_PIN_RESET);
+
+  // selecting SPI device
+  ILI9488_Select();
+
+  // using SPI to transmit data
+  HAL_StatusTypeDef status = HAL_SPI_Transmit(spi, &cmd, 1, HAL_MAX_DELAY);
+
+  // deselecting SPI device
+  ILI9488_Deselect();
+
+  return status;
+}
+
+// sends data to controller
+HAL_StatusTypeDef ILI9488_Data(SPI_HandleTypeDef *spi, uint8_t *data,
+                               uint16_t size) {
+  // setting DC pin to command mode (high)
+  HAL_GPIO_WritePin(DISPLAY_DC_GPIO_Port, DISPLAY_DC_Pin, GPIO_PIN_SET);
+
+  // selecting SPI device
+  ILI9488_Select();
+
+  // using SPI to transmit data
+  HAL_StatusTypeDef status = HAL_SPI_Transmit(spi, data, size, HAL_MAX_DELAY);
+
+  // deselecting SPI device
+  ILI9488_Deselect();
+
+  return status;
+}
+
+// utility function to set the writing range of the controller
+HAL_StatusTypeDef ILI9488_SetRange(SPI_HandleTypeDef *spi, uint16_t colStart,
+                                   uint16_t colEnd, uint16_t rowStart,
+                                   uint16_t rowEnd) {
+  // set column address command
+  HAL_TRY(ILI9488_Cmd(spi, 0x2A));
+
+  // parameters: starting col MSB, starting col LSB, ending col MSB, ending
+  // col LSB
+  uint8_t caset[] = {
+
+      (uint8_t)(colStart >> 8),
+
+      (uint8_t)(colStart & 0xFF),
+
+      (uint8_t)(colEnd >> 8),
+
+      (uint8_t)(colEnd & 0xFF)
+
+  };
+
+  HAL_TRY(ILI9488_Data(spi, caset, 4));
+
+  // set row address command
+  HAL_TRY(ILI9488_Cmd(spi, 0x2B));
+  // parameters: starting row MSB, starting row LSB, ending row MSB, ending
+  // row LSB
+  uint8_t raset[] = {
+
+      (uint8_t)(rowStart >> 8),
+
+      (uint8_t)(rowStart & 0xFF),
+
+      (uint8_t)(rowEnd >> 8),
+
+      (uint8_t)(rowEnd & 0xFF)};
+
+  HAL_TRY(ILI9488_Data(spi, raset, 4));
+
+  return HAL_OK;
+}
+
+//--------------------------------------------------------------------------------
+// public functions
+
+// sets brightness of display
+HAL_StatusTypeDef ILI9488_SetBrightness(SPI_HandleTypeDef *spi,
+                                        TIM_HandleTypeDef *tim, uint8_t val) {
+
+  // for pwm driven brightness
+  __HAL_TIM_SET_COMPARE(tim, TIM_CHANNEL_1, val);
+
+  // for displays without a physical brightness pin
+  HAL_TRY(ILI9488_Cmd(spi, 0x51));
+  HAL_TRY(ILI9488_Data(spi, &val, 1));
+
+  return HAL_OK;
+}
+
+// setter for background image
+HAL_StatusTypeDef ILI9488_SetBackground(Image_t *bg) {
+  // making sure requested image is full screen
+  if (bg->height != 320 || bg->width != 480) {
+    return HAL_ERROR;
+  }
+
+  state.backgroundImage = bg;
+
+  return HAL_OK;
+}
+
+// initializes the ILI9488
+HAL_StatusTypeDef ILI9488_Init(SPI_HandleTypeDef *spi,
+                               TIM_HandleTypeDef *backlightTimer) {
+
+  // initializing background to empty image
+  ILI9488_SetBackground((Image_t *)&File_005_ObjNum_004_480x320_6_18_26);
+
+  // safety delays. can likely be removed
+  HAL_Delay(200);
+
+  // hardware reset
+  ILI9488_Reset();
+  HAL_Delay(200);
+
+  // software reset
+  HAL_TRY(ILI9488_Cmd(spi, 0x01));
+  HAL_Delay(120);
+
+  // exit sleep mode
+  HAL_TRY(ILI9488_Cmd(spi, 0x11));
+  HAL_Delay(120);
+
+  // powering testing switches
+  HAL_GPIO_WritePin(SWITCH_POWER_GPIO_Port, SWITCH_POWER_Pin, GPIO_PIN_SET);
+
+  // backlight on
+  // starting display backlight pwm timer
+  HAL_TIM_PWM_Start(backlightTimer, TIM_CHANNEL_1);
+
+  // configuring extended command set for spi write
+  HAL_TRY(ILI9488_Cmd(spi, 0xF7));
+  uint8_t unlockData[] = {0xA9, 0x51, 0x2C, 0x82};
+  HAL_TRY(ILI9488_Data(spi, &unlockData[0], 2));
+
+  // memory data access control - instruction 36h MADCTL
+  HAL_TRY(ILI9488_Cmd(spi, 0x36));
+  // same as st7796s
+  uint8_t madctl = 0x20;
+  HAL_TRY(ILI9488_Data(spi, &madctl, 1));
+
+  // configuring brightness control settings - instruction 53h WRCTRLD
+  HAL_TRY(ILI9488_Cmd(spi, 0x53));
+  // 0 0 1 0 1 1 0 0
+  uint8_t brightnessCtl = 0x2C;
+  HAL_TRY(ILI9488_Data(spi, &brightnessCtl, 1));
+
+  // Interface Pixel Format - instruction 3Ah COLMOD
+  HAL_TRY(ILI9488_Cmd(spi, 0x3A));
+  // Lowest available is 3bit/pixel
+  // 00000001
+  // format: R G B 0 R G B 0
+  // each byte = two pixels due to padding
+  uint8_t colmod = 0x01;
+  HAL_TRY(ILI9488_Data(spi, &colmod, 1));
+
+  // Column inversion for display longevity
+  // update: seems to cause flicker on this display?
+  // 1 dot mode
+  //	ILI9488_CMD(spi, 0xB4);
+  //	uint8_t inversion = 0x01;
+  //	ILI9488_DATA(spi, &inversion, 1);
+
+  // display on
+  HAL_TRY(ILI9488_Cmd(spi, 0x29));
+
+  return HAL_OK;
+}
+
+// debugging function to see filling order of screen
+HAL_StatusTypeDef ILI9488_Fill(SPI_HandleTypeDef *spi) {
+
+  // setting fill range
+  HAL_TRY(ILI9488_SetRange(spi, 0, ILI9488_WIDTH - 1, 0, ILI9488_HEIGHT - 1));
+
+  // write data command
+  HAL_TRY(ILI9488_Cmd(spi, 0x2C));
+
+  // setting to data mode
+  HAL_GPIO_WritePin(DISPLAY_DC_GPIO_Port, DISPLAY_DC_Pin, GPIO_PIN_SET);
+
+  // selecting spi device
+  ILI9488_Select();
+
+  // each byte contains two bits
+  uint8_t padded = 238;
+  for (uint32_t r = 0; r < 76800; r++) {
+    HAL_TRY(HAL_SPI_Transmit(spi, &padded, 1, HAL_MAX_DELAY));
+  }
+
+  ILI9488_Deselect();
+
+  return HAL_OK;
+}
+
+// fast refreshing using chunking
+HAL_StatusTypeDef ILI9488_Refresh(SPI_HandleTypeDef *spi) {
+  // checking if the display is already being modified
+  if (!state.currentlyDrawing) {
+    // setting status to busy
+
+    state.currentlyDrawing = true;
+
+    HAL_TRY(ILI9488_SetRange(spi, 0, ILI9488_WIDTH - 1, 0, ILI9488_HEIGHT - 1));
+
+    // write data command
+    HAL_TRY(ILI9488_Cmd(spi, 0x2C));
+
+    // setting to data mode
+    HAL_GPIO_WritePin(DISPLAY_DC_GPIO_Port, DISPLAY_DC_Pin, GPIO_PIN_SET);
+
+    // selecting spi device
+    ILI9488_Select();
+
+    state.activeBuf = 0;
+    state.imageProgress = 0;
+
+    // setting state to reuse the other callback
+    state.imageSize = ILI9488_WIDTH * ILI9488_HEIGHT;
+    state.imageTarget = state.imageSize / 2;
+    state.width = ILI9488_WIDTH / 8;
+    state.height = ILI9488_HEIGHT;
+    state.x = 0;
+    state.y = 0;
+
+    state.fillPos = 0;
+    state.fillCol = 0;
+    state.rowSkip = 0; // full-width refresh, rows are contiguous
+
+    state.activeBuf = 0;
+    expandToChunk(state.screenCopy, (uint32_t *)state.buf[state.activeBuf],
+                  CHUNK / 4);
+
+    state.imageProgress += CHUNK;
+    state.activeBuf = !state.activeBuf;
+    expandToChunk(state.screenCopy, (uint32_t *)state.buf[state.activeBuf],
+                  CHUNK / 4);
+
+    HAL_TRY(HAL_SPI_Transmit_DMA(spi, state.buf[!state.activeBuf], CHUNK));
+
+    return HAL_OK;
+  } else {
+    return HAL_BUSY;
+  }
+}
+
 // loads image to screen buffer
-HAL_StatusTypeDef ILI9488_LOAD_IMAGE(SPI_HandleTypeDef *spi, uint16_t x,
+HAL_StatusTypeDef ILI9488_LoadImage(SPI_HandleTypeDef *spi, uint16_t x,
                                      uint16_t y, const Image_t *image,
                                      bool overWrite, bool bg, bool draw) {
   if (!state.currentlyLoading) {
@@ -449,35 +482,14 @@ HAL_StatusTypeDef ILI9488_LOAD_IMAGE(SPI_HandleTypeDef *spi, uint16_t x,
     uint32_t pos = (ILI9488_WIDTH * y) + x;            // in pixels
     const uint16_t imgWidth = image->width;            // in pixels
     const uint16_t imgHeight = image->height;          // in pixels
-    const uint16_t rowskip = ILI9488_WIDTH - imgWidth; // in pixels
+    const uint16_t rowSkip = ILI9488_WIDTH - imgWidth; // in pixels
     const uint8_t *imgData = image->data;
     uint8_t *screenData = state.screenCopy;
 
     // pre loading background if OR mode is enabled
     if (!overWrite && bg) {
-      const uint8_t *bgData = state.backgroundImage->data;
-      uint32_t bgRem = bgData[0]; // in pixels
-      uint32_t bgIdx = 0;
-
-      // getting correct background index for rle value
-      BG_ADVANCE(bgData, &bgRem, &bgIdx, (ILI9488_WIDTH * y) + x);
-
-      for (uint16_t row = 0; row < imgHeight; row++) {
-        uint16_t remainingPx = imgWidth;
-
-        while (remainingPx > 0) {
-          uint16_t chunk = (remainingPx > bgRem) ? bgRem : remainingPx;
-          remainingPx -= chunk;
-
-          FILL_SCREEN(screenData, &pos, chunk, bgIdx % 2, true);
-
-          BG_ADVANCE(bgData, &bgRem, &bgIdx, chunk);
-        }
-        BG_ADVANCE(bgData, &bgRem, &bgIdx, rowskip);
-        pos += rowskip;
-      }
-
-      pos = (ILI9488_WIDTH * y) + x; // in pixels
+      bgPreload(state.backgroundImage->data, screenData, pos, imgWidth,
+                imgHeight);
     }
 
     // drawing image
@@ -496,12 +508,12 @@ HAL_StatusTypeDef ILI9488_LOAD_IMAGE(SPI_HandleTypeDef *spi, uint16_t x,
         chunk = remainingPx > chunk ? chunk : remainingPx;
         remainingPx -= chunk;
 
-        FILL_SCREEN(screenData, &pos, chunk, isOn, overWrite);
+        fillScreen(screenData, &pos, chunk, isOn, overWrite);
 
         // should only ever == imgWidth as per the logic above
         if ((col += chunk) >= imgWidth) {
           col = 0;
-          pos += rowskip;
+          pos += rowSkip;
         }
       }
     }
@@ -516,7 +528,7 @@ HAL_StatusTypeDef ILI9488_LOAD_IMAGE(SPI_HandleTypeDef *spi, uint16_t x,
     state.currentlyLoading = false;
 
     if (draw) {
-      return ILI9488_DRAW(spi);
+      return ILI9488_Draw(spi);
     }
 
     return HAL_OK;
@@ -527,7 +539,7 @@ HAL_StatusTypeDef ILI9488_LOAD_IMAGE(SPI_HandleTypeDef *spi, uint16_t x,
 
 // loads text with transparent background on OR mode
 HAL_StatusTypeDef
-ILI9488_LOAD_TEXT(SPI_HandleTypeDef *spi, uint16_t x, uint16_t y,
+ILI9488_LoadText(SPI_HandleTypeDef *spi, uint16_t x, uint16_t y,
                   uint8_t text[], uint8_t textSize, const Character_t *font,
                   /*width of character in pixels*/ uint8_t characterWidth,
                   /*number of characters in font*/ size_t fontSize,
@@ -547,49 +559,25 @@ ILI9488_LOAD_TEXT(SPI_HandleTypeDef *spi, uint16_t x, uint16_t y,
     const uint32_t bytesPerChar =
         (characterWidth * characterHeight) / 8;         // in bytes
     const uint8_t scaledCharWidth = characterWidth / 8; // in bytes
-    uint16_t rowskip;
+    uint16_t rowSkip;
 
     uint8_t *screenData = state.screenCopy;
 
     const uint16_t boundsWidth = characterWidth * textSize; // in pixels
 
-    uint32_t pos;
-
     // pre loading background if OR mode is enabled
     if (!overWrite && bg) {
-      const uint8_t *bgData = state.backgroundImage->data;
-      uint32_t bgRem = bgData[0]; // in pixels
-      uint32_t bgIdx = 0;
-      rowskip = ILI9488_WIDTH - boundsWidth; // in pixels
-
-      pos = (ILI9488_WIDTH * y) + x;
-
-      // getting correct background index for rle value
-      BG_ADVANCE(bgData, &bgRem, &bgIdx, (ILI9488_WIDTH * y) + x);
-
-      for (uint16_t row = 0; row < characterHeight; row++) {
-        uint16_t remainingPx = boundsWidth;
-
-        while (remainingPx > 0) {
-          uint16_t chunk = (remainingPx > bgRem) ? bgRem : remainingPx;
-          remainingPx -= chunk;
-
-          FILL_SCREEN(screenData, &pos, chunk, bgIdx % 2, true);
-
-          BG_ADVANCE(bgData, &bgRem, &bgIdx, chunk);
-        }
-        BG_ADVANCE(bgData, &bgRem, &bgIdx, rowskip);
-        pos += rowskip;
-      }
+      bgPreload(state.backgroundImage->data, screenData,
+                (y * ILI9488_WIDTH) + x, boundsWidth, characterHeight);
     }
 
-    rowskip = ILI9488_SCALED_WIDTH - scaledCharWidth; // in bytes
+    rowSkip = ILI9488_SCALED_WIDTH - scaledCharWidth; // in bytes
     // iterating through every inputted character
     for (uint16_t charIdx = 0; charIdx < textSize; charIdx++) {
       // loading character
       uint16_t col = 0; // in bytes
-      pos = (ILI9488_SCALED_WIDTH * y) + (x / 8) +
-            (charIdx * scaledCharWidth); // in bytes
+      uint32_t pos = (ILI9488_SCALED_WIDTH * y) + (x / 8) +
+                     (charIdx * scaledCharWidth); // in bytes
 
       // defining current character by using the character array with an ascii
       // offset
@@ -617,7 +605,7 @@ ILI9488_LOAD_TEXT(SPI_HandleTypeDef *spi, uint16_t x, uint16_t y,
         // incrementing column and row
         if (++col >= characterWidth / 8) {
           col = 0;
-          pos += rowskip;
+          pos += rowSkip;
         }
       }
     }
@@ -632,7 +620,7 @@ ILI9488_LOAD_TEXT(SPI_HandleTypeDef *spi, uint16_t x, uint16_t y,
     state.currentlyLoading = false;
 
     if (draw) {
-      return ILI9488_DRAW(spi);
+      return ILI9488_Draw(spi);
     }
 
     return HAL_OK;
@@ -643,21 +631,21 @@ ILI9488_LOAD_TEXT(SPI_HandleTypeDef *spi, uint16_t x, uint16_t y,
 
 // x and y should be multiples of 8
 // draws last loaded image to screen
-HAL_StatusTypeDef ILI9488_DRAW(SPI_HandleTypeDef *spi) {
+HAL_StatusTypeDef ILI9488_Draw(SPI_HandleTypeDef *spi) {
   if (!state.currentlyDrawing) {
 
     // setting status to busy
     state.currentlyDrawing = true;
 
     // setting fill range to only include the last written screen update
-    HAL_TRY(ILI9488_SET_RANGE(spi, state.x,
-                              (state.x + state.width - 1 > ILI9488_WIDTH - 1
-                                   ? ILI9488_WIDTH - 1
-                                   : state.x + state.width - 1),
-                              state.y,
-                              (state.y + state.height - 1 > ILI9488_HEIGHT - 1
-                                   ? ILI9488_HEIGHT - 1
-                                   : state.y + state.height - 1)));
+    HAL_TRY(ILI9488_SetRange(spi, state.x,
+                             (state.x + state.width - 1 > ILI9488_WIDTH - 1
+                                  ? ILI9488_WIDTH - 1
+                                  : state.x + state.width - 1),
+                             state.y,
+                             (state.y + state.height - 1 > ILI9488_HEIGHT - 1
+                                  ? ILI9488_HEIGHT - 1
+                                  : state.y + state.height - 1)));
 
     if (state.x + state.width > ILI9488_WIDTH) {
       state.width = ILI9488_WIDTH - state.x;
@@ -672,13 +660,13 @@ HAL_StatusTypeDef ILI9488_DRAW(SPI_HandleTypeDef *spi) {
     state.width /= 8;
 
     // write data command
-    HAL_TRY(ILI9488_CMD(spi, 0x2C));
+    HAL_TRY(ILI9488_Cmd(spi, 0x2C));
 
     // setting to data mode
     HAL_GPIO_WritePin(DISPLAY_DC_GPIO_Port, DISPLAY_DC_Pin, GPIO_PIN_SET);
 
     // selecting spi device
-    ILI9488_SELECT();
+    ILI9488_Select();
 
     // double buffering
 
@@ -694,19 +682,20 @@ HAL_StatusTypeDef ILI9488_DRAW(SPI_HandleTypeDef *spi) {
     state.rowSkip = ILI9488_SCALED_WIDTH - state.width;
 
     if (state.imageTarget <= CHUNK) {
-      EXPAND_TO_CHUNK((uint32_t *)state.buf[state.activeBuf],
-                      state.imageTarget / 4);
+      expandToChunk(state.screenCopy, (uint32_t *)state.buf[state.activeBuf],
+                    state.imageTarget / 4);
       HAL_TRY(HAL_SPI_Transmit_DMA(spi, state.buf[state.activeBuf],
                                    state.imageTarget));
       state.imageProgress = state.imageTarget;
     } else {
-      EXPAND_TO_CHUNK((uint32_t *)state.buf[state.activeBuf], CHUNK / 4);
+      expandToChunk(state.screenCopy, (uint32_t *)state.buf[state.activeBuf],
+                    CHUNK / 4);
       state.imageProgress += CHUNK;
       state.activeBuf = !state.activeBuf;
 
       uint32_t remaining = state.imageTarget - state.imageProgress;
-      EXPAND_TO_CHUNK((uint32_t *)state.buf[state.activeBuf],
-                      (remaining < CHUNK ? remaining : CHUNK) / 4);
+      expandToChunk(state.screenCopy, (uint32_t *)state.buf[state.activeBuf],
+                    (remaining < CHUNK ? remaining : CHUNK) / 4);
       HAL_TRY(HAL_SPI_Transmit_DMA(spi, state.buf[!state.activeBuf], CHUNK));
     }
 
@@ -723,7 +712,7 @@ void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi) {
 
     // done drawing condition
     if (state.imageProgress >= state.imageTarget) {
-      ILI9488_DESELECT();
+      ILI9488_Deselect();
       state.currentlyDrawing = 0;
       return;
     }
@@ -747,7 +736,8 @@ void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi) {
       // toggling active buffer
       state.activeBuf = !state.activeBuf;
 
-      EXPAND_TO_CHUNK((uint32_t *)state.buf[state.activeBuf], CHUNK / 4);
+      expandToChunk(state.screenCopy, (uint32_t *)state.buf[state.activeBuf],
+                    CHUNK / 4);
     }
   }
 }

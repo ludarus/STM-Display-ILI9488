@@ -20,13 +20,12 @@
 #define CLOCK6 2052
 #define CLOCK7 28800
 
-void setAlarm(TIM_HandleTypeDef *alarmTimer, uint8_t frequencyIndex,
-              uint8_t dutyCycle);
-void enableAlarm(TIM_HandleTypeDef*alarmTimer);
-void disableAlarm(TIM_HandleTypeDef*alarmTimer);
-void startBeep(TIM_HandleTypeDef*alarmTimer);
-void stopBeep(TIM_HandleTypeDef*alarmTimer);
-
+void ALARM_Set(TIM_HandleTypeDef *alarmTimer, uint8_t frequencyIndex,
+               uint8_t dutyCycle);
+void ALARM_Enable(TIM_HandleTypeDef *alarmTimer);
+void ALARM_Disable(TIM_HandleTypeDef *alarmTimer);
+void ALARM_StartBeep(TIM_HandleTypeDef *alarmTimer);
+void ALARM_StopBeep(TIM_HandleTypeDef *alarmTimer);
 
 typedef struct {
   uint16_t psc;

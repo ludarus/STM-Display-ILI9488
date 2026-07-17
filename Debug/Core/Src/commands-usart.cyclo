@@ -1,7 +1,7 @@
-../Core/Src/commands-usart.c:187:19:usartCommandsInit	2
-../Core/Src/commands-usart.c:200:19:displayImageCMD	2
-../Core/Src/commands-usart.c:215:19:refreshCMD	2
-../Core/Src/commands-usart.c:227:19:orCMD	1
+../Core/Src/commands-usart.c:187:19:UART_CMDS_Init	2
+../Core/Src/commands-usart.c:200:19:CMD_DisplayImage	2
+../Core/Src/commands-usart.c:215:19:CMD_Refresh	2
+../Core/Src/commands-usart.c:227:19:CMD_Or	1
 ../Core/Src/commands-usart.c:251:6:stringsEqual	3
 ../Core/Src/commands-usart.c:262:6:parseCommand	4
 ../Core/Src/commands-usart.c:283:6:HAL_UARTEx_RxEventCallback	1

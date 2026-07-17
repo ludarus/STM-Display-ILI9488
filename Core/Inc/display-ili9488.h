@@ -79,23 +79,23 @@ typedef struct {
 } ImageTransferState_t;
 
 // public functions
-HAL_StatusTypeDef ILI9488_BRIGHTNESS(SPI_HandleTypeDef *spi,
+HAL_StatusTypeDef ILI9488_SetBrightness(SPI_HandleTypeDef *spi,
                                      TIM_HandleTypeDef *tim, uint8_t val);
-HAL_StatusTypeDef ILI9488_SET_BACKGROUND(Image_t *bg);
-HAL_StatusTypeDef ILI9488_INIT(SPI_HandleTypeDef *spi,
+HAL_StatusTypeDef ILI9488_SetBackground(Image_t *bg);
+HAL_StatusTypeDef ILI9488_Init(SPI_HandleTypeDef *spi,
                                TIM_HandleTypeDef *backlightTimer);
-HAL_StatusTypeDef ILI9488_REFRESH(SPI_HandleTypeDef *spi);
-HAL_StatusTypeDef ILI9488_FILL(SPI_HandleTypeDef *spi);
-HAL_StatusTypeDef ILI9488_LOAD_IMAGE(SPI_HandleTypeDef *spi, uint16_t x,
+HAL_StatusTypeDef ILI9488_Refresh(SPI_HandleTypeDef *spi);
+HAL_StatusTypeDef ILI9488_Fill(SPI_HandleTypeDef *spi);
+HAL_StatusTypeDef ILI9488_LoadImage(SPI_HandleTypeDef *spi, uint16_t x,
                                      uint16_t y, const Image_t *image,
                                      bool overWrite, bool bg, bool draw);
 HAL_StatusTypeDef
-ILI9488_LOAD_TEXT(SPI_HandleTypeDef *spi, uint16_t x, uint16_t y,
+ILI9488_LoadText(SPI_HandleTypeDef *spi, uint16_t x, uint16_t y,
                   uint8_t text[], uint8_t textSize, const Character_t *font,
                   /*width of character in pixels*/ uint8_t characterWidth,
                   /*number of characters in font*/ size_t fontSize,
                   /*height of character in pixels*/ size_t characterHeight,
                   bool overWrite, bool bg, bool draw);
-HAL_StatusTypeDef ILI9488_DRAW(SPI_HandleTypeDef *spi);
+HAL_StatusTypeDef ILI9488_Draw(SPI_HandleTypeDef *spi);
 
 #endif /* INC_DISPLAY_ILI9488_H_ */
