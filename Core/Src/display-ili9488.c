@@ -229,7 +229,7 @@ HAL_StatusTypeDef ILI9488_INIT(SPI_HandleTypeDef *spi,
                                TIM_HandleTypeDef *backlightTimer) {
 
   // initializing background to empty image
-  state.backgroundImage = (Image_t *)&File_005_ObjNum_004_480x320_6_18_26;
+  ILI9488_SET_BACKGROUND((Image_t *)&File_005_ObjNum_004_480x320_6_18_26);
 
   // safety delays. can likely be removed
   HAL_Delay(200);
@@ -368,44 +368,6 @@ HAL_StatusTypeDef ILI9488_REFRESH(SPI_HandleTypeDef *spi) {
   }
 }
 
-// testing function to make sure written images are in the right spot
-// can be altered for speed later in development
-HAL_StatusTypeDef ILI9488_REFRESH_DEBUG(SPI_HandleTypeDef *spi) {
-  // checking if the display is already being modified
-  if (!state.currentlyDrawing) {
-    // setting status to busy
-
-    state.currentlyDrawing = true;
-
-    // setting fill range
-    HAL_TRY(
-        ILI9488_SET_RANGE(spi, 0, ILI9488_WIDTH - 1, 0, ILI9488_HEIGHT - 1));
-
-    // write data command
-    HAL_TRY(ILI9488_CMD(spi, 0x2C));
-
-    // setting to data mode
-    HAL_GPIO_WritePin(DISPLAY_DC_GPIO_Port, DISPLAY_DC_Pin, GPIO_PIN_SET);
-
-    // selecting spi device
-    ILI9488_SELECT();
-
-    // using lookup table to expand bit packed pixels into the correct data
-    // pattern for the display
-    // R G B P R G B P
-    for (uint32_t i = 0; i < sizeof(state.screenCopy); i++) {
-      HAL_TRY(HAL_SPI_Transmit(spi, (uint8_t *)&table[state.screenCopy[i]], 4,
-                               HAL_MAX_DELAY));
-    }
-    ILI9488_DESELECT();
-    state.currentlyDrawing = false;
-
-    return HAL_OK;
-  } else {
-    return HAL_BUSY;
-  }
-}
-
 // private incrementing function
 static inline void BG_ADVANCE(const uint8_t *data, uint32_t *remaining,
                               uint32_t *index, uint32_t count) {
@@ -419,93 +381,6 @@ static inline void BG_ADVANCE(const uint8_t *data, uint32_t *remaining,
 
     (*index)++;
     *remaining = data[*index];
-  }
-}
-
-// image is required to be drawn fully in the boundaries of the display
-HAL_StatusTypeDef ILI9488_LOAD_IMAGE_DEBUG(SPI_HandleTypeDef *spi, uint16_t x,
-                                           uint16_t y, const Image_t *image,
-                                           bool overWrite) {
-  if (!state.currentlyLoading) {
-    // checking to make sure the image is in bounds:
-    if (x + image->width > ILI9488_WIDTH ||
-        y + image->height > ILI9488_HEIGHT) {
-      return HAL_ERROR;
-    }
-
-    state.currentlyLoading = true;
-
-    // copying state variables for compiler optimization (pointer aliasing)
-    uint16_t row = 0;                       // in pixels
-    uint16_t col = 0;                       // in pixels
-    const uint16_t imgWidth = image->width; // in pixels
-    const uint8_t *imgData = image->data;
-
-    // background variables
-    const uint8_t *bgData = state.backgroundImage->data;
-    uint32_t rem = bgData[0]; // in pixels
-    uint32_t bgIdx = 0;
-
-    if (!overWrite) {
-      // getting correct background index for rle value
-      BG_ADVANCE(bgData, &rem, &bgIdx, (ILI9488_WIDTH * y) + x);
-    }
-
-    // iterating through compressed image
-    for (uint32_t i = 0; i < image->size; i++) {
-
-      // iterating through the current RLE value
-      for (uint8_t j = 0; j < imgData[i]; j++) {
-        // calculating screen pixel index from current position within image
-        uint32_t globalpos = ILI9488_WIDTH * (y + row) + x + col;
-
-        if (i % 2) {
-          // pixel is high, 1 % 2 = 1
-          // will always be high in overwrite and OR mode
-          SET_PIXEL(state.screenCopy, globalpos);
-        } else if (overWrite) {
-          // pixel is low and overwrite is on. If in OR mode, just leave
-          // current pixel as it is
-          CLR_PIXEL(state.screenCopy, globalpos);
-        } else {
-          // if pixel is low and OR mode is on, write background
-          // (bgIdx % 2) ? SET_PIXEL(state.screenCopy, globalpos)
-          //             : CLR_PIXEL(state.screenCopy, globalpos);
-          if (bgIdx % 2) {
-            SET_PIXEL(state.screenCopy, globalpos);
-          } else {
-            CLR_PIXEL(state.screenCopy, globalpos);
-          }
-        }
-
-        // incrementing the column and width
-        if (++col == imgWidth) {
-          col = 0;
-          row++;
-
-          // jump entire row
-          if (!overWrite) {
-            BG_ADVANCE(bgData, &rem, &bgIdx, ILI9488_WIDTH - imgWidth);
-          }
-        } else if (!overWrite) {
-          // incrementing singular pixel
-          BG_ADVANCE(bgData, &rem, &bgIdx, 1);
-        }
-      }
-    }
-
-    // setting state variables
-    state.x = x;
-    state.y = y;
-    state.width = image->width;
-    state.height = image->height;
-    state.imageSize = image->height * image->width;
-
-    state.currentlyLoading = false;
-
-    return HAL_OK;
-  } else {
-    return HAL_BUSY;
   }
 }
 

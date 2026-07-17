@@ -85,14 +85,10 @@ HAL_StatusTypeDef ILI9488_SET_BACKGROUND(Image_t *bg);
 HAL_StatusTypeDef ILI9488_INIT(SPI_HandleTypeDef *spi,
                                TIM_HandleTypeDef *backlightTimer);
 HAL_StatusTypeDef ILI9488_REFRESH(SPI_HandleTypeDef *spi);
-HAL_StatusTypeDef ILI9488_REFRESH_DEBUG(SPI_HandleTypeDef *spi);
 HAL_StatusTypeDef ILI9488_FILL(SPI_HandleTypeDef *spi);
 HAL_StatusTypeDef ILI9488_LOAD_IMAGE(SPI_HandleTypeDef *spi, uint16_t x,
-                                          uint16_t y, const Image_t *image,
-                                          bool overWrite, bool bg, bool draw);
-HAL_StatusTypeDef ILI9488_LOAD_IMAGE_DEBUG(SPI_HandleTypeDef *spi, uint16_t x,
-                                           uint16_t y, const Image_t *image,
-                                           bool overWrite);
+                                     uint16_t y, const Image_t *image,
+                                     bool overWrite, bool bg, bool draw);
 HAL_StatusTypeDef
 ILI9488_LOAD_TEXT(SPI_HandleTypeDef *spi, uint16_t x, uint16_t y,
                   uint8_t text[], uint8_t textSize, const Character_t *font,
