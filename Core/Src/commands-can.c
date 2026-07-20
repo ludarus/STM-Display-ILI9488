@@ -103,8 +103,11 @@ static const Obj_t objects[] = {
     // object 0 is not used
     {0},
     {1, 0, 0, &File_002_ObjNum_001_NEW_6_17_26},
-    {2},
-    {3},
+    // ↓temporary values↓
+    {2, 0, 0, &File_002_ObjNum_001_NEW_6_17_26},
+    {3, 0, 0, &File_002_ObjNum_001_NEW_6_17_26},
+    // ↑temporary values↑
+
     {4, 0, 0, &File_005_ObjNum_004_480x320_6_18_26},
     {5, 0, 0, &File_006_ObjNum_005_480x320_6_18_26_C},
     {6, 0, 0, &File_007_ObjNum_006_480x320_6_18_26},
@@ -148,106 +151,157 @@ static const Obj_t objects[] = {
     {44, 0, 0, &File_045_ObjNum_044_144x208_6_19_26},
     {45, 0, 0, &File_046_ObjNum_045_144x208_6_19_26},
     {46, 0, 0, &File_047_ObjNum_046_144x208_6_19_26},
-    {47},
-    {48},
-    {49},
-    {50},
-    {51},
+    // ↓temporary values↓
+    {47, 16, 16, &File_047_ObjNum_046_144x208_6_19_26},
+    {48, 32, 32, &File_047_ObjNum_046_144x208_6_19_26},
+    {49, 48, 48, &File_047_ObjNum_046_144x208_6_19_26},
+    {50, 64, 64, &File_047_ObjNum_046_144x208_6_19_26},
+    {51, 72, 72, &File_047_ObjNum_046_144x208_6_19_26},
+    // ↑temporary values↑
+
     {52, 0, 0, &File_048_ObjNum_052_144x183_6_19_26},
     {53, 0, 0, &File_049_ObjNum_053_144x183_6_19_26},
     {54, 0, 0, &File_050_ObjNum_054_144x183_6_19_26},
     {55, 0, 0, &File_051_ObjNum_055_144x183_6_19_26},
-    {56},
+    // ↓temporary values↓
+    {56, 64, 64, &File_051_ObjNum_055_144x183_6_19_26},
+    // ↑temporary values↑
+
     {57, 0, 0, &File_052_ObjNum_057_144x30_6_19_26},
-    {58},
-    {59},
-    {60},
-    {61},
-    {62},
-    {63},
-    {64},
-    {65},
-    {66},
-    {67},
-    {68},
-    {69},
-    {70},
-    {71},
-    {72},
-    {73},
-    {74},
-    {75},
-    {76},
+    // ↓temporary values↓
+    {58, 8 * 0, 8 * 0, &File_052_ObjNum_057_144x30_6_19_26},
+    {59, 8 * 1, 8 * 1, &File_052_ObjNum_057_144x30_6_19_26},
+    {60, 8 * 2, 8 * 2, &File_052_ObjNum_057_144x30_6_19_26},
+    {61, 8 * 3, 8 * 3, &File_052_ObjNum_057_144x30_6_19_26},
+    {62, 8 * 4, 8 * 4, &File_052_ObjNum_057_144x30_6_19_26},
+    {63, 8 * 5, 8 * 5, &File_052_ObjNum_057_144x30_6_19_26},
+    {64, 8 * 6, 8 * 6, &File_052_ObjNum_057_144x30_6_19_26},
+    {65, 8 * 7, 8 * 7, &File_052_ObjNum_057_144x30_6_19_26},
+    {66, 8 * 8, 8 * 8, &File_052_ObjNum_057_144x30_6_19_26},
+    {67, 8 * 9, 8 * 9, &File_052_ObjNum_057_144x30_6_19_26},
+    {68, 8 * 8, 8 * 0, &File_052_ObjNum_057_144x30_6_19_26},
+    {69, 8 * 7, 8 * 1, &File_052_ObjNum_057_144x30_6_19_26},
+    {70, 8 * 6, 8 * 2, &File_052_ObjNum_057_144x30_6_19_26},
+    {71, 8 * 5, 8 * 3, &File_052_ObjNum_057_144x30_6_19_26},
+    {72, 8 * 4, 8 * 4, &File_052_ObjNum_057_144x30_6_19_26},
+    {73, 8 * 3, 8 * 5, &File_052_ObjNum_057_144x30_6_19_26},
+    {74, 8 * 2, 8 * 6, &File_052_ObjNum_057_144x30_6_19_26},
+    {75, 8 * 1, 8 * 7, &File_052_ObjNum_057_144x30_6_19_26},
+    {76, 8 * 0, 8 * 8, &File_052_ObjNum_057_144x30_6_19_26},
+    // ↑temporary values↑
+
     {77, 0, 0, &File_053_ObjNum_077_48x30_6_19_26},
-    {78},
-    {79},
-    {80},
-    {81},
-    {82},
-    {83},
-    {84},
-    {85},
-    {86},
+    // ↓temporary values↓
+    {78, 0 * 8, 0 * 8, &File_053_ObjNum_077_48x30_6_19_26},
+    {79, 1 * 8, 1 * 8, &File_053_ObjNum_077_48x30_6_19_26},
+    {80, 2 * 8, 2 * 8, &File_053_ObjNum_077_48x30_6_19_26},
+    {81, 3 * 8, 3 * 8, &File_053_ObjNum_077_48x30_6_19_26},
+    {82, 4 * 8, 4 * 8, &File_053_ObjNum_077_48x30_6_19_26},
+    {83, 5 * 8, 5 * 8, &File_053_ObjNum_077_48x30_6_19_26},
+    {84, 6 * 8, 6 * 8, &File_053_ObjNum_077_48x30_6_19_26},
+    {85, 7 * 8, 7 * 8, &File_053_ObjNum_077_48x30_6_19_26},
+    {86, 8 * 8, 8 * 8, &File_053_ObjNum_077_48x30_6_19_26},
+    // ↑temporary values↑
+
     {87, 0, 0, &File_054_ObjNum_087_48x255_6_19_26},
-    {88},
-    {89},
+    // ↓temporary values↓
+    {88, 0 * 8, 0 * 8, &File_054_ObjNum_087_48x255_6_19_26},
+    {89, 1 * 8, 1 * 8, &File_054_ObjNum_087_48x255_6_19_26},
+    // ↑temporary values↑
+
     {90, 0, 0, &File_055_ObjNum_090_480x320_6_18_26},
     {91, 0, 0, &File_056_ObjNum_091_480x320_6_18_26},
     {92, 0, 0, &File_057_ObjNum_092_480x320_6_18_26},
     {93, 0, 0, &File_058_ObjNum_093_480x320_6_18_26},
     {94, 0, 0, &File_059_ObjNum_094_480x320_6_18_26},
-    {95},
-    {96},
+    // ↓temporary values↓
+    {95, 0 * 8, 0 * 8, &File_059_ObjNum_094_480x320_6_18_26},
+    {96, 1 * 8, 1 * 8, &File_059_ObjNum_094_480x320_6_18_26},
+    // ↑temporary values↑
+
     {97, 0, 0, &File_062_ObjNum_097_480x40_6_19_26},
     {98, 0, 0, &File_063_ObjNum_098_176x33_6_19_26},
     {99, 0, 0, &File_064_ObjNum_099_48x63_6_19_26},
-    {100},
-    {101},
-    {102},
-    {103},
+    // ↓temporary values↓
+    {100, 0 * 8, 0 * 8, &File_064_ObjNum_099_48x63_6_19_26},
+    {101, 1 * 8, 1 * 8, &File_064_ObjNum_099_48x63_6_19_26},
+    {102, 2 * 8, 2 * 8, &File_064_ObjNum_099_48x63_6_19_26},
+    {103, 3 * 8, 3 * 8, &File_064_ObjNum_099_48x63_6_19_26},
+    // ↑temporary values↑
+
     {104, 0, 0, &File_065_ObjNum_104_16x30_6_19_26},
-    {105},
-    {106},
-    {107},
-    {108},
+    // ↓temporary values↓
+    {105, 0 * 8, 0 * 8, &File_065_ObjNum_104_16x30_6_19_26},
+    {106, 1 * 8, 1 * 8, &File_065_ObjNum_104_16x30_6_19_26},
+    {107, 2 * 8, 2 * 8, &File_065_ObjNum_104_16x30_6_19_26},
+    {108, 3 * 8, 3 * 8, &File_065_ObjNum_104_16x30_6_19_26},
+    // ↑temporary values↑
+
     {109, 0, 0, &File_066_ObjNum_109_96x80_6_19_26},
-    {110},
-    {111},
-    {112},
-    {113},
+    // ↓temporary values↓
+    {110, 0 * 8, 0 * 8, &File_066_ObjNum_109_96x80_6_19_26},
+    {111, 1 * 8, 1 * 8, &File_066_ObjNum_109_96x80_6_19_26},
+    {112, 2 * 8, 2 * 8, &File_066_ObjNum_109_96x80_6_19_26},
+    {113, 3 * 8, 3 * 8, &File_066_ObjNum_109_96x80_6_19_26},
+    // ↑temporary values↑
+
     {114, 0, 0, &File_067_ObjNum_114_64x103_6_19_26},
-    {115},
-    {116},
-    {117},
-    {118},
+    // ↓temporary values↓
+    {115, 0 * 8, 0 * 8, &File_067_ObjNum_114_64x103_6_19_26},
+    {116, 1 * 8, 1 * 8, &File_067_ObjNum_114_64x103_6_19_26},
+    {117, 2 * 8, 2 * 8, &File_067_ObjNum_114_64x103_6_19_26},
+    {118, 3 * 8, 3 * 8, &File_067_ObjNum_114_64x103_6_19_26},
+    // ↑temporary values↑
+
     {119, 0, 0, &File_068_ObjNum_119_64x103_6_19_26},
-    {120},
-    {121},
-    {122},
-    {123},
+    // ↓temporary values↓
+    {120, 0 * 8, 0 * 8, &File_068_ObjNum_119_64x103_6_19_26},
+    {121, 1 * 8, 1 * 8, &File_068_ObjNum_119_64x103_6_19_26},
+    {122, 2 * 8, 2 * 8, &File_068_ObjNum_119_64x103_6_19_26},
+    {123, 3 * 8, 3 * 8, &File_068_ObjNum_119_64x103_6_19_26},
+    // ↑temporary values↑
+
     {124, 0, 0, &File_069_ObjNum_124_64x103_6_19_26},
-    {125},
-    {126},
-    {127},
-    {128},
+    // ↓temporary values↓
+    {125, 0 * 8, 0 * 8, &File_069_ObjNum_124_64x103_6_19_26},
+    {126, 1 * 8, 1 * 8, &File_069_ObjNum_124_64x103_6_19_26},
+    {127, 2 * 8, 2 * 8, &File_069_ObjNum_124_64x103_6_19_26},
+    {128, 3 * 8, 3 * 8, &File_069_ObjNum_124_64x103_6_19_26},
+    // ↑temporary values↑
+
     {129, 0, 0, &File_070_ObjNum_129_96x80_6_19_26},
-    {130},
-    {131},
-    {132},
-    {133},
+    // ↓temporary values↓
+    {130, 0 * 8, 0 * 8, &File_070_ObjNum_129_96x80_6_19_26},
+    {131, 1 * 8, 1 * 8, &File_070_ObjNum_129_96x80_6_19_26},
+    {132, 2 * 8, 2 * 8, &File_070_ObjNum_129_96x80_6_19_26},
+    {133, 3 * 8, 3 * 8, &File_070_ObjNum_129_96x80_6_19_26},
+    // ↑temporary values↑
+
     {134, 0, 0, &File_071_ObjNum_134_176x188_6_19_26},
     {135, 0, 0, &File_072_ObjNum_135_480x320_6_18_26},
     {136, 0, 0, &File_073_ObjNum_136_480x320_6_18_26},
-    {137},
+    // ↓temporary values↓
+    {137, 0 * 8, 0 * 8, &File_073_ObjNum_136_480x320_6_18_26},
+    // ↑temporary values↑
+
     {138, 0, 0, &File_074_ObjNum_138_48x143_6_19_26},
-    {139},
+    // ↓temporary values↓
+    {139, 0 * 8, 0 * 8, &File_074_ObjNum_138_48x143_6_19_26},
+    // ↑temporary values↑
+
     {140, 0, 0, &File_075_ObjNum_140_368x40_6_19_26},
-    {141},
-    {142},
+    // ↓temporary values↓
+    {141, 0 * 8, 0 * 8, &File_075_ObjNum_140_368x40_6_19_26},
+    {142, 1 * 8, 1 * 8, &File_075_ObjNum_140_368x40_6_19_26},
+    // ↑temporary values↑
+
     {143, 0, 0, &File_076_ObjNum_143_368x40_6_19_26},
-    {144},
-    {145},
-    {146},
+    // ↓temporary values↓
+    {144, 0 * 8, 0 * 8, &File_076_ObjNum_143_368x40_6_19_26},
+    {145, 1 * 8, 1 * 8, &File_076_ObjNum_143_368x40_6_19_26},
+    {146, 2 * 8, 2 * 8, &File_076_ObjNum_143_368x40_6_19_26},
+    // ↑temporary values↑
+
     {147, 0, 0, &File_077_ObjNum_147_480x320_6_18_26},
     {148, 0, 0, &File_078_ObjNum_148_480x320_6_18_26},
     {149, 0, 0, &File_079_ObjNum_149_480x320_6_17_26},
@@ -333,11 +387,16 @@ HAL_StatusTypeDef CMD_DispBg(CanRxMessage_t *msg) {
 
   uint16_t objNum = lsb | msb;
 
-  // display according image
-  // ILI9488_LOAD_IMAGE(spi, uint16_t x, uint16_t y, const Image_t *image, bool
-  // overWrite, bool draw)
+  // objnum checking
+  if (objNum > 150) {
+    return HAL_ERROR;
+  }
 
-  // diagnostic
+  HAL_TRY(ILI9488_SetBackground(objects[objNum].img));
+
+  HAL_TRY(ILI9488_LoadImage(spi, 0, 0, objects[objNum].img, true, false, true));
+
+  // display according image
   uint8_t len = snprintf((char *)diagnosticMsg, sizeof(diagnosticMsg),
                          "displayed background with objNum: %u\n", objNum);
 
@@ -395,8 +454,8 @@ HAL_StatusTypeDef CMD_DispText(CanRxMessage_t *msg) {
   if (remainingChars == 0 && target != 0) {
     // displaying
     HAL_StatusTypeDef displayStatus =
-        ILI9488_LoadText(spi, 0, 0, charArray, target, font, CHARWIDTH,
-                          FONTSIZE, CHARHEIGHT, true, false, true);
+        ILI9488_LoadText(spi, 0, 0, charArray, target, font, FONTSIZE,
+                         CHARWIDTH, CHARHEIGHT, true, true, true);
 
     uint8_t len = snprintf((char *)diagnosticMsg, sizeof(diagnosticMsg),
                            "Displayed text: %.*s\n", target, charArray);
@@ -428,9 +487,14 @@ HAL_StatusTypeDef CMD_DispImage(CanRxMessage_t *msg) {
 
   uint16_t objNum = lsb | msb;
 
+  // objnum checking
+  if (objNum > 150) {
+    return HAL_ERROR;
+  }
+
   // display according image
-  // ILI9488_LOAD_IMAGE(spi, uint16_t x, uint16_t y, const Image_t *image, bool
-  // overWrite, bool draw)
+  HAL_TRY(ILI9488_LoadImage(spi, objects[objNum].x, objects[objNum].y,
+                            objects[objNum].img, true, false, true));
 
   // diagnostic
   uint8_t len = snprintf((char *)diagnosticMsg, sizeof(diagnosticMsg),
@@ -583,12 +647,11 @@ static const CanCommand_t commands[] = {
 
 // public functions
 
-HAL_StatusTypeDef
-CAN_CMDS_Init(CAN_HandleTypeDef *canInterface,
-                SPI_HandleTypeDef *displaySpiInterface,
-                UART_HandleTypeDef *serialLoggingInterface,
-                TIM_HandleTypeDef *alarmPWMTimerInterface,
-                TIM_HandleTypeDef *backlightPWMTimerInterface) {
+HAL_StatusTypeDef CAN_CMDS_Init(CAN_HandleTypeDef *canInterface,
+                                SPI_HandleTypeDef *displaySpiInterface,
+                                UART_HandleTypeDef *serialLoggingInterface,
+                                TIM_HandleTypeDef *alarmPWMTimerInterface,
+                                TIM_HandleTypeDef *backlightPWMTimerInterface) {
 
   can = canInterface;
   spi = displaySpiInterface;

@@ -54,6 +54,11 @@ extern "C" {
       return x;                                                                \
     }                                                                          \
   } while (0)
+
+// spinning macro (can be dangerous)
+#define HAL_SPIN(x)                                                            \
+  while (x != HAL_OK) {                                                        \
+  }
 /* USER CODE END EM */
 
 void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);

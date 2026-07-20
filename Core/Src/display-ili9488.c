@@ -24,8 +24,8 @@
 static ImageTransferState_t state;
 
 // lookup table for possible 3 byte packages
-// output of .generate_lookup.py
-const uint32_t table[256] = {
+// output of generate_lookup.py
+static const uint32_t table[256] = {
     0x00000000, 0x000000A0, 0x0000000A, 0x000000AA, 0x0000A000, 0x0000A0A0,
     0x0000A00A, 0x0000A0AA, 0x00000A00, 0x00000AA0, 0x00000A0A, 0x00000AAA,
     0x0000AA00, 0x0000AAA0, 0x0000AA0A, 0x0000AAAA, 0x00A00000, 0x00A000A0,
@@ -307,13 +307,13 @@ HAL_StatusTypeDef ILI9488_SetBrightness(SPI_HandleTypeDef *spi,
 }
 
 // setter for background image
-HAL_StatusTypeDef ILI9488_SetBackground(Image_t *bg) {
+HAL_StatusTypeDef ILI9488_SetBackground(const Image_t *bg) {
   // making sure requested image is full screen
   if (bg->height != 320 || bg->width != 480) {
     return HAL_ERROR;
   }
 
-  state.backgroundImage = bg;
+  state.backgroundImage = (Image_t *)bg;
 
   return HAL_OK;
 }
@@ -514,7 +514,7 @@ HAL_StatusTypeDef ILI9488_LoadImage(SPI_HandleTypeDef *spi, uint16_t x,
 HAL_StatusTypeDef
 ILI9488_LoadText(SPI_HandleTypeDef *spi, uint16_t x, uint16_t y, uint8_t text[],
                  const uint8_t textSize, const Character_t *font,
-                 const uint8_t fontCount, // number of characters in font
+                 const uint8_t fontSize, // number of characters in font
                  const uint8_t charWidth_p, const uint16_t charHeight_p,
                  bool overWrite, bool bg, bool draw) {
 
@@ -555,7 +555,7 @@ ILI9488_LoadText(SPI_HandleTypeDef *spi, uint16_t x, uint16_t y, uint8_t text[],
       const uint8_t *currentCharacter =
           // if inputted character is out of range for the inputted font, set to
           // a placeholder character
-          (text[charIdx] < 32 || (size_t)(text[charIdx] - 32) >= fontCount)
+          (text[charIdx] < 32 || (text[charIdx] - 32) >= fontSize)
               ? font[0].data
               : font[text[charIdx] - 32].data;
 
@@ -609,6 +609,8 @@ HAL_StatusTypeDef ILI9488_Draw(SPI_HandleTypeDef *spi) {
     state.currentlyDrawing = true;
 
     // setting fill range to only include the last written screen update
+    // The boundary logic shouldn't be necessary after removal of out of
+    // bounds drawing
     HAL_TRY(ILI9488_SetRange(spi, state.x,
                              (state.x + state.width - 1 > ILI9488_WIDTH - 1
                                   ? ILI9488_WIDTH - 1

@@ -81,7 +81,7 @@ typedef struct {
 // public functions
 HAL_StatusTypeDef ILI9488_SetBrightness(SPI_HandleTypeDef *spi,
                                         TIM_HandleTypeDef *tim, uint8_t val);
-HAL_StatusTypeDef ILI9488_SetBackground(Image_t *bg);
+HAL_StatusTypeDef ILI9488_SetBackground(const Image_t *bg);
 HAL_StatusTypeDef ILI9488_Init(SPI_HandleTypeDef *spi,
                                TIM_HandleTypeDef *backlightTimer);
 HAL_StatusTypeDef ILI9488_Refresh(SPI_HandleTypeDef *spi);
@@ -92,7 +92,7 @@ HAL_StatusTypeDef ILI9488_LoadImage(SPI_HandleTypeDef *spi, uint16_t x,
 HAL_StatusTypeDef
 ILI9488_LoadText(SPI_HandleTypeDef *spi, uint16_t x, uint16_t y, uint8_t text[],
                  const uint8_t textSize, const Character_t *font,
-                 const uint8_t fontCount, // number of characters in font
+                 const uint8_t fontSize, // number of characters in font
                  const uint8_t charWidth_p, const uint16_t charHeight_p,
                  bool overWrite, bool bg, bool draw);
 HAL_StatusTypeDef ILI9488_Draw(SPI_HandleTypeDef *spi);
