@@ -4,3 +4,4 @@ Drivers/
 *.d
 *.o
 *.list
+compile_commands.json

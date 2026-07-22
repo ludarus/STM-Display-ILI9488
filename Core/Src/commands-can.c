@@ -449,13 +449,15 @@ HAL_StatusTypeDef CMD_DispText(CanRxMessage_t *msg) {
       remainingChars--;
     }
   }
-
   // end condition
   if (remainingChars == 0 && target != 0) {
     // displaying
     HAL_StatusTypeDef displayStatus =
-        ILI9488_LoadText(spi, 0, 0, charArray, target, font, FONTSIZE,
-                         CHARWIDTH, CHARHEIGHT, true, true, true);
+        // ILI9488_LoadText(spi, 0, 0, charArray, target, font, FONTSIZE,
+        //                  CHARWIDTH, CHARHEIGHT, true, false, true);
+
+        ILI9488_LoadText(spi, 0, 120, charArray, target, font, FONTSIZE,
+                         CHARWIDTH, CHARHEIGHT, false, true, true);
 
     uint8_t len = snprintf((char *)diagnosticMsg, sizeof(diagnosticMsg),
                            "Displayed text: %.*s\n", target, charArray);

@@ -3,6 +3,8 @@
  *
  *  Created on: Jun 23, 2026
  *      Author: Luke Fadel
+ *
+ *      Type annotations: _p = in pixels, _b = in bytes
  */
 #include "character.h"
 #include "image.h"
@@ -15,10 +17,10 @@
 #define INC_DISPLAY_ILI9488_H_
 
 // width and height of display in pixels
-#define ILI9488_WIDTH 480
-#define ILI9488_HEIGHT 320
+#define ILI9488_WIDTH_PX 480
+#define ILI9488_HEIGHT_PX 320
 
-#define ILI9488_SCALED_WIDTH (ILI9488_WIDTH / 8)
+#define ILI9488_WIDTH_BYTES (ILI9488_WIDTH_PX / 8)
 
 // size of page in flash
 // previously defined in stm32f0xx_hal_flash_ex.h:150:9
@@ -80,22 +82,20 @@ typedef struct {
 
 // public functions
 HAL_StatusTypeDef ILI9488_SetBrightness(SPI_HandleTypeDef *spi,
-                                     TIM_HandleTypeDef *tim, uint8_t val);
+                                        TIM_HandleTypeDef *tim, uint8_t val);
 HAL_StatusTypeDef ILI9488_SetBackground(const Image_t *bg);
 HAL_StatusTypeDef ILI9488_Init(SPI_HandleTypeDef *spi,
                                TIM_HandleTypeDef *backlightTimer);
 HAL_StatusTypeDef ILI9488_Refresh(SPI_HandleTypeDef *spi);
-HAL_StatusTypeDef ILI9488_Fill(SPI_HandleTypeDef *spi);
-HAL_StatusTypeDef ILI9488_LoadImage(SPI_HandleTypeDef *spi, uint16_t x,
-                                     uint16_t y, const Image_t *image,
-                                     bool overWrite, bool bg, bool draw);
+HAL_StatusTypeDef ILI9488_LoadImage(SPI_HandleTypeDef *spi, uint16_t x_p,
+                                    uint16_t y_p, const Image_t *image,
+                                    bool overWrite, bool bg, bool draw);
 HAL_StatusTypeDef
-ILI9488_LoadText(SPI_HandleTypeDef *spi, uint16_t x, uint16_t y,
-                  uint8_t text[], uint8_t textSize, const Character_t *font,
-                  /*width of character in pixels*/ uint8_t characterWidth,
-                  /*number of characters in font*/ size_t fontSize,
-                  /*height of character in pixels*/ size_t characterHeight,
-                  bool overWrite, bool bg, bool draw);
+ILI9488_LoadText(SPI_HandleTypeDef *spi, uint16_t x_p, uint16_t y_p,
+                 uint8_t text[], uint8_t textSize, const Character_t *font,
+                 const uint8_t fontCount, // number of characters in font
+                 const uint8_t charWidth_p, const uint16_t charHeight_p,
+                 bool overWrite, bool bg, bool draw);
 HAL_StatusTypeDef ILI9488_Draw(SPI_HandleTypeDef *spi);
 
 #endif /* INC_DISPLAY_ILI9488_H_ */

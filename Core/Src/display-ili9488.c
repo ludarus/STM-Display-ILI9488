@@ -7,10 +7,13 @@
  *  Created for ILI9488 display driver
  *  https://www.mouser.com/pdfDocs/ILI9488_Data_Sheet_100.pdf
  *  LSB = first pixel in byte
+ *
+ *      Type annotations: _p = in pixels, _b = in bytes
  */
 
 // includes #include "character.h" #include "image.h"
 #include "File_005_ObjNum_004_480x320_6_18_26.h"
+#include "font.h"
 #include "stm32f0xx_hal.h"
 #include "stm32f0xx_hal_def.h"
 #include "stm32f0xx_hal_gpio.h"
@@ -23,7 +26,7 @@
 // state so main functions and callbacks can all access render state
 static ImageTransferState_t state;
 
-// lookup table for possible 3 byte packages
+// lookup table for possible 4 byte packages
 // output of .generate_lookup.py
 const uint32_t table[256] = {
     0x00000000, 0x000000A0, 0x0000000A, 0x000000AA, 0x0000A000, 0x0000A0A0,
@@ -73,7 +76,10 @@ const uint32_t table[256] = {
 //--------------------------------------------------------------------------------
 // private inline utility functions: ----
 
-// TODO make this one better
+// expands a bitpacked byte to the proper data format & colour resolution to
+// transmit to the display.
+// Takes 1 byte which contains 8 pixels worth of information and expands it into
+// 4 bytes of colour coded data
 static inline void expandToChunk(uint8_t *screenData, uint32_t *dst,
                                  const uint32_t count) {
   uint32_t pos = state.fillPos;
@@ -161,7 +167,7 @@ static inline void bgPreload(const uint8_t *bgData, uint8_t *screenData,
                              uint32_t position, const uint16_t width,
                              const uint16_t height) {
 
-  const uint16_t rowSkip = ILI9488_WIDTH - width;
+  const uint16_t rowSkip = ILI9488_WIDTH_PX - width;
 
   uint32_t bgRem = bgData[0]; // in pixels
   uint32_t bgIdx = 0;
@@ -313,7 +319,7 @@ HAL_StatusTypeDef ILI9488_SetBackground(const Image_t *bg) {
     return HAL_ERROR;
   }
 
-  state.backgroundImage = bg;
+  state.backgroundImage = (Image_t *)bg;
 
   return HAL_OK;
 }
@@ -386,30 +392,175 @@ HAL_StatusTypeDef ILI9488_Init(SPI_HandleTypeDef *spi,
   return HAL_OK;
 }
 
-// debugging function to see filling order of screen
-HAL_StatusTypeDef ILI9488_Fill(SPI_HandleTypeDef *spi) {
+// loads image to screen buffer
+HAL_StatusTypeDef ILI9488_LoadImage(SPI_HandleTypeDef *spi, uint16_t x_p,
+                                    uint16_t y_p, const Image_t *image,
+                                    bool overWrite, bool bg, bool draw) {
+  if (!state.currentlyLoading) {
+    // checking to make sure the image is in bounds:
+    if (x_p + image->width > ILI9488_WIDTH_PX ||
+        y_p + image->height > ILI9488_HEIGHT_PX) {
+      return HAL_ERROR;
+    }
 
-  // setting fill range
-  HAL_TRY(ILI9488_SetRange(spi, 0, ILI9488_WIDTH - 1, 0, ILI9488_HEIGHT - 1));
+    state.currentlyLoading = true;
 
-  // write data command
-  HAL_TRY(ILI9488_Cmd(spi, 0x2C));
+    // all pixels in image including ones that are clipped off by the edge of
+    // copying state variables for compiler optimization (pointer aliasing)
+    uint16_t col_p = 0;                                       // in pixels
+    uint32_t pos_p = (ILI9488_WIDTH_PX * y_p) + x_p;          // in pixels
+    const uint16_t imgWidth_p = image->width;                 // in pixels
+    const uint16_t imgHeight_p = image->height;               // in pixels
+    const uint16_t rowSkip_p = ILI9488_WIDTH_PX - imgWidth_p; // in pixels
+    const uint8_t *imgData = image->data;
+    uint8_t *screenData = state.screenCopy;
 
-  // setting to data mode
-  HAL_GPIO_WritePin(DISPLAY_DC_GPIO_Port, DISPLAY_DC_Pin, GPIO_PIN_SET);
+    // pre loading background if OR mode is enabled
+    if (!overWrite && bg) {
+      bgPreload(state.backgroundImage->data, screenData, pos_p, imgWidth_p,
+                imgHeight_p);
+    }
 
-  // selecting spi device
-  ILI9488_Select();
+    // drawing image
+    for (uint32_t i = 0; i < image->size; i++) {
 
-  // each byte contains two bits
-  uint8_t padded = 238;
-  for (uint32_t r = 0; r < 76800; r++) {
-    HAL_TRY(HAL_SPI_Transmit(spi, &padded, 1, HAL_MAX_DELAY));
+      // faster loading algorithm
+      bool isOn = i % 2;
+      uint8_t remaining_p = imgData[i]; // in pixels
+
+      while (remaining_p > 0) {
+        // Sets the current chunk to the largest possible contiguous segment of
+        // pixels in the current row
+        uint16_t chunk_p = imgWidth_p - col_p;
+
+        // if chunk is more than the remaining pixels needed
+        chunk_p = remaining_p > chunk_p ? chunk_p : remaining_p;
+        remaining_p -= chunk_p;
+
+        fillScreen(screenData, &pos_p, chunk_p, isOn, overWrite);
+
+        // should only ever == imgWidth as per the logic above
+        if ((col_p += chunk_p) >= imgWidth_p) {
+          col_p = 0;
+          pos_p += rowSkip_p;
+        }
+      }
+    }
+
+    // setting state variables
+    state.x = x_p;
+    state.y = y_p;
+    state.width = imgWidth_p;
+    state.height = imgHeight_p;
+    state.imageSize = imgWidth_p * imgHeight_p;
+
+    state.currentlyLoading = false;
+
+    if (draw) {
+      return ILI9488_Draw(spi);
+    }
+
+    return HAL_OK;
+  } else {
+    return HAL_BUSY;
   }
+}
 
-  ILI9488_Deselect();
+// loads text with transparent background on OR mode
+HAL_StatusTypeDef
+ILI9488_LoadText(SPI_HandleTypeDef *spi, uint16_t x_p, uint16_t y_p,
+                 uint8_t text[], uint8_t textSize, const Character_t *font,
+                 const uint8_t fontCount, // number of characters in font
+                 const uint8_t charWidth_p, const uint16_t charHeight_p,
+                 bool overWrite, bool bg, bool draw) {
 
-  return HAL_OK;
+  if (!state.currentlyLoading) {
+    // checking to make sure the text is in bounds
+    if (y_p + charHeight_p > ILI9488_HEIGHT_PX ||
+        x_p + charWidth_p > ILI9488_WIDTH_PX) {
+      // TODO possibly just cut the text off by setting textSize = above
+      return HAL_ERROR;
+    }
+
+    state.currentlyLoading = true;
+
+    uint16_t boundsWidth_p = charWidth_p * textSize; // in pixels
+
+    // clamping font length
+    if (x_p + boundsWidth_p > ILI9488_WIDTH_PX) {
+      textSize = (ILI9488_WIDTH_PX - x_p) / charWidth_p;
+      boundsWidth_p = charWidth_p * textSize;
+    }
+
+    const uint32_t bytesPerChar_b =
+        (charWidth_p * charHeight_p) / 8; // in bytes
+
+    const uint8_t charWidth_b = charWidth_p / 8; // in bytes
+    const uint16_t rowSkip_b = ILI9488_WIDTH_BYTES - charWidth_b;
+
+    uint8_t *screenData = state.screenCopy;
+
+    // pre loading background if OR mode is enabled
+    if (!overWrite && bg) {
+      bgPreload(state.backgroundImage->data, screenData,
+                (y_p * ILI9488_WIDTH_PX) + x_p, boundsWidth_p, charHeight_p);
+    }
+
+    // iterating through every inputted character
+    for (uint16_t charIdx = 0; charIdx < textSize; charIdx++) {
+      // loading character
+      uint16_t col_b = 0; // in bytes
+      uint32_t pos_b = (ILI9488_WIDTH_BYTES * y_p) + (x_p / 8) +
+                       (charIdx * charWidth_b); // in bytes
+
+      // defining current character by using the character array with an ascii
+      // offset
+      const uint8_t *currentCharacter =
+          // if inputted character is out of range for the inputted font, set to
+          // a placeholder character
+          (text[charIdx] < 32 || (size_t)(text[charIdx] - 32) >= fontCount)
+              ? font[0].data
+              : font[text[charIdx] - 32].data;
+
+      // loading one byte at a time. This can be done easily as the screen width
+      // is a multiple of 8, the x coordinate is a multiple of 8, and the font
+      // width is a multiple of 8
+      for (uint32_t byte = 0; byte < bytesPerChar_b; byte++) {
+        // if the current byte is in bounds of the screen
+        if (overWrite) {
+          // overwrite mode
+          screenData[pos_b] = currentCharacter[byte];
+        } else {
+          // or mode
+          screenData[pos_b] |= currentCharacter[byte];
+        }
+
+        pos_b++;
+        // incrementing column and row
+        if (++col_b >= charWidth_b) {
+          col_b = 0;
+          pos_b += rowSkip_b;
+        }
+      }
+    }
+
+    // setting state variables
+    state.x = x_p;
+    state.y = y_p;
+    state.width = boundsWidth_p;
+    state.height = charHeight_p;
+    state.imageSize = boundsWidth_p * charHeight_p;
+
+    state.currentlyLoading = false;
+
+    if (draw) {
+      return ILI9488_Draw(spi);
+    }
+
+    return HAL_OK;
+  } else {
+    return HAL_BUSY;
+  }
 }
 
 // fast refreshing using chunking
@@ -420,7 +571,8 @@ HAL_StatusTypeDef ILI9488_Refresh(SPI_HandleTypeDef *spi) {
 
     state.currentlyDrawing = true;
 
-    HAL_TRY(ILI9488_SetRange(spi, 0, ILI9488_WIDTH - 1, 0, ILI9488_HEIGHT - 1));
+    HAL_TRY(ILI9488_SetRange(spi, 0, ILI9488_WIDTH_PX - 1, 0,
+                             ILI9488_HEIGHT_PX - 1));
 
     // write data command
     HAL_TRY(ILI9488_Cmd(spi, 0x2C));
@@ -435,10 +587,10 @@ HAL_StatusTypeDef ILI9488_Refresh(SPI_HandleTypeDef *spi) {
     state.imageProgress = 0;
 
     // setting state to reuse the other callback
-    state.imageSize = ILI9488_WIDTH * ILI9488_HEIGHT;
+    state.imageSize = ILI9488_WIDTH_PX * ILI9488_HEIGHT_PX;
     state.imageTarget = state.imageSize / 2;
-    state.width = ILI9488_WIDTH / 8;
-    state.height = ILI9488_HEIGHT;
+    state.width = ILI9488_WIDTH_PX / 8;
+    state.height = ILI9488_HEIGHT_PX;
     state.x = 0;
     state.y = 0;
 
@@ -463,172 +615,6 @@ HAL_StatusTypeDef ILI9488_Refresh(SPI_HandleTypeDef *spi) {
   }
 }
 
-// loads image to screen buffer
-HAL_StatusTypeDef ILI9488_LoadImage(SPI_HandleTypeDef *spi, uint16_t x,
-                                     uint16_t y, const Image_t *image,
-                                     bool overWrite, bool bg, bool draw) {
-  if (!state.currentlyLoading) {
-    // checking to make sure the image is in bounds:
-    if (x + image->width > ILI9488_WIDTH ||
-        y + image->height > ILI9488_HEIGHT) {
-      return HAL_ERROR;
-    }
-
-    state.currentlyLoading = true;
-
-    // all pixels in image including ones that are clipped off by the edge of
-    // copying state variables for compiler optimization (pointer aliasing)
-    uint16_t col = 0;                                  // in pixels
-    uint32_t pos = (ILI9488_WIDTH * y) + x;            // in pixels
-    const uint16_t imgWidth = image->width;            // in pixels
-    const uint16_t imgHeight = image->height;          // in pixels
-    const uint16_t rowSkip = ILI9488_WIDTH - imgWidth; // in pixels
-    const uint8_t *imgData = image->data;
-    uint8_t *screenData = state.screenCopy;
-
-    // pre loading background if OR mode is enabled
-    if (!overWrite && bg) {
-      bgPreload(state.backgroundImage->data, screenData, pos, imgWidth,
-                imgHeight);
-    }
-
-    // drawing image
-    for (uint32_t i = 0; i < image->size; i++) {
-
-      // faster loading algorithm
-      bool isOn = i % 2;
-      uint8_t remainingPx = imgData[i]; // in pixels
-
-      while (remainingPx > 0) {
-        // Sets the current chunk to the largest possible contiguous segment of
-        // pixels in the current row
-        uint16_t chunk = imgWidth - col;
-
-        // if chunk is more than the remaining pixels needed
-        chunk = remainingPx > chunk ? chunk : remainingPx;
-        remainingPx -= chunk;
-
-        fillScreen(screenData, &pos, chunk, isOn, overWrite);
-
-        // should only ever == imgWidth as per the logic above
-        if ((col += chunk) >= imgWidth) {
-          col = 0;
-          pos += rowSkip;
-        }
-      }
-    }
-
-    // setting state variables
-    state.x = x;
-    state.y = y;
-    state.width = image->width;
-    state.height = image->height;
-    state.imageSize = image->height * image->width;
-
-    state.currentlyLoading = false;
-
-    if (draw) {
-      return ILI9488_Draw(spi);
-    }
-
-    return HAL_OK;
-  } else {
-    return HAL_BUSY;
-  }
-}
-
-// loads text with transparent background on OR mode
-HAL_StatusTypeDef
-ILI9488_LoadText(SPI_HandleTypeDef *spi, uint16_t x, uint16_t y,
-                  uint8_t text[], uint8_t textSize, const Character_t *font,
-                  /*width of character in pixels*/ uint8_t characterWidth,
-                  /*number of characters in font*/ size_t fontSize,
-                  /*height of character in pixels*/ size_t characterHeight,
-                  bool overWrite, bool bg, bool draw) {
-
-  if (!state.currentlyLoading) {
-    // checking to make sure the text is in bounds
-    if (textSize * characterWidth > ILI9488_WIDTH - x ||
-        y + characterHeight > ILI9488_HEIGHT) {
-      // TODO possibly just cut the text off by setting textSize = above
-      return HAL_ERROR;
-    }
-
-    state.currentlyLoading = true;
-
-    const uint32_t bytesPerChar =
-        (characterWidth * characterHeight) / 8;         // in bytes
-    const uint8_t scaledCharWidth = characterWidth / 8; // in bytes
-    uint16_t rowSkip;
-
-    uint8_t *screenData = state.screenCopy;
-
-    const uint16_t boundsWidth = characterWidth * textSize; // in pixels
-
-    // pre loading background if OR mode is enabled
-    if (!overWrite && bg) {
-      bgPreload(state.backgroundImage->data, screenData,
-                (y * ILI9488_WIDTH) + x, boundsWidth, characterHeight);
-    }
-
-    rowSkip = ILI9488_SCALED_WIDTH - scaledCharWidth; // in bytes
-    // iterating through every inputted character
-    for (uint16_t charIdx = 0; charIdx < textSize; charIdx++) {
-      // loading character
-      uint16_t col = 0; // in bytes
-      uint32_t pos = (ILI9488_SCALED_WIDTH * y) + (x / 8) +
-                     (charIdx * scaledCharWidth); // in bytes
-
-      // defining current character by using the character array with an ascii
-      // offset
-      const uint8_t *currentCharacter =
-          // if inputted character is out of range for the inputted font, set to
-          // a placeholder character
-          (text[charIdx] < 32 || (size_t)(text[charIdx] - 32) >= fontSize)
-              ? font[0].data
-              : font[text[charIdx] - 32].data;
-
-      // loading one byte at a time. This can be done easily as the screen width
-      // is a multiple of 8, the x coordinate is a multiple of 8, and the font
-      // width is a multiple of 8
-      for (uint32_t byte = 0; byte < bytesPerChar; byte++) {
-        // if the current byte is in bounds of the screen
-        if (overWrite) {
-          // overwrite mode
-          screenData[pos] = currentCharacter[byte];
-        } else {
-          // or mode
-          screenData[pos] |= currentCharacter[byte];
-        }
-
-        pos++;
-        // incrementing column and row
-        if (++col >= characterWidth / 8) {
-          col = 0;
-          pos += rowSkip;
-        }
-      }
-    }
-
-    // setting state variables
-    state.x = x;
-    state.y = y;
-    state.width = boundsWidth;
-    state.height = characterHeight;
-    state.imageSize = boundsWidth * characterHeight;
-
-    state.currentlyLoading = false;
-
-    if (draw) {
-      return ILI9488_Draw(spi);
-    }
-
-    return HAL_OK;
-  } else {
-    return HAL_BUSY;
-  }
-}
-
 // x and y should be multiples of 8
 // draws last loaded image to screen
 HAL_StatusTypeDef ILI9488_Draw(SPI_HandleTypeDef *spi) {
@@ -638,21 +624,15 @@ HAL_StatusTypeDef ILI9488_Draw(SPI_HandleTypeDef *spi) {
     state.currentlyDrawing = true;
 
     // setting fill range to only include the last written screen update
-    HAL_TRY(ILI9488_SetRange(spi, state.x,
-                             (state.x + state.width - 1 > ILI9488_WIDTH - 1
-                                  ? ILI9488_WIDTH - 1
-                                  : state.x + state.width - 1),
-                             state.y,
-                             (state.y + state.height - 1 > ILI9488_HEIGHT - 1
-                                  ? ILI9488_HEIGHT - 1
-                                  : state.y + state.height - 1)));
+    HAL_TRY(ILI9488_SetRange(spi, state.x, state.x + state.width - 1, state.y,
+                             state.y + state.height - 1));
 
-    if (state.x + state.width > ILI9488_WIDTH) {
-      state.width = ILI9488_WIDTH - state.x;
+    if (state.x + state.width > ILI9488_WIDTH_PX) {
+      state.width = ILI9488_WIDTH_PX - state.x;
     }
 
-    if (state.y + state.height > ILI9488_HEIGHT) {
-      state.height = ILI9488_HEIGHT - state.y;
+    if (state.y + state.height > ILI9488_HEIGHT_PX) {
+      state.height = ILI9488_HEIGHT_PX - state.y;
     }
 
     // converting pixels to bytes
@@ -677,9 +657,9 @@ HAL_StatusTypeDef ILI9488_Draw(SPI_HandleTypeDef *spi) {
 
     state.activeBuf = 0;
 
-    state.fillPos = (uint32_t)ILI9488_SCALED_WIDTH * state.y + state.x;
+    state.fillPos = (uint32_t)ILI9488_WIDTH_BYTES * state.y + state.x;
     state.fillCol = 0;
-    state.rowSkip = ILI9488_SCALED_WIDTH - state.width;
+    state.rowSkip = ILI9488_WIDTH_BYTES - state.width;
 
     if (state.imageTarget <= CHUNK) {
       expandToChunk(state.screenCopy, (uint32_t *)state.buf[state.activeBuf],
