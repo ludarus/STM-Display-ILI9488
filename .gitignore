@@ -5,3 +5,4 @@ Drivers/
 *.o
 *.list
 compile_commands.json
+.clangd
