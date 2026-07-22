@@ -478,7 +478,6 @@ ILI9488_LoadText(SPI_HandleTypeDef *spi, uint16_t x_p, uint16_t y_p,
     // checking to make sure the text is in bounds
     if (y_p + charHeight_p > ILI9488_HEIGHT_PX ||
         x_p + charWidth_p > ILI9488_WIDTH_PX) {
-      // TODO possibly just cut the text off by setting textSize = above
       return HAL_ERROR;
     }
 

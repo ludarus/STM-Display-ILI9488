@@ -394,7 +394,8 @@ HAL_StatusTypeDef CMD_DispBg(CanRxMessage_t *msg) {
 
   HAL_TRY(ILI9488_SetBackground(objects[objNum].img));
 
-  HAL_TRY(ILI9488_LoadImage(spi, 0, 0, objects[objNum].img, true, false, true));
+  HAL_SPIN(
+      ILI9488_LoadImage(spi, 0, 0, objects[objNum].img, true, false, true));
 
   // display according image
   uint8_t len = snprintf((char *)diagnosticMsg, sizeof(diagnosticMsg),
@@ -452,12 +453,9 @@ HAL_StatusTypeDef CMD_DispText(CanRxMessage_t *msg) {
   // end condition
   if (remainingChars == 0 && target != 0) {
     // displaying
-    HAL_StatusTypeDef displayStatus =
-        // ILI9488_LoadText(spi, 0, 0, charArray, target, font, FONTSIZE,
-        //                  CHARWIDTH, CHARHEIGHT, true, false, true);
-
-        ILI9488_LoadText(spi, 0, 120, charArray, target, font, FONTSIZE,
-                         CHARWIDTH, CHARHEIGHT, false, true, true);
+    // HAL_StatusTypeDef displayStatus =
+    HAL_SPIN(ILI9488_LoadText(spi, 0, 120, charArray, target, font, FONTSIZE,
+                              CHARWIDTH, CHARHEIGHT, false, true, true))
 
     uint8_t len = snprintf((char *)diagnosticMsg, sizeof(diagnosticMsg),
                            "Displayed text: %.*s\n", target, charArray);
@@ -466,7 +464,8 @@ HAL_StatusTypeDef CMD_DispText(CanRxMessage_t *msg) {
 
     // restting target
     target = 0;
-    return displayStatus;
+    // return displayStatus;
+    return HAL_OK;
   }
 
   // logging
@@ -495,8 +494,8 @@ HAL_StatusTypeDef CMD_DispImage(CanRxMessage_t *msg) {
   }
 
   // display according image
-  HAL_TRY(ILI9488_LoadImage(spi, objects[objNum].x, objects[objNum].y,
-                            objects[objNum].img, true, false, true));
+  HAL_SPIN(ILI9488_LoadImage(spi, objects[objNum].x, objects[objNum].y,
+                             objects[objNum].img, true, false, true));
 
   // diagnostic
   uint8_t len = snprintf((char *)diagnosticMsg, sizeof(diagnosticMsg),
@@ -565,7 +564,10 @@ HAL_StatusTypeDef CMD_SysFail(CanRxMessage_t *msg) {
   // cmdNum 0x88
   HAL_UART_Transmit_IT(uart, (uint8_t *)"ERROR: SYSTEM FAILURE RECEIVED \n",
                        32);
-  return ILI9488_LoadImage(spi, 0, 0, &SYSFAIL_480x320, true, false, true);
+
+  HAL_SPIN(ILI9488_LoadImage(spi, 0, 0, &SYSFAIL_480x320, true, false, true))
+  return HAL_OK;
+  // return ILI9488_LoadImage(spi, 0, 0, &SYSFAIL_480x320, true, false, true);
 }
 
 HAL_StatusTypeDef CMD_Brightness(CanRxMessage_t *msg) {
